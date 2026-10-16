@@ -346,3 +346,11 @@ Forever nutzt das moderne Beute-Fenster (`LootFrame.ScrollBox`, keine `LootButto
 liefern `GetSlotIndex`. `GetLootSlotInfo` meldet `isQuestItem = false` und `questID = nil` auch für
 Gegenstände, die ein Questziel braucht (gesehen: Geiferzahnschnauze für Westfall-Eintopf).
 Quest-Gegenstände erkennt SITREP darum am Namen in den Zielen des Questlogs (4.10.3).
+
+## Quest lines of a unit's tooltip in a group (measured 2026-10-16, `/sitrep npcprobe`, 4.11.5)
+
+`C_TooltipInfo.GetUnit` lists, under the `QuestTitle` line (type 17), each group member's part: a
+`QuestPlayer` line (type 18) with the player's name, then their `QuestObjective` lines (type 8) — the
+player's own part too, under their own name, and in no fixed order. The first objective line is
+therefore not necessarily yours: SITREP reads the lines per owner (`Quests.TipQuestLines`) and takes
+your counts from your quest log.
