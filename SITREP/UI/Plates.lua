@@ -34,6 +34,9 @@
 --   mate ring   (plates.mateRing) your group's members: a party-blue ring round the
 --               bar and the name in the same blue; never see-through (other friends
 --               are, plates.friendOpacity)
+--   mate target (plates.mateTarget) your group's members: their target in a line
+--               under the bar ("› name"), red hostile, yellow neutral, green
+--               friendly, mint when it is your target too; the cast bar below it
 --   hover       the member whose party frame the mouse is on: drawn as your target,
 --               its brackets at full alpha (not faded with the plate out of sight)
 --   dispel orbs friendly plates: a small orb left of the bar for each kind of debuff
@@ -578,6 +581,11 @@ local function build(plate, hb)
 	s.distText = K.Font(s.text, 9, C.text, K.FONT, "OUTLINE")
 	s.distText:SetPoint("LEFT", s, "RIGHT", SEL_GAP + 3 + 4 + 3, 0)
 	s.distText:Hide()
+	-- one of your group: what they have targeted, under the bar (N.MateTarget)
+	s.mateT = K.Font(s.text, 9, C.text, K.FONT, "OUTLINE")
+	s.mateT:SetPoint("TOP", s, "BOTTOM", 0, -(SEL_GAP + 2))
+	if s.mateT.SetWordWrap then s.mateT:SetWordWrap(false) end
+	s.mateT:Hide()
 	-- SITREP's cast bar under the plate
 	ns.Units.CastBar(s, s, 10)
 	-- below the target brackets, like the text above them
@@ -883,11 +891,63 @@ function N.Combo(s)
 	end
 	if show ~= (s.combo:IsShown() and true or false) then
 		s.combo:SetShown(show)
-		local y = -(SEL_GAP + 2) - (show and (PIP_H + 4) or 0)
-		s.cast:ClearAllPoints()
-		s.cast:SetPoint("TOPLEFT", s, "BOTTOMLEFT", 0, y)
-		s.cast:SetPoint("TOPRIGHT", s, "BOTTOMRIGHT", 0, y)
+		N.PlaceCast(s)
 	end
+end
+
+-- The cast bar under whatever is under the bar: combo pips, a member's target.
+local MATE_T_H = 12
+function N.PlaceCast(s)
+	local y = -(SEL_GAP + 2) - (s.combo:IsShown() and (PIP_H + 4) or 0) - (s.mateT:IsShown() and MATE_T_H or 0)
+	if s.castY == y then return end
+	s.castY = y
+	s.cast:ClearAllPoints()
+	s.cast:SetPoint("TOPLEFT", s, "BOTTOMLEFT", 0, y)
+	s.cast:SetPoint("TOPRIGHT", s, "BOTTOMRIGHT", 0, y)
+end
+
+-- A member of your group: their unit in the group (partyN, raidN), for their target.
+function N.MateUnit(s)
+	if not s.mate then return nil end
+	local raid = IsInRaid and IsInRaid()
+	local n = (raid and read(GetNumGroupMembers) or read(GetNumSubgroupMembers)) or 0
+	local prefix = raid and "raid" or "party"
+	for i = 1, n do
+		local u = prefix .. i
+		if read(UnitIsUnit, s.unit, u) == true then return u end
+		local g = read(UnitGUID, u)
+		if g and g == s.guid then return u end
+	end
+	return nil
+end
+
+-- A member's target under their plate: "› name" in its reaction's colour, mint
+-- when it is your target too, "› you" when it is you; nothing without a target.
+local MATE_T_FOE, MATE_T_NEUTRAL, MATE_T_FRIEND = { 1, 0.42, 0.32 }, { 1, 0.85, 0.3 }, { 0.45, 0.95, 0.5 }
+function N.MateTarget(s)
+	local t = s.mateUnit and (s.mateUnit .. "target")
+	local show = P().mateTarget ~= false and t ~= nil and s.mate and read(UnitExists, t) == true or false
+	if show then
+		local c
+		if read(UnitIsUnit, t, "player") == true then
+			c = MATE_T_FRIEND
+			s.mateT:SetText("› you")
+		else
+			local mine = read(UnitGUID, "target")
+			local g = read(UnitGUID, t)
+			if (mine and g and mine == g) or read(UnitIsUnit, t, "target") == true then c = MINT
+			else
+				local r = read(UnitReaction, t, "player")
+				c = not r and C.text or r <= 3 and MATE_T_FOE or r == 4 and MATE_T_NEUTRAL or MATE_T_FRIEND
+			end
+			local name = read(GetUnitName, t, false)
+			if name then s.mateT:SetText("› " .. name)
+			elseif not pcall(function() s.mateT:SetFormattedText("› %s", GetUnitName(t, false)) end) then show = false end
+		end
+		if c then s.mateT:SetTextColor(c[1], c[2], c[3]) end
+	end
+	if show ~= (s.mateT:IsShown() and true or false) then s.mateT:SetShown(show) end
+	N.PlaceCast(s)
 end
 
 function N.PaintDot(s, isTarget)
@@ -1082,6 +1142,7 @@ function N.Refresh(s)
 	local isTarget = N.Marked(unit, s) -- (your target, or the member whose frame the mouse is on)
 	s.isTarget = isTarget
 	s.mate = N.Mate(s)
+	s.mateUnit = N.MateUnit(s)
 	-- friendly plates: what you can dispel
 	if friend and p.borders then N.PaintDispel(s, unit) else s.disp:Hide() end
 	s.zenOn = N.Zen(s)
@@ -1170,6 +1231,7 @@ function N.Refresh(s)
 	N.Kill(s)
 	N.GroupFocus(s)
 	N.Combo(s)
+	N.MateTarget(s)
 	-- an enemy player: the coral ring
 	s.foe:SetShown(P().foeRing ~= false and not s.friend and s.isPlayer == true)
 	paintHealth(s)
@@ -1226,7 +1288,9 @@ local function detach(s)
 	if s.kill.pulse then s.kill.pulse:Stop() end
 	s.mana:Hide()
 	s.mateRing:Hide()
-	s.mate = nil
+	s.mate, s.mateUnit = nil, nil
+	s.mateT:Hide()
+	N.PlaceCast(s)
 	if s.selSolid then pcall(s.sel.SetIgnoreParentAlpha, s.sel, false); s.selSolid = false end
 	s.isBig, s.sizeKey = false, nil
 	ns.Heals.FeedTo(s.healN, nil)
@@ -1505,12 +1569,20 @@ local function paintTargets()
 		N.PaintDot(s, isTarget)
 		if ns.PlateAuras then pcall(ns.PlateAuras.Place, s) end -- (your target's a little larger)
 		s.faint = N.Faint(s)
+		if s.mate then N.MateTarget(s) end
 		hideBlizzard(s)
 		-- zen (and an NPC's look) ends on your target and starts again when it is not
 		if (s.friend or s.isPlayer == false) and N.Zen(s) ~= (s.zenOn or false) then N.Refresh(s) end
 	end
 end
 ns.On("PLAYER_TARGET_CHANGED", paintTargets)
+-- a member of your group targets something else: the line under their plate
+ns.On("UNIT_TARGET", function(_, unit)
+	if not unit then return end
+	for _, s in pairs(current()) do
+		if s.mateUnit == unit then N.MateTarget(s) end
+	end
+end)
 -- someone joins or leaves your group: their ring (and zen bar) comes or goes
 ns.On("GROUP_ROSTER_UPDATE", function()
 	for _, s in pairs(current()) do
