@@ -1,0 +1,71 @@
+## Interface: 16001
+## Title: |cff5cff8dSITREP|r
+## Notes: A calm glass HUD for World of Warcraft: Forever: unit frames, nameplates, quest navigation that learns where quests are (flights, ways, spawns, drop rates), bestiary, chat. Built for the secret-value client.
+## Author: SITREP
+## Version: 4.11.3
+## SavedVariables: SITREP_DB
+## IconTexture: Interface\Icons\Ability_Hunter_SniperShot
+## Category: Interface
+
+Core.lua
+Data.lua
+Sensors.lua
+Model.lua
+Pressure.lua
+Comms.lua
+AAR.lua
+Allies.lua
+Targeting.lua
+Incoming.lua
+Recap.lua
+Spawns.lua
+Quests.lua
+Trails.lua
+Travel.lua
+QuestShare.lua
+Questbook.lua
+Drops.lua
+Bestiary.lua
+Debug.lua
+Doctor.lua
+Perf.lua
+UI\Kit.lua
+UI\Heals.lua
+UI\HUD.lua
+UI\HUDContacts.lua
+UI\Units.lua
+UI\Frames.lua
+UI\FramePlayer.lua
+UI\FrameTarget.lua
+UI\FrameGroup.lua
+UI\Auras.lua
+UI\Plates.lua
+UI\PlateAuras.lua
+UI\PlateHover.lua
+UI\PlateNPC.lua
+UI\Incoming.lua
+UI\Emergency.lua
+UI\RecapPanel.lua
+UI\Minimap.lua
+UI\XP.lua
+UI\Bags.lua
+UI\Chat.lua
+UI\QuestTracker.lua
+UI\QuestMap.lua
+UI\QuestItems.lua
+UI\QuestArrow.lua
+UI\QuestNearby.lua
+UI\ActionBars.lua
+UI\BarLayout.lua
+UI\MicroMenu.lua
+UI\Trackers.lua
+UI\TrackerLibrary.lua
+UI\TrackerState.lua
+UI\TrackerAuras.lua
+UI\TrackerMirror.lua
+UI\TrackerIcons.lua
+UI\Config.lua
+UI\ConfigPicture.lua
+UI\ConfigSettings.lua
+UI\ConfigLog.lua
+UI\ConfigTrackers.lua

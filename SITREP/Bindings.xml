@@ -1,0 +1,20 @@
+<Bindings>
+	<Binding name="SITREP_REPORT" header="SITREP" category="ADDONS">
+		SITREP_Report()
+	</Binding>
+	<Binding name="SITREP_HUD" category="ADDONS">
+		SITREP_ToggleHUD()
+	</Binding>
+	<Binding name="SITREP_CONFIG" category="ADDONS">
+		SITREP_ToggleConfig()
+	</Binding>
+	<Binding name="SITREP_QUESTNAV" category="ADDONS">
+		SITREP_QuestNav()
+	</Binding>
+	<Binding name="SITREP_QUESTLIST" category="ADDONS">
+		SITREP_ToggleQuestList()
+	</Binding>
+	<Binding name="SITREP_CHAT" category="ADDONS">
+		SITREP_ToggleChat()
+	</Binding>
+</Bindings>

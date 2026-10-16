@@ -1,0 +1,9 @@
+# built packages (attached to GitHub releases, not kept in the repository)
+*.zip
+*.tgz
+# old builds kept locally
+backups/
+.DS_Store
+
+# working notes for the maintainer (personal paths and names): kept locally
+HANDOFF.md

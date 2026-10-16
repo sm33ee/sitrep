@@ -1,0 +1,2119 @@
+<title>SITREP Field Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Stencil+Display:wght@600;800&family=Barlow+Condensed:wght@400;500;600&family=Public+Sans:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+/* Layout: a field manual. Paragraph-numbered sections in one reading column,
+   with the live HUD instrument and the in-game console breaking out to full width. */
+:root {
+  --paper: #dedac6;
+  --paper-2: #d3ceb5;
+  --ink: #1c2017;
+  --ink-2: #4b503f;
+  --rule: #a39f86;
+  --olive: #4d5c24;
+  --signal: #a8281f;
+
+  --display: "Big Shoulders Stencil Display", "Arial Narrow", Impact, sans-serif;
+  --body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+  --hud: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+
+  /* In-game surfaces: the addon draws the same in either theme. */
+  --g-bg: #070b0a;
+  --g-panel: #0d1213;
+  --g-raised: #161c1e;
+  --g-hover: #20272a;
+  --g-line: rgba(255,255,255,.07);
+  --g-line2: rgba(255,255,255,.15);
+  --g-text: #e1e9e6;
+  --g-dim: #869592;
+  --g-faint: #56625f;
+  --g-red: #ff5555;
+  --g-amber: #ffb833;
+  --acc: #5cff8d;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #14170f; --paper-2: #1c2016; --ink: #dddcc8; --ink-2: #a5a791;
+    --rule: #3b402f; --olive: #adc16c; --signal: #e3594c; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #14170f; --paper-2: #1c2016; --ink: #dddcc8; --ink-2: #a5a791;
+  --rule: #3b402f; --olive: #adc16c; --signal: #e3594c; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 16px/1.6 var(--body);
+  padding-inline: 20px;
+  padding-block: 0 48px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; }
+.col { max-width: 720px; }
+a { color: var(--olive); }
+:focus-visible { outline: 2px solid var(--olive); outline-offset: 2px; }
+
+/* Classification band and document header */
+.band {
+  text-align: center; font: 600 12px/1 var(--hud); letter-spacing: .3em;
+  color: var(--signal); padding-block: 10px; border-bottom: 1px solid var(--rule);
+}
+.docrow {
+  display: flex; flex-wrap: wrap; gap: 6px 24px; justify-content: space-between;
+  font: 500 13px/1.3 var(--hud); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2);
+  padding-block: 14px; border-bottom: 1px solid var(--rule);
+}
+.masthead { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 340px); gap: 24px 48px; align-items: end; padding-block: 36px 28px; }
+h1 {
+  font: 800 clamp(84px, 16vw, 188px)/.8 var(--display); margin: 0; letter-spacing: .01em;
+}
+.masthead .sub { font: 600 clamp(20px, 2.6vw, 28px)/1.15 var(--display); letter-spacing: .04em; margin: 14px 0 0; text-wrap: balance; }
+.masthead p { margin: 0; color: var(--ink-2); font-size: 15px; }
+
+h2 {
+  font: 800 clamp(30px, 4vw, 44px)/1 var(--display); letter-spacing: .02em; margin: 0 0 8px; text-wrap: balance;
+}
+.para { font: 600 13px/1 var(--hud); letter-spacing: .14em; color: var(--signal); margin-bottom: 10px; display: block; }
+section { padding-block: 56px 8px; border-top: 1px solid var(--rule); margin-top: 56px; }
+section p { margin: 0 0 14px; }
+.lede { font-size: 17px; }
+.note { font-size: 14px; color: var(--ink-2); }
+code, kbd { font: 500 14px/1 var(--hud); letter-spacing: .03em; background: var(--paper-2); padding: 2px 6px; border-radius: 2px; }
+
+/* ---------- Instrument: the live HUD ---------- */
+.instrument {
+  background: var(--g-bg); color: var(--g-text); border-radius: 4px; padding: 18px; position: relative;
+  box-shadow: 0 1px 0 rgba(255,255,255,.05) inset, 0 20px 50px -30px rgba(0,0,0,.6);
+  font-family: var(--hud); font-variant-numeric: tabular-nums;
+}
+.inst-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+.inst-head .loc { font-size: 14px; letter-spacing: .12em; text-transform: uppercase; color: var(--g-dim); }
+.inst-head .loc b { color: var(--g-text); font-weight: 600; }
+.inst-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 14px; }
+.gpanel {
+  position: relative; background: var(--g-panel); border: 1px solid var(--g-line); padding: 8px 10px 10px;
+}
+.gpanel::before, .gpanel::after {
+  content: ""; position: absolute; width: 9px; height: 9px; border: 2px solid var(--acc); pointer-events: none;
+}
+.gpanel::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+.gpanel::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+.gtitle { display: flex; justify-content: space-between; font-size: 12px; letter-spacing: .14em; color: var(--g-dim); margin-bottom: 6px; text-transform: uppercase; }
+.gtitle .hot { color: var(--acc); }
+.env-axis { position: relative; height: 20px; margin: 0 92px 4px 44px; }
+.env-axis .t { position: absolute; bottom: 4px; width: 1px; background: var(--g-line2); }
+.env-axis .n { position: absolute; top: 0; transform: translateX(-50%); font-size: 11px; color: var(--g-faint); }
+.env-axis .mine { position: absolute; left: 0; bottom: 0; height: 2px; background: var(--acc); transition: width .3s; }
+.env { display: grid; gap: 4px; min-height: 196px; align-content: start; }
+.lane { display: grid; grid-template-columns: 40px minmax(0, 1fr) 88px; gap: 0 4px; align-items: center; height: 30px; }
+.lane .lbl { font-size: 14px; font-weight: 600; letter-spacing: .04em; }
+.lane .trk { position: relative; height: 24px; background: var(--g-raised); overflow: hidden; }
+.lane .zone { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(255, 64, 64, .13); transition: width .3s, background .3s; }
+.lane.hot .zone { background: rgba(255, 64, 64, .34); }
+.lane .bar { position: absolute; top: 8px; height: 8px; transition: left .35s, width .35s; }
+.lane .more { position: absolute; right: 3px; top: 3px; font-size: 13px; font-weight: 600; }
+.lane .ml { position: absolute; top: 0; bottom: 0; width: 1px; background: color-mix(in srgb, var(--acc) 45%, transparent); }
+.lane .edge { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+.lane .inf { text-align: right; font-size: 15px; line-height: 1.1; white-space: nowrap; }
+.lane .inf small { display: block; font-size: 11px; letter-spacing: .08em; color: var(--g-dim); }
+.lane.lost { opacity: .5; }
+.env-empty { color: var(--g-faint); text-align: center; letter-spacing: .2em; font-size: 13px; padding-top: 80px; }
+.env-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 11px; letter-spacing: .1em; color: var(--g-dim); margin: 10px 0 0 44px; text-transform: uppercase; }
+.env-legend i { display: inline-block; width: 14px; height: 7px; margin-right: 6px; vertical-align: middle; }
+.right { display: grid; gap: 14px; align-content: start; }
+
+.board-rows { display: grid; gap: 2px; min-height: 164px; }
+.brow {
+  display: grid; grid-template-columns: 3px 22px minmax(0, 1fr) auto; gap: 0 8px; align-items: center;
+  background: var(--g-raised); height: 38px; position: relative; padding-right: 8px;
+}
+.brow .strip { align-self: stretch; }
+.brow .ico { width: 20px; height: 20px; display: grid; place-items: center; font: 600 11px/1 var(--hud); color: #0b0f0e; border-radius: 2px; }
+.brow .nm { min-width: 0; }
+.brow .nm b { font-weight: 600; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; line-height: 1.1; }
+.brow .nm b i { font-style: normal; color: var(--g-dim); font-weight: 400; font-size: 13px; margin-left: 4px; }
+.brow .tags { font-size: 11px; letter-spacing: .1em; color: var(--g-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.brow .where { text-align: right; font-size: 16px; line-height: 1.1; }
+.brow .where small { display: block; font-size: 11px; letter-spacing: .1em; color: var(--g-dim); }
+.brow .tbar { position: absolute; left: 3px; bottom: 0; height: 2px; }
+.brow .hp { position: absolute; left: 3px; right: 0; top: 0; height: 2px; background: rgba(90,240,130,.2); }
+.brow .hp span { display: block; height: 100%; background: rgba(90,240,130,.85); }
+.brow.lkp { opacity: .6; }
+.board-empty { color: var(--g-faint); text-align: center; letter-spacing: .2em; font-size: 13px; padding-top: 64px; }
+.t-red { color: var(--g-red); } .t-amb { color: var(--g-amber); } .t-acc { color: var(--acc); }
+
+.eng-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; }
+.advice { font: 600 42px/1 var(--hud); letter-spacing: .03em; transition: color .3s; }
+.eng-num { text-align: right; font-size: 15px; line-height: 1.35; }
+.tug { position: relative; height: 10px; margin: 10px 0 6px; background: var(--g-raised); display: flex; }
+.tug .f { background: var(--acc); opacity: .9; transition: width .4s; }
+.tug .h { background: var(--g-red); opacity: .85; flex: 1; }
+.tug .tick { position: absolute; top: -3px; width: 1px; height: 16px; background: rgba(255,255,255,.6); }
+.tug .mid { position: absolute; left: 50%; top: 0; width: 2px; height: 10px; background: #000; margin-left: -1px; }
+.eng-foot { display: flex; justify-content: space-between; font-size: 12px; letter-spacing: .1em; color: var(--g-dim); }
+
+.pr-top { display: flex; justify-content: space-between; align-items: flex-end; }
+.pr-dps { font: 600 34px/1 var(--hud); }
+.pr-dps small { font-size: 12px; color: var(--g-dim); letter-spacing: .12em; margin-left: 4px; }
+.pr-side { text-align: right; font-size: 15px; line-height: 1.35; }
+.spark { display: flex; align-items: flex-end; gap: 2px; height: 30px; margin: 8px 0 6px; }
+.spark span { flex: 1; background: var(--acc); min-height: 1px; transition: height .2s; }
+.hpbar { height: 5px; background: var(--g-raised); }
+.hpbar span { display: block; height: 100%; background: rgba(90,240,130,.9); transition: width .25s; }
+
+.banner {
+  position: absolute; left: 50%; top: 58px; transform: translateX(-50%); z-index: 3;
+  background: rgba(0,0,0,.7); border-bottom: 1px solid currentColor; padding: 6px 18px;
+  font: 600 18px/1.2 var(--hud); letter-spacing: .08em; white-space: nowrap; pointer-events: none;
+  opacity: 0; transition: opacity .25s; max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis;
+}
+.banner.on { opacity: 1; }
+.flash { position: absolute; inset: 0; pointer-events: none; border-radius: 4px; box-shadow: inset 0 0 70px 10px rgba(255,40,40,.55); opacity: 0; transition: opacity .6s; }
+.flash.on { opacity: 1; transition: none; }
+.aar {
+  position: absolute; right: 18px; bottom: 18px; z-index: 3; width: min(300px, calc(100% - 36px));
+  background: var(--g-panel); border: 1px solid var(--g-line2); padding: 10px 12px; display: none;
+}
+.aar.on { display: block; }
+.aar .k { font-size: 11px; letter-spacing: .14em; color: var(--g-dim); }
+.aar .o { font: 600 24px/1.1 var(--hud); margin: 2px 0 4px; }
+.aar .l { font-size: 13px; color: var(--g-dim); }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; margin-top: 14px; font-size: 14px; }
+.seg { display: inline-flex; border: 1px solid var(--g-line2); }
+.seg button, .gbtn {
+  font: 500 14px/1 var(--hud); letter-spacing: .08em; text-transform: uppercase; color: var(--g-text);
+  background: var(--g-raised); border: 0; padding: 9px 12px; cursor: pointer;
+}
+.seg button + button { border-left: 1px solid var(--g-line2); }
+.seg button[aria-pressed="true"] { color: var(--acc); background: color-mix(in srgb, var(--acc) 14%, var(--g-raised)); }
+.seg button:hover, .gbtn:hover { background: var(--g-hover); }
+.gbtn { border: 1px solid var(--g-line2); }
+.gbtn.primary { color: var(--acc); border-color: color-mix(in srgb, var(--acc) 70%, transparent); background: color-mix(in srgb, var(--acc) 12%, var(--g-raised)); }
+.ctl { display: inline-flex; align-items: center; gap: 8px; color: var(--g-dim); letter-spacing: .08em; text-transform: uppercase; font-size: 13px; }
+.ctl select { font: 500 14px var(--hud); background: var(--g-raised); color: var(--g-text); border: 1px solid var(--g-line2); padding: 6px 8px; }
+.ctl input[type=range] { width: 130px; }
+
+/* in-game range input + switch, shared by instrument and console */
+.instrument input[type=range], .gwin input[type=range] {
+  -webkit-appearance: none; appearance: none; background: transparent; height: 18px; cursor: pointer;
+}
+.instrument input[type=range]::-webkit-slider-runnable-track, .gwin input[type=range]::-webkit-slider-runnable-track { height: 4px; background: var(--g-raised); }
+.instrument input[type=range]::-moz-range-track, .gwin input[type=range]::-moz-range-track { height: 4px; background: var(--g-raised); }
+.instrument input[type=range]::-moz-range-progress, .gwin input[type=range]::-moz-range-progress { height: 4px; background: var(--acc); }
+.instrument input[type=range]::-webkit-slider-thumb, .gwin input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 6px; height: 16px; background: var(--g-text); margin-top: -6px; border: 0; border-radius: 0; }
+.instrument input[type=range]::-moz-range-thumb, .gwin input[type=range]::-moz-range-thumb { width: 6px; height: 16px; background: var(--g-text); border: 0; border-radius: 0; }
+.instrument input[type=range]:hover::-webkit-slider-thumb, .gwin input[type=range]:hover::-webkit-slider-thumb { background: var(--acc); }
+.sw { display: inline-flex; align-items: center; gap: 10px; background: none; border: 0; padding: 0; color: var(--g-text); font: 500 15px/1.2 var(--hud); cursor: pointer; text-align: left; }
+.sw .pill { flex: none; width: 30px; height: 14px; border: 1px solid var(--g-line2); background: var(--g-raised); position: relative; }
+.sw .pill::after { content: ""; position: absolute; top: 1px; left: 2px; width: 12px; height: 10px; background: var(--g-dim); transition: left .15s, background .15s; }
+.sw[aria-checked="true"] .pill { border-color: color-mix(in srgb, var(--acc) 70%, transparent); background: color-mix(in srgb, var(--acc) 22%, var(--g-raised)); }
+.sw[aria-checked="true"] .pill::after { left: 14px; background: var(--acc); }
+
+/* ---------- Feed table ---------- */
+.tbl-wrap { overflow-x: auto; margin-top: 18px; }
+table.feeds { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 15px; }
+.feeds th { text-align: left; font: 600 12px/1 var(--hud); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); padding: 0 12px 10px 0; border-bottom: 2px solid var(--ink); }
+.feeds td { padding: 11px 12px 11px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.feeds td:first-child { font-weight: 600; white-space: nowrap; }
+.pill-s { display: inline-block; font: 600 12px/1 var(--hud); letter-spacing: .12em; padding: 4px 7px; border: 1.5px solid currentColor; white-space: nowrap; }
+.s-live { color: var(--olive); } .s-part { color: #9a6a12; } .s-secret { color: var(--signal); } .s-dark { color: var(--ink-2); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .s-part { color: #e0a93a; } }
+:root[data-theme="dark"] .s-part { color: #e0a93a; }
+
+/* ---------- OODA ---------- */
+.ooda { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin-top: 22px; border-top: 2px solid var(--ink); }
+.ooda > div { padding: 14px 16px 6px 0; border-right: 1px solid var(--rule); padding-left: 16px; min-width: 0; }
+.ooda > div:first-child { padding-left: 0; }
+.ooda > div:last-child { border-right: 0; }
+.ooda .n { font: 800 34px/1 var(--display); color: var(--olive); }
+.ooda h3 { font: 600 20px/1.1 var(--hud); letter-spacing: .1em; text-transform: uppercase; margin: 6px 0 8px; }
+.ooda p { font-size: 14.5px; color: var(--ink-2); margin: 0 0 8px; }
+.ooda .files { font: 500 13px/1.4 var(--hud); letter-spacing: .06em; color: var(--ink); }
+
+/* ---------- Lanchester calculator ---------- */
+.calc { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 28px; margin-top: 22px; align-items: start; }
+.calc label { display: flex; justify-content: space-between; font: 600 13px/1 var(--hud); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 6px; }
+.calc label output { color: var(--ink); font-size: 15px; }
+.calc input[type=range] { width: 100%; accent-color: var(--olive); margin: 0 0 18px; }
+.calc .res { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 2px solid var(--ink); }
+.calc .res div { padding: 10px 10px 0 0; }
+.calc .res b { display: block; font: 800 34px/1 var(--display); font-variant-numeric: tabular-nums; }
+.calc .res span { font: 600 11px/1.2 var(--hud); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+#curve { width: 100%; height: auto; aspect-ratio: 16 / 7; display: block; }
+.formula { font: 500 17px/1.5 var(--hud); letter-spacing: .03em; background: var(--paper-2); padding: 12px 14px; border-left: 3px solid var(--olive); margin: 16px 0; }
+
+/* ---------- Console (in-game settings window) ---------- */
+.gwin {
+  background: var(--g-bg); color: var(--g-text); font-family: var(--hud); border-radius: 4px; margin-top: 22px;
+  position: relative; border: 1px solid var(--g-line); font-variant-numeric: tabular-nums;
+  background-image: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0,0,0,.18) 2px 3px);
+}
+.gwin::before, .gwin::after { content: ""; position: absolute; width: 16px; height: 16px; border: 2px solid var(--acc); pointer-events: none; }
+.gwin::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+.gwin::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+.gw-title { display: flex; align-items: baseline; gap: 12px; padding: 14px 20px 12px; border-bottom: 1px solid var(--g-line); flex-wrap: wrap; }
+.gw-title .logo { font: 600 26px/1 var(--hud); color: var(--acc); letter-spacing: .04em; }
+.gw-title .tag { font-size: 13px; letter-spacing: .1em; color: var(--g-dim); }
+.gw-body { display: grid; grid-template-columns: 186px minmax(0, 1fr); min-height: 540px; }
+.gw-nav { background: rgba(0,0,0,.28); padding: 6px 0; margin: 8px 0 8px 12px; }
+.gw-nav button {
+  display: flex; gap: 12px; align-items: center; width: 100%; background: none; border: 0; color: var(--g-text);
+  font: 500 15px/1 var(--hud); padding: 10px 12px 10px 14px; cursor: pointer; text-align: left; position: relative;
+}
+.gw-nav button .num { font-size: 11px; color: var(--g-faint); width: 16px; }
+.gw-nav button:hover { background: rgba(255,255,255,.05); }
+.gw-nav button[aria-current="page"] { background: var(--g-hover); color: var(--acc); }
+.gw-nav button[aria-current="page"] .num { color: var(--acc); opacity: .7; }
+.gw-nav button[aria-current="page"]::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--acc); }
+.gw-page { padding: 16px 24px 20px; min-width: 0; }
+.gw-h { display: flex; align-items: center; gap: 10px; }
+.gw-h::before { content: ""; width: 3px; height: 14px; background: var(--acc); }
+.gw-h h3 { margin: 0; font: 500 17px/1 var(--hud); letter-spacing: .12em; text-transform: uppercase; }
+.gw-h::after { content: ""; flex: 1; height: 1px; background: var(--g-line); }
+.gw-sub { font-family: var(--body); font-size: 12.5px; color: var(--g-dim); margin: 6px 0 18px 13px; }
+.gcols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 30px; align-items: start; }
+.gcols > div { display: grid; gap: 14px; min-width: 0; }
+.gs-top { display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 2px; }
+.gs-top output { color: var(--acc); }
+.gs input[type=range] { width: 100%; }
+.sw-wrap { display: grid; gap: 3px; }
+.sw-wrap .d { font-family: var(--body); font-size: 12px; color: var(--g-dim); margin-left: 40px; }
+.glabel { font-size: 12px; letter-spacing: .14em; color: var(--g-dim); text-transform: uppercase; }
+.gcard-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+.gcard { background: var(--g-panel); border: 1px solid var(--g-line); padding: 10px 12px 12px; position: relative; }
+.gcard::before { content: ""; position: absolute; top: -1px; left: -1px; width: 7px; height: 7px; border: 2px solid var(--acc); border-right: 0; border-bottom: 0; }
+.gcard .i { font-size: 11px; color: var(--g-faint); }
+.gcard .l { font-size: 13px; color: var(--g-dim); letter-spacing: .12em; }
+.gcard .b { font: 600 26px/1.1 var(--hud); margin: 6px 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gcard .s { font-family: var(--body); font-size: 11.5px; color: var(--g-dim); line-height: 1.35; }
+.feedgrid { display: grid; gap: 6px; }
+.feedgrid div { display: grid; grid-template-columns: 70px minmax(0, 120px) minmax(0, 1fr); gap: 10px; align-items: center; font-size: 14px; }
+.gpill { font: 600 11px/1 var(--hud); letter-spacing: .08em; text-align: center; padding: 3px 0; border: 1px solid currentColor; }
+.feedgrid .nt { color: var(--g-dim); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gcanvas { width: 100%; height: auto; display: block; background: rgba(0,0,0,.35); border: 1px solid var(--g-line); }
+
+.matrix-wrap { overflow-x: auto; }
+.matrix { display: grid; grid-template-columns: 70px repeat(9, 40px); gap: 2px; width: max-content; }
+.matrix .ch { font-size: 12px; text-align: center; align-self: end; padding-bottom: 3px; }
+.matrix .rh { font-size: 14px; text-align: right; padding-right: 8px; align-self: center; }
+.matrix button { width: 40px; height: 36px; border: 0; font: 500 13px/1 var(--hud); color: var(--g-text); cursor: pointer; font-variant-numeric: tabular-nums; }
+.matrix button:hover { outline: 1px solid var(--g-text); outline-offset: -1px; }
+.matrix .mine { box-shadow: inset 0 0 0 1px var(--acc); }
+.mx-side { display: grid; gap: 10px; align-content: start; font-size: 13px; color: var(--g-dim); max-width: 240px; font-family: var(--body); }
+.legend { display: flex; height: 8px; }
+.legend span { flex: 1; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { width: 86px; background: var(--g-raised); border: 1px solid var(--g-line2); color: var(--g-dim); padding: 8px 6px 7px; cursor: pointer; font: 500 12px/1 var(--hud); }
+.chip i { display: block; height: 6px; margin-bottom: 8px; }
+.chip[aria-pressed="true"] { color: var(--chipc); border-color: var(--chipc); }
+.steppers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; }
+.steppers div { display: flex; align-items: center; gap: 6px; background: var(--g-raised); padding: 3px 4px 3px 8px; font-size: 14px; }
+.steppers div b { flex: 1; font-weight: 500; }
+.steppers button { width: 18px; height: 18px; background: var(--g-hover); color: var(--g-text); border: 1px solid var(--g-line2); cursor: pointer; font: 500 13px/1 var(--hud); padding: 0; }
+.ginput { width: 100%; font: 500 14px/1.3 var(--hud); background: var(--g-raised); color: var(--g-text); border: 1px solid var(--g-line2); padding: 7px 8px; }
+.ginput:focus { border-color: var(--acc); outline: none; }
+.preview { background: rgba(0,0,0,.5); border: 1px solid var(--g-line); padding: 10px 12px; color: #ff8a3d; font: 500 15px/1.35 var(--hud); overflow-wrap: anywhere; }
+.logrows { display: grid; gap: 2px; }
+.logrows div { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 8px; background: var(--g-raised); padding: 5px 8px; font-size: 14px; }
+.logrows .z { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.logrows .m { color: var(--g-dim); font-size: 13px; }
+.heat div { position: relative; padding: 4px 8px; font-size: 14px; display: flex; justify-content: space-between; }
+.heat div i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--acc); opacity: .2; }
+.heat div span { position: relative; }
+.ladder { position: relative; height: 70px; margin-top: 4px; }
+.ladder .ax { position: absolute; left: 0; right: 0; top: 44px; height: 1px; background: var(--g-line2); }
+.ladder .t { position: absolute; top: 44px; width: 1px; height: 5px; background: var(--g-line2); }
+.ladder .tn { position: absolute; top: 52px; font-size: 11px; color: var(--g-faint); transform: translateX(-50%); }
+.ladder .mk { position: absolute; top: 32px; width: 2px; height: 12px; background: var(--acc); }
+.ladder .ml { position: absolute; font-size: 11px; transform: translateX(-50%); white-space: nowrap; }
+.gw-foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-top: 1px solid var(--g-line); padding: 9px 20px; font-size: 12px; letter-spacing: .12em; color: var(--g-dim); }
+.gw-foot .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--acc); margin-right: 6px; animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .3; } }
+
+/* ---------- Unit frames ---------- */
+.uf-stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 300px); gap: 18px; align-items: start;
+  background: var(--g-bg); color: var(--g-text); border-radius: 4px; padding: 22px; margin-top: 22px; font-family: var(--hud); font-variant-numeric: tabular-nums; }
+.uf { position: relative; background: var(--g-bg); border: 1px solid var(--g-line); padding: 6px 8px 8px; min-width: 0; }
+.uf::before, .uf::after { content: ""; position: absolute; width: 9px; height: 9px; border: 2px solid var(--acc); pointer-events: none; }
+.uf::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+.uf::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+.uf-flash { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; opacity: 0; transition: opacity .45s; }
+.uf-head { display: flex; justify-content: space-between; font-size: 12px; letter-spacing: .14em; color: var(--g-dim); margin-bottom: 6px; min-height: 15px; }
+.uf-head .uf-title { color: var(--acc); }
+.uf-name { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; min-width: 0; }
+.uf-name .ico { width: 16px; height: 16px; flex: none; border-radius: 2px; }
+.uf-name b { font-size: 18px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+.uf-name .lv { font-size: 13px; color: var(--g-dim); }
+.uf-hp { position: relative; height: 22px; background: var(--g-raised); overflow: hidden; }
+.uf-hp .fill { position: absolute; left: 0; top: 0; bottom: 0; transition: width .25s, background .3s; }
+.uf-hp .tk { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(0,0,0,.5); }
+.uf-hp .tx { position: absolute; top: 50%; transform: translateY(-50%); font-size: 15px; font-weight: 600; text-shadow: 0 1px 2px #000, 0 0 2px #000; }
+.uf-hp .tx.l { left: 7px; } .uf-hp .tx.r { right: 7px; } .uf-hp .tx.c { left: 50%; transform: translate(-50%, -50%); }
+.uf-hp .exec { position: absolute; top: 0; bottom: 0; width: 2px; background: #ffd633; }
+.uf-hp .exec-l { position: absolute; top: 1px; font-size: 9px; color: #ffd633; letter-spacing: .08em; text-shadow: 0 1px 2px #000; }
+.uf-loc { position: absolute; inset: 0; background: rgba(140, 12, 20, .93); display: flex; justify-content: space-between; align-items: center; padding: 0 7px; font-size: 15px; font-weight: 600; letter-spacing: .06em; }
+.uf-line { height: 2px; margin-top: 1px; }
+.uf-line i { display: block; height: 100%; transition: width .3s; }
+.uf-pw { height: 5px; background: var(--g-raised); margin-top: 2px; }
+.uf-pw i { display: block; height: 100%; transition: width .3s; }
+.uf-cast { position: relative; height: 14px; background: var(--g-raised); margin-top: 4px; }
+.uf-cast i { position: absolute; left: 0; top: 0; bottom: 0; background: #ffb833; }
+.uf-cast span { position: absolute; left: 5px; top: 0; font-size: 11px; line-height: 14px; color: #000; font-weight: 600; letter-spacing: .06em; }
+.uf-cast b { position: absolute; right: 5px; top: 0; font-size: 11px; line-height: 14px; color: #fff; letter-spacing: .1em; text-shadow: 0 0 2px #000; display: none; }
+.uf-cast.hot { outline: 1px solid #fff2a0; }
+.uf-cast.hot i { background: #ffed73; }
+.uf-cast.hot b { display: block; }
+.uf-cast.locked i { background: rgba(140, 148, 153, .5); }
+#ufT { transition: opacity .3s; }
+.uf-pips { display: flex; gap: 3px; justify-content: flex-end; margin-top: 4px; min-height: 4px; }
+.uf-pips i { width: 14px; height: 4px; background: rgba(255,255,255,.12); }
+.uf-pips i.on { background: #ffd633; }
+.uf-strip { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; margin-top: 8px; }
+.uf-strip .trk { position: relative; height: 12px; background: var(--g-raised); overflow: hidden; }
+.uf-strip .zone { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(255,64,64,.16); }
+.uf-strip .bar { position: absolute; top: 3px; height: 6px; transition: left .35s, width .35s; }
+.uf-strip .ml { position: absolute; top: 0; bottom: 0; width: 1px; background: color-mix(in srgb, var(--acc) 70%, transparent); }
+.uf-strip .inf { font-size: 14px; white-space: nowrap; }
+.uf-intel { font-size: 12px; color: var(--g-dim); letter-spacing: .04em; margin-top: 7px; min-height: 15px; }
+.uf-foot { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; margin-top: 6px; min-height: 16px; }
+.uf-foot .dim { color: var(--g-dim); font-size: 12px; }
+.uf [data-part] { transition: outline-color .15s; outline: 1px solid transparent; outline-offset: 2px; }
+.uf [data-part].lit { outline-color: var(--acc); }
+.uf-auras { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; min-height: 26px; }
+.uf-auras.small .aura { width: 20px; height: 20px; font-size: 8px; }
+.aura { position: relative; width: 26px; height: 26px; border: 2px solid #3f4547; background: #1b2022; display: grid; place-items: center;
+  font: 600 9px/1 var(--hud); letter-spacing: .02em; color: var(--g-text); overflow: hidden; flex: none; }
+.aura .sw { position: absolute; inset: 0; background: conic-gradient(rgba(0,0,0,.62) var(--p, 0%), transparent 0); pointer-events: none; }
+.aura span { position: relative; }
+.aura .st { position: absolute; right: 1px; bottom: 0; font-size: 9px; color: #fff; text-shadow: 0 0 2px #000; }
+.aura .bg { position: absolute; left: 1px; top: 0; color: #ff4026; font-size: 12px; text-shadow: 0 0 2px #000; }
+.aura.can { outline: 2px solid var(--acc); outline-offset: 2px; }
+.aura.dim { opacity: .55; }
+.anatomy { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-family: var(--body); }
+.anatomy li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; padding: 6px 8px; border-left: 2px solid transparent; cursor: default; font-size: 13px; color: var(--g-dim); line-height: 1.35; }
+.anatomy li b { display: block; font-family: var(--hud); font-weight: 600; font-size: 14px; letter-spacing: .06em; color: var(--g-text); text-transform: uppercase; }
+.anatomy li .k { font-family: var(--hud); color: var(--acc); font-size: 13px; padding-top: 1px; }
+.anatomy li:hover, .anatomy li:focus { background: var(--g-raised); border-left-color: var(--acc); outline: none; }
+.anatomy-h { font-size: 12px; letter-spacing: .14em; color: var(--g-dim); margin: 0 0 6px 10px; text-transform: uppercase; }
+.dropped { font-family: var(--body); font-size: 12.5px; color: var(--g-dim); margin: 14px 10px 0; line-height: 1.45; }
+.dropped s { color: var(--g-faint); }
+
+/* ---------- Unit frames: highlights, prediction, cost, counts ---------- */
+.uf-head { flex-wrap: wrap; gap: 2px 10px; }
+.uf-head .lvl { color: var(--g-text); margin-left: 6px; letter-spacing: .04em; }
+.uf-head .rest { color: #8fb8ff; margin-left: 4px; letter-spacing: .04em; }
+.uf-tags { text-align: right; }
+.t-grn { color: #5cff8d; } .t-org { color: #ffa040; }
+.uf-glow { position: absolute; inset: -1px; border: 2px solid #ff3333; pointer-events: none; opacity: 0; z-index: 2; }
+.uf-disp { position: absolute; inset: -4px; border: 2px solid transparent; pointer-events: none; opacity: 0; z-index: 2; }
+.uf-hp .pred { position: absolute; top: 0; bottom: 0; background: #5af27a; opacity: .42; transition: left .25s, width .25s; }
+.uf.cc { box-shadow: 0 0 0 1px #ff4040; }
+.uf.cc .uf-hp { background: #292b2b; }
+.uf.cc .uf-hp .fill { background: #d1d6d6 !important; }
+.uf.cc .uf-hp .tx { display: none; }
+.uf-loc { background: transparent; justify-content: center; gap: 10px; color: #fff; text-shadow: 0 0 3px #000, 0 1px 2px #000, 0 0 1px #000; }
+.uf-pw { position: relative; }
+.uf-pw .cost { position: absolute; top: 0; bottom: 0; transition: left .2s, width .2s; }
+.uf-cast.own i { background: #73bfff; }
+.uf-cast.own span { color: #001022; }
+.uf-tot { height: 3px; background: rgba(92,255,141,.16); margin-top: 3px; position: relative; }
+.uf-tot i { position: absolute; left: 0; top: 0; bottom: 0; transition: width .3s; }
+.uf-tot::after { content: ""; position: absolute; right: 0; top: -1px; bottom: -1px; width: 1px; background: rgba(92,255,141,.5); }
+
+/* ---------- Pets and party ---------- */
+.pp-stage { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr) minmax(0, 300px); }
+.pp-col { display: grid; gap: 10px; min-width: 0; align-content: start; }
+.uf.mini .uf-name b { font-size: 15px; }
+.uf.mini .uf-hp { height: 16px; }
+.uf.mini .uf-hp .tx { font-size: 13px; }
+.uf.mini .uf-cast { height: 12px; }
+.uf.mini .uf-cast span { font-size: 10px; line-height: 12px; }
+.party { display: grid; gap: 10px; }
+.pm .dist { font-size: 13px; margin-left: auto; }
+.pm .uf-auras { min-height: 0; margin-top: 6px; }
+.pm .aura { width: 20px; height: 20px; font-size: 8px; }
+
+/* ---------- Trackers ---------- */
+.tr-stage { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 18px; align-items: start;
+  background: var(--g-bg); color: var(--g-text); border-radius: 4px; padding: 22px; margin-top: 22px; font-family: var(--hud); font-variant-numeric: tabular-nums; }
+.tr-stage > div { min-width: 0; }
+.tr-screen { position: relative; height: 240px; background:
+  radial-gradient(ellipse at 50% 120%, rgba(92,255,141,.06), transparent 60%),
+  repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 24px),
+  repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 1px, transparent 1px 24px), var(--g-panel);
+  border: 1px solid var(--g-line); overflow: hidden; }
+.tr-screen .hint { position: absolute; left: 10px; bottom: 8px; font-size: 12px; letter-spacing: .1em; color: var(--g-faint); text-transform: uppercase; }
+.trk-i { position: absolute; display: grid; place-items: center; background: #1b2022; border: 2px solid #3f4547; font: 600 13px/1 var(--hud); color: var(--g-text);
+  transition: opacity .25s; overflow: hidden; }
+.trk-i[data-b="red"] { border-color: #ff4033; } .trk-i[data-b="orange"] { border-color: #ff9e26; } .trk-i[data-b="green"] { border-color: #59eb6b; }
+.trk-i .sw { position: absolute; inset: 0; background: conic-gradient(rgba(0,0,0,.65) var(--p, 0%), transparent 0); }
+.trk-i .ab { position: relative; letter-spacing: .02em; }
+.trk-i .tm { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; font-size: 11px; color: #fff; text-shadow: 0 0 2px #000; }
+.trk-i .ct { position: absolute; right: 3px; top: 2px; font-size: 12px; color: #ffd633; text-shadow: 0 0 2px #000; }
+.trk-i .q { position: absolute; left: 3px; top: 1px; font-size: 12px; color: #ffb833; }
+.trk-i .lb { position: absolute; left: 50%; top: calc(100% + 4px); transform: translateX(-50%); white-space: nowrap; font-size: 10px; letter-spacing: .08em; color: var(--g-dim); }
+.tr-screen.layout .trk-i { outline: 1px dashed var(--g-line2); outline-offset: 3px; overflow: visible; }
+.tr-ctl .gbtn[aria-pressed="true"] { color: var(--acc); border-color: color-mix(in srgb, var(--acc) 70%, transparent); }
+.tr-ctl { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.tr-legend { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; margin-top: 14px; font-size: 13px; color: var(--g-dim); }
+.tr-legend b { color: var(--g-text); font-weight: 600; letter-spacing: .04em; }
+.ladder2 { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-family: var(--body); }
+.ladder2 li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; padding: 6px 8px; border-left: 2px solid transparent; font-size: 13px; color: var(--g-dim); line-height: 1.35; }
+.ladder2 li b { display: block; font-family: var(--hud); font-weight: 600; font-size: 14px; letter-spacing: .06em; color: var(--g-text); text-transform: uppercase; }
+.ladder2 li .k { font-family: var(--hud); color: var(--g-faint); font-size: 13px; padding-top: 1px; }
+.ladder2 li.on { background: var(--g-raised); border-left-color: var(--acc); }
+.ladder2 li.on .k { color: var(--acc); }
+.tr-src { font-size: 12px; letter-spacing: .12em; color: var(--g-dim); text-transform: uppercase; margin: 0 0 8px 10px; }
+.tr-src b { color: var(--acc); font-weight: 600; }
+.kinds { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin-top: 18px; border-top: 2px solid var(--ink); }
+.kinds > div { padding: 12px 14px 4px 0; border-right: 1px solid var(--rule); min-width: 0; }
+.kinds > div + div { padding-left: 14px; }
+.kinds > div:last-child { border-right: 0; }
+.kinds h3 { font: 600 17px/1.2 var(--hud); letter-spacing: .1em; margin: 0 0 6px; }
+.kinds p { font-size: 14px; color: var(--ink-2); margin: 0 0 6px; }
+.kinds .inv { font: 500 13px/1.3 var(--hud); letter-spacing: .08em; color: var(--signal); }
+@media (max-width: 900px) {
+  .pp-stage, .tr-stage { grid-template-columns: minmax(0, 1fr); }
+  .kinds { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kinds > div:nth-child(2) { border-right: 0; }
+  .kinds > div:nth-child(3) { padding-left: 0; }
+}
+@media (max-width: 560px) {
+  .kinds { grid-template-columns: minmax(0, 1fr); }
+  .kinds > div { border-right: 0; padding-left: 0 !important; border-bottom: 1px solid var(--rule); }
+  .tr-stage, .uf-stage { padding: 14px; }
+}
+
+/* ---------- Install / limits ---------- */
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; margin-top: 18px; }
+.two > div { min-width: 0; }
+.two h3 { font: 600 18px/1.2 var(--hud); letter-spacing: .12em; text-transform: uppercase; margin: 0 0 10px; }
+pre.cmd { background: var(--paper-2); padding: 12px 14px; overflow-x: auto; font: 500 14px/1.5 var(--hud); margin: 0 0 12px; }
+ol.lim, ul.files { margin: 0; padding-left: 20px; }
+ol.lim li, ul.files li { margin-bottom: 8px; font-size: 15px; }
+ul.files li code { background: none; padding: 0; font-weight: 600; }
+.foot { margin-top: 48px; }
+
+@media (max-width: 900px) {
+  .uf-stage { grid-template-columns: minmax(0, 1fr); }
+  .masthead { grid-template-columns: minmax(0, 1fr); }
+  .inst-grid { grid-template-columns: minmax(0, 1fr); }
+  .ooda { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ooda > div:nth-child(2) { border-right: 0; }
+  .ooda > div:nth-child(3) { padding-left: 0; }
+  .calc, .two { grid-template-columns: minmax(0, 1fr); }
+  .gw-body { grid-template-columns: minmax(0, 1fr); }
+  .gw-nav { display: flex; overflow-x: auto; margin: 8px 12px 0; padding: 0; }
+  .gw-nav button { width: auto; white-space: nowrap; }
+  .gcard-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  body { padding-inline: 16px; }
+  .instrument { padding: 12px; }
+  .gcols { grid-template-columns: minmax(0, 1fr); }
+  .ooda { grid-template-columns: minmax(0, 1fr); }
+  .ooda > div { border-right: 0; padding-left: 0; border-bottom: 1px solid var(--rule); }
+  .advice { font-size: 34px; }
+  .gw-page { padding: 14px 14px 18px; }
+  .banner { font-size: 14px; top: 64px; }
+  .lane { grid-template-columns: 34px minmax(0, 1fr) 74px; }
+  .env-axis { margin: 0 78px 4px 38px; }
+  .lane .inf { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gw-foot .dot { animation: none; }
+  .tug .f, .spark span, .hpbar span { transition: none; }
+}
+</style>
+
+<div class="wrap">
+  <div class="band">UNCLASSIFIED // FOR USE IN AZEROTH</div>
+  <div class="docrow"><span>FM 60-1</span><span>World of Warcraft: Forever · Interface 16001 · v3.16</span><span>2 October 2026</span></div>
+
+  <header class="masthead">
+    <div>
+      <h1>SITREP</h1>
+      <p class="sub">A tactical awareness addon for the PvP realm of World of Warcraft: Forever</p>
+    </div>
+    <p>Forever runs on the modern client with the Midnight addon restrictions switched on. The combat log is gone, and health and auras turn secret in combat. SITREP is built only on what the client still reports, and it reports what it cannot see as unknown.</p>
+  </header>
+
+  <!-- ===================== LIVE INSTRUMENT ===================== -->
+  <div class="instrument" id="inst" aria-label="Live SITREP HUD simulation">
+    <div class="inst-head">
+      <div class="loc" id="loc">Hillsbrad Foothills · <b>Tarren Mill</b></div>
+      <div class="loc">Simulation · same model as the addon · <b id="clock">00:00</b></div>
+    </div>
+    <div class="inst-grid">
+      <div class="gpanel">
+        <div class="gtitle"><span>Envelope</span><span id="envStatus">THEIRS 0 · MINE 0 · CLOSING 0</span></div>
+        <div class="env-axis" id="envAxis" aria-hidden="true"></div>
+        <div class="env" id="env" aria-label="Engagement envelope: each enemy's distance against its reach and yours"></div>
+        <div class="env-legend"><span><i style="background:var(--acc);height:2px"></i>My reach</span><span><i style="background:rgba(255,64,64,.5)"></i>Their reach</span><span>&lt;&lt; closing y/s</span></div>
+      </div>
+      <div class="right">
+        <div class="gpanel">
+          <div class="gtitle"><span>Contacts</span><span id="boardStatus">0 TRACKED</span></div>
+          <div class="board-rows" id="board"></div>
+        </div>
+        <div class="gpanel">
+          <div class="gtitle"><span>Engagement</span><span id="engStatus">k 2.20 · n 0</span></div>
+          <div class="eng-top">
+            <div class="advice" id="advice">CLEAR</div>
+            <div class="eng-num"><div id="ratio">RATIO –</div><div id="pwin">P(WIN) –</div></div>
+          </div>
+          <div class="tug" id="tug"><div class="f" id="tugF" style="width:100%"></div><div class="h"></div><i class="tick"></i><i class="tick"></i><i class="tick"></i><i class="mid"></i></div>
+          <div class="eng-foot"><span id="forces">FRIENDLY 1 · HOSTILE 0.0</span><span id="losses"></span></div>
+        </div>
+        <div class="gpanel">
+          <div class="gtitle"><span>Incoming pressure</span><span id="hpState">HP LIVE</span></div>
+          <div class="pr-top">
+            <div class="pr-dps"><span id="dps">0</span><small>DPS IN</small></div>
+            <div class="pr-side"><div id="ttl">TTL --</div><div id="hps" style="color:var(--g-dim);font-size:13px">HEAL IN 0</div></div>
+          </div>
+          <div class="spark" id="spark"></div>
+          <div class="hpbar"><span id="hpFill" style="width:100%"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Scenario">
+        <button type="button" data-scen="ambush" aria-pressed="true">Ambush</button>
+        <button type="button" data-scen="sweep" aria-pressed="false">Group sweep</button>
+        <button type="button" data-scen="outnumbered" aria-pressed="false">Outnumbered</button>
+      </div>
+      <button type="button" class="gbtn" id="pause">Pause</button>
+      <label class="ctl" for="myClass">You play
+        <select id="myClass"></select>
+      </label>
+      <button type="button" class="gbtn primary" id="reportBtn">Broadcast report</button>
+    </div>
+    <div class="banner" id="banner"></div>
+    <div class="flash" id="flash"></div>
+    <div class="aar" id="aar"><div class="k" id="aarK">AFTER ACTION</div><div class="o" id="aarO">WIN</div><div class="l" id="aarL1"></div><div class="l" id="aarL2"></div></div>
+  </div>
+  <p class="note" style="margin-top:10px">Forever lets an addon know how far away an enemy is, but not where. The envelope shows each enemy's distance bracket against the zone its class can hit you from (red), your own spell ranges (green lines) and how fast it is closing. Watch the rogue in the ambush: the early warning fires seconds before it reaches you.</p>
+
+  <!-- ===================== 1. FEEDS ===================== -->
+  <section id="feeds">
+    <div class="col">
+      <span class="para">1-1</span>
+      <h2>What the client lets an addon see</h2>
+      <p class="lede">Forever's client (build 1.60.1) is the Retail client with Midnight's secret-value rules. A secret value throws if addon code compares it, branches on it or does arithmetic with it. Most PvP addon ideas die here. The table below shows what testers measured in the beta and what SITREP does with each feed.</p>
+    </div>
+    <div class="tbl-wrap">
+      <table class="feeds">
+        <thead><tr><th>Feed</th><th>In combat</th><th>How SITREP uses it</th></tr></thead>
+        <tbody>
+          <tr><td>Nameplates</td><td><span class="pill-s s-live">LIVE</span></td><td>Primary contact source: identity, hostility and range. Their screen position is blocked ("Can't measure restricted regions"), so they give no direction.</td></tr>
+          <tr><td>Direction to enemies</td><td><span class="pill-s s-secret">BLOCKED</span></td><td>No API exposes it, and SITREP no longer guesses. Every readout is distance and closure only.</td></tr>
+          <tr><td>Range checks</td><td><span class="pill-s s-live">LIVE</span></td><td>Every harmful spell in your spellbook becomes a range gate, plus the 10 and 28 yard interact checks. Their answers give a bracket such as 20–28 yd. The moment an enemy crosses a gate it is exactly on that distance, so two crossings give its closure rate.</td></tr>
+          <tr><td>Own position</td><td><span class="pill-s s-part">OPEN WORLD</span></td><td>Group members share theirs over the addon channel, so the allies panel shows each one's exact distance, green while your heals reach them. Instances hide it.</td></tr>
+          <tr><td>Damage numbers</td><td><span class="pill-s s-live">LIVE</span></td><td><code>UNIT_COMBAT</code> amounts and the damage school stay plain. They drive incoming DPS, spike detection, a shadow estimate of your own health, and the Lightning Shield charge count.</td></tr>
+          <tr><td>Unit identity</td><td><span class="pill-s s-part">MAY TURN SECRET</span></td><td>Name, class and level are captured while plain and kept by GUID. When they turn secret, the contact keeps its last known identity.</td></tr>
+          <tr><td>Health and power</td><td><span class="pill-s s-secret">SECRET</span></td><td>Passed straight to the client's status bars, which may draw secrets. Heal prediction and the mana cost preview are drawn the same way. SITREP never reads the number.</td></tr>
+          <tr><td>Who targets whom</td><td><span class="pill-s s-part">PARTIAL</span></td><td>Comparing two units feeds TARGETED BY, HEALERS, MOBS and ALLIES. The client may hide the answer in combat, so each fight report counts how many checks it answered and how many it hid.</td></tr>
+          <tr><td>Auras</td><td><span class="pill-s s-secret">LOCKED IN COMBAT</span></td><td>Lists, lookups and the aura payload all refuse in combat, even for your own buffs. Trackers fall back on the buff bar's icons, counted hits and your own casts (7-2).</td></tr>
+          <tr><td>Weapon imbues</td><td><span class="pill-s s-live">LIVE</span></td><td>The weapon-enchant query, backed by the timer line in the weapon's tooltip, tells a tracker whether Flametongue or Windfury is on.</td></tr>
+          <tr><td>Combat log</td><td><span class="pill-s s-dark">GONE</span></td><td>Not needed. Nothing in SITREP depends on it.</td></tr>
+          <tr><td>Addon messages</td><td><span class="pill-s s-live">LIVE</span></td><td>Contacts and positions are shared, so a group sees what any member sees. SITREP checks the client's chat lockdown before every send.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===================== 2. LOOP ===================== -->
+  <section id="loop">
+    <div class="col">
+      <span class="para">2-1</span>
+      <h2>The loop</h2>
+      <p class="lede">SITREP runs Boyd's OODA loop five times a second. Each stage feeds the next, and a fault in one stage is contained: a failing handler is reported once and the tick carries on. That matters because the client stops reporting Lua errors after 100 per session.</p>
+    </div>
+    <div class="ooda">
+      <div><div class="n">1</div><h3>Observe</h3><p>Nameplates, target, focus and your group's targets become contacts, each with a range bracket and a closure rate. Group members add their exact positions.</p><div class="files">Sensors.lua</div></div>
+      <div><div class="n">2</div><h3>Orient</h3><p>Each contact is placed against its weapon engagement zone and yours. Threat (how dangerous it is now) rises when it closes fast or is inside its reach. Priority picks the HVT.</p><div class="files">Model.lua · Data.lua</div></div>
+      <div><div class="n">3</div><h3>Decide</h3><p>A Lanchester force ratio and P(win) produce one of five calls. The pressure gauge overrides the call with DEFEND when your time-to-live drops too low.</p><div class="files">Model.lua · Pressure.lua</div></div>
+      <div><div class="n">4</div><h3>Act</h3><p>One key sends a one-line contact report to your group. The addon channel shares the picture. After each fight, the after-action review recalibrates the model on your real outcomes. Duels train a separate curve and keep a record per opponent class.</p><div class="files">Comms.lua · AAR.lua</div></div>
+    </div>
+  </section>
+
+  <!-- ===================== 3. LANCHESTER ===================== -->
+  <section id="calc">
+    <div class="col">
+      <span class="para">3-1</span>
+      <h2>The engagement calculus</h2>
+      <p class="lede">In aimed-fire combat every fighter can shoot at every enemy, so fighting strength grows with the square of numbers. Three against two is not 1.5 to 1. It is 2.25 to 1. That is Lanchester's square law, and group PvP is close to it: everyone can target anyone in range.</p>
+      <div class="formula">strength = N × Σ quality &nbsp;&nbsp;·&nbsp;&nbsp; ρ = S<sub>friendly</sub> / S<sub>hostile</sub> &nbsp;&nbsp;·&nbsp;&nbsp; P(win) = σ(k · ln ρ + b)</div>
+      <p>Quality combines class power, level difference, health, and the matchup matrix averaged over your side. Sightings count less as they age. If you win, expected losses are N × (1 − √(1 − 1/ρ)). The curve's k and b start at doctrine values and move with every fight you win or lose.</p>
+    </div>
+    <div class="calc">
+      <div>
+        <label for="cF">Friendly <output id="cFo">3</output></label>
+        <input type="range" id="cF" min="1" max="10" value="3">
+        <label for="cH">Hostile <output id="cHo">2</output></label>
+        <input type="range" id="cH" min="1" max="10" value="2">
+        <label for="cQ">Their quality vs yours <output id="cQo">1.00×</output></label>
+        <input type="range" id="cQ" min="0.5" max="2" step="0.05" value="1">
+        <div class="res">
+          <div><b id="cR">2.25</b><span>Force ratio</span></div>
+          <div><b id="cP">86%</b><span>P(win)</span></div>
+          <div><b id="cL">0.76</b><span>Exp. losses</span></div>
+        </div>
+      </div>
+      <div><canvas id="curve" width="760" height="332" aria-label="P(win) against force ratio"></canvas></div>
+    </div>
+  </section>
+
+  <!-- ===================== 4. CONSOLE ===================== -->
+  <section id="console">
+    <div class="col">
+      <span class="para">4-1</span>
+      <h2>The console</h2>
+      <p class="lede">Type <code>/sitrep</code> in game to open this window. It is drawn entirely from flat textures and lines in the HUD's style, not Blizzard templates. Every control writes to your profile and applies immediately. This replica is wired to the simulation above: edit the matchup matrix and the threat board reorders, or pick an accent and the HUD repaints.</p>
+    </div>
+    <div class="gwin" id="gwin">
+      <div class="gw-title"><span class="logo">SITREP</span><span class="tag">//  TACTICAL AWARENESS CONSOLE   v3.16.0</span></div>
+      <div class="gw-body">
+        <nav class="gw-nav" id="gnav" aria-label="Console sections"></nav>
+        <div class="gw-page" id="gpage"></div>
+      </div>
+      <div class="gw-foot"><span><i class="dot"></i><span id="gstatus">ONLINE</span></span><span>/sitrep · ESC closes · changes apply live</span></div>
+    </div>
+  </section>
+
+  <!-- ===================== 5. UNIT FRAMES ===================== -->
+  <section id="frames">
+    <div class="col">
+      <span class="para">5-1</span>
+      <h2>Player and target frames</h2>
+      <p class="lede">A unit frame should answer the next decision in under a third of a second. SITREP's frames spend their space on two questions. Your frame asks whether you'll survive the next three seconds, and who is on you. Your target's frame asks whether you can hit it, whether you should, and who else is on it.</p>
+      <p>Both run on the simulation above and follow its top threat as your target. Switch "You play" to a healer and your own frame shows the heal you are casting. Hover a line in the anatomy to find it on the frame.</p>
+    </div>
+    <div class="uf-stage">
+      <div class="uf" id="ufP">
+        <i class="uf-flash" id="pfFlash"></i><i class="uf-glow" id="pfGlow" data-part="p-glow"></i><i class="uf-disp" id="pfDisp"></i>
+        <div class="uf-head"><span data-part="p-lvl"><span class="uf-title">YOU</span><span class="lvl">60</span><span class="rest" id="pfRest">zZZ</span></span><span class="uf-tags" id="pfTags" data-part="p-tags"></span></div>
+        <div class="uf-hp" data-part="p-hp"><i class="fill" id="pfFill"></i><i class="pred" id="pfPred"></i><i class="tk" style="left:25%"></i><i class="tk" style="left:50%"></i><i class="tk" style="left:75%"></i>
+          <span class="tx l" id="pfHpT"></span><span class="tx r" id="pfPct"></span>
+          <div class="uf-loc" id="pfLoc" data-part="p-loc" hidden><span id="pfLocT">STUNNED</span><span id="pfLocS"></span></div></div>
+        <div class="uf-line" data-part="p-abs"><i id="pfAbs" style="background:#e6f2ff"></i></div>
+        <div class="uf-line"><i id="pfHeal" style="background:#5af27a"></i></div>
+        <div class="uf-pw" data-part="p-pw"><i id="pfPw" style="background:#4088ff"></i><i class="cost" id="pfCost"></i></div>
+        <div class="uf-cast own" id="pfCast" data-part="p-pw" hidden><i id="pfCastF"></i><span id="pfCastT">FROSTBOLT</span></div>
+        <div class="uf-foot"><span id="pfLine" data-part="p-exp"></span><span id="pfTtl" data-part="p-ttl"></span></div>
+        <div class="uf-auras" id="pfAuras" data-part="p-auras"></div>
+      </div>
+      <div class="uf" id="ufT">
+        <div class="uf-head"><span class="uf-title">TARGET</span><span class="uf-tags" id="tfTags" data-part="t-tags"></span></div>
+        <div class="uf-name"><i class="ico" id="tfIco"></i><b id="tfName">NO TARGET</b><span class="lv" id="tfLv"></span></div>
+        <div class="uf-hp" data-part="t-hp"><i class="fill" id="tfFill"></i><span id="tfTicks"></span><i class="exec" id="tfExec" data-part="t-exec" hidden></i><span class="exec-l" id="tfExecL" hidden></span>
+          <span class="tx c" id="tfPct"></span><span class="tx r" id="tfHpT"></span></div>
+        <div class="uf-pw"><i id="tfPw"></i></div>
+        <div class="uf-cast" id="tfCast" data-part="t-cast" hidden><i id="tfCastF"></i><span id="tfCastT">CASTING</span><b>KICK</b></div>
+        <div class="uf-pips" id="tfPips" data-part="t-pips"></div>
+        <div class="uf-strip" data-part="t-strip"><span class="trk" id="tfTrk"><i class="zone" id="tfZone"></i><i class="bar" id="tfBar"></i></span><span class="inf" id="tfInf"></span></div>
+        <div class="uf-intel" id="tfIntel" data-part="t-intel"></div>
+        <div class="uf-foot"><span id="tfTot" data-part="t-tot"></span><span class="dim" id="tfRec" data-part="t-rec"></span></div>
+        <div class="uf-tot" id="tfTotHp" data-part="t-tot" hidden><i id="tfTotF"></i></div>
+        <div class="uf-auras" id="tfDebuffs" data-part="t-auras"></div>
+        <div class="uf-auras small" id="tfBuffs" data-part="t-auras"></div>
+      </div>
+      <div>
+        <div class="anatomy-h">Anatomy</div>
+        <ol class="anatomy" id="anatomy">
+          <li tabindex="0" data-for="p-lvl"><span class="k">P1</span><span><b>Level and rest</b>Your level, and zZZ while you rest in an inn or a city.</span></li>
+          <li tabindex="0" data-for="p-tags"><span class="k">P2</span><span><b>Who is on you</b>TARGETED BY counts enemy players, HEALERS your group's healers, MOBS hostile NPCs. Each shows only above zero. A flag carrier reads HEALERS 0 as "go back".</span></li>
+          <li tabindex="0" data-for="p-glow"><span class="k">P3</span><span><b>Highlights</b>A red border while you are being hit. An outer border in the debuff's colour when you can dispel something on yourself.</span></li>
+          <li tabindex="0" data-for="p-hp"><span class="k">P4</span><span><b>Health and heal prediction</b>Drawn by the client even while the number is secret. A heal being cast on you extends the bar in pale green; for your own cast, by the spell's lowest value.</span></li>
+          <li tabindex="0" data-for="p-loc"><span class="k">P5</span><span><b>Crowd control</b>Stunned or feared: the bar turns to high-contrast greys, the frame gets a red edge, the seconds left sit in the middle.</span></li>
+          <li tabindex="0" data-for="p-abs"><span class="k">P6</span><span><b>Shields and heals</b>Hairlines under the bar: absorbs in white, incoming heals in green.</span></li>
+          <li tabindex="0" data-for="p-pw"><span class="k">P7</span><span><b>Cost preview</b>Hover a spell or cast one: its cost shows on your mana in light blue, or red when you can't afford it. Your cast bar is blue.</span></li>
+          <li tabindex="0" data-for="p-exp"><span class="k">P8</span><span><b>Exposure</b>How many enemies have you inside their reach, and how many are closing.</span></li>
+          <li tabindex="0" data-for="p-ttl"><span class="k">P9</span><span><b>Time to live</b>Your estimated health over the net incoming damage per second. Red under the DEFEND threshold.</span></li>
+          <li tabindex="0" data-for="p-auras"><span class="k">P10</span><span><b>Your debuffs</b>Border by type: blue magic, purple curse, brown disease, green poison. Outlined when your class can remove it.</span></li>
+          <li tabindex="0" data-for="t-tags"><span class="k">T1</span><span><b>Who is on it</b>ALLIES counts friendly players on your target; HEALERS the enemy healers keeping it up. On a friendly target it reads TARGETED BY. Works in open PvP and on mobs.</span></li>
+          <li tabindex="0" data-for="t-strip"><span class="k">T2</span><span><b>Range strip</b>Its distance bracket against your spell lines and its own reach, plus how many of your spells reach it.</span></li>
+          <li tabindex="0" data-for="t-cast"><span class="k">T3</span><span><b>Cast bar</b>Timed by the client, so it keeps working when the cast is secret. In its last quarter it brightens and shows KICK; casts you can't interrupt are grey.</span></li>
+          <li tabindex="0" data-for="t-exec"><span class="k">T4</span><span><b>Execute line</b>At 20% for warriors and paladins.</span></li>
+          <li tabindex="0" data-for="t-intel"><span class="k">T5</span><span><b>Intel</b>Matchup verdict from your matrix row, and what its class can do to you.</span></li>
+          <li tabindex="0" data-for="t-tot"><span class="k">T6</span><span><b>Its target</b>Name in class colour, "&gt;&gt; YOU" in red when it's on you, and a thin health bar over a faint green track. Click it to target it.</span></li>
+          <li tabindex="0" data-for="t-auras"><span class="k">T7</span><span><b>Its buffs and debuffs</b>Purgeable buffs outlined, big defensives marked ! and listed first. Your own debuffs on it bright, others dim.</span></li>
+          <li tabindex="0" data-for="t-rec"><span class="k">T8</span><span><b>Your record</b>Duels and fights against its class, from the after-action log.</span></li>
+        </ol>
+        <p class="dropped">Left out on purpose: <s>3D portraits</s>, <s>your own name</s>, <s>XP bar</s>, <s>faction crests</s>. None of them change a decision in a fight.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 6. PETS AND PARTY ===================== -->
+  <section id="party">
+    <div class="col">
+      <span class="para">6-1</span>
+      <h2>Pets and party</h2>
+      <p class="lede">Pets, your target's pet and your party use the same frame language: health the client draws, a cast bar, and the same highlights. A red border means that member is being hit right now. A border in a debuff's colour means you can dispel it, so the frame you need to click lights up before you read a name.</p>
+      <p>The distance on each party row is exact, from positions the group shares over the addon channel. It turns red past your heal range. Switch "You play" above: as a Druid or Shaman the poisoned rogue lights up, as a Mage the cursed druid does.</p>
+    </div>
+    <div class="uf-stage pp-stage">
+      <div class="pp-col">
+        <div class="anatomy-h">Your pet</div>
+        <div class="uf mini" id="ufPet">
+          <div class="uf-head"><span class="uf-title">PET</span><span id="petTags"></span></div>
+          <div class="uf-name"><i class="ico" style="background:#8787ed"></i><b>Imp</b><span class="lv">60</span></div>
+          <div class="uf-hp"><i class="fill" id="petFill" style="background:#52e67a"></i><span class="tx c" id="petPct"></span></div>
+          <div class="uf-pw"><i id="petPw" style="background:#4088ff;width:80%"></i></div>
+          <div class="uf-cast" id="petCast" hidden><i id="petCastF"></i><span>FIREBOLT</span></div>
+        </div>
+        <div class="anatomy-h" style="margin-top:8px">Target's pet</div>
+        <div class="uf mini" id="ufTPet">
+          <div class="uf-head"><span class="uf-title">TARGET PET</span><span class="t-red" id="tpetTags">&gt;&gt; YOU</span></div>
+          <div class="uf-name"><i class="ico" style="background:#abd473"></i><b>Broken Tooth</b><span class="lv">60</span></div>
+          <div class="uf-hp"><i class="fill" id="tpetFill" style="background:#abd473;opacity:.85"></i><span class="tx c" id="tpetPct"></span></div>
+          <div class="uf-pw"><i style="background:#ffe040;width:70%"></i></div>
+        </div>
+        <p class="dropped" style="margin:4px 0 0">Shown as if you played a Warlock and targeted a Hunter. Each frame hides when there is no pet.</p>
+      </div>
+      <div class="pp-col">
+        <div class="anatomy-h">Party</div>
+        <div class="party" id="partyRows"></div>
+      </div>
+      <div>
+        <div class="anatomy-h">Reading the party</div>
+        <ol class="anatomy">
+          <li><span class="k">1</span><span><b>Under attack</b>Red border while that member takes hits, fading over a second and a half after the last one.</span></li>
+          <li><span class="k">2</span><span><b>Dispel</b>Border in the debuff's colour, pulsing, only when your class can remove it.</span></li>
+          <li><span class="k">3</span><span><b>Targeted by</b>How many enemy players have that member as their target.</span></li>
+          <li><span class="k">4</span><span><b>Incoming heals</b>The same pale green extension as on your own frame.</span></li>
+          <li><span class="k">5</span><span><b>Distance</b>Exact yards from shared positions, red when out of heal range.</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 7. TRACKERS ===================== -->
+  <section id="trackers">
+    <div class="col">
+      <span class="para">7-1</span>
+      <h2>Trackers</h2>
+      <p class="lede">A tracker is one of your spells as an icon, placed anywhere on screen. It shows one condition and nothing else, so a glance answers one question: is my shield up, is my DoT on, is my interrupt ready. Each icon has its own position, size, opacity and an importance border in red, orange or green.</p>
+    </div>
+    <div class="kinds">
+      <div><h3>ON COOLDOWN</h3><p>Shows while the spell is on cooldown, with a swipe.</p><div class="inv">INVERTED: NOT ON COOLDOWN, i.e. ready</div></div>
+      <div><h3>ON TARGET</h3><p>Shows while your aura is on your target, with its time left.</p><div class="inv">INVERTED: NOT ON TARGET, i.e. reapply</div></div>
+      <div><h3>ON ME</h3><p>Shows while the buff is on you. The buff can be named separately when the spell's buff has another name.</p><div class="inv">INVERTED: NOT ON ME, i.e. rebuff</div></div>
+      <div><h3>ON WEAPON</h3><p>Shows while a weapon imbue is on, main or off hand: Flametongue, Windfury, poisons, oils.</p><div class="inv">INVERTED: NOT ON WEAPON, i.e. reimbue</div></div>
+    </div>
+    <div class="col" style="margin-top:22px">
+      <p>The spell field searches a library built from your spellbook, the auras on you and your target, every aura SITREP has seen, and spell IDs. Results scroll, and hovering one shows its full tooltip. The tracker list can be exported as a string and mirrored into macros, which survive a client that forgets addon settings.</p>
+    </div>
+    <div class="tr-stage">
+      <div>
+        <div class="tr-screen" id="trScreen" aria-label="Tracker icons placed on a mock screen"><span class="hint">An Enhancement Shaman's set · drag-free replica</span></div>
+        <div class="tr-ctl">
+          <button type="button" class="gbtn" id="trCombat" aria-pressed="true">In combat</button>
+          <button type="button" class="gbtn" id="trHit">Take a melee hit</button>
+          <button type="button" class="gbtn" id="trNature">Take a nature hit</button>
+          <button type="button" class="gbtn" id="trLS">Cast Lightning Shield</button>
+          <button type="button" class="gbtn" id="trLayout" aria-pressed="false">Layout mode</button>
+        </div>
+        <div class="tr-legend" id="trLegend"></div>
+      </div>
+      <div>
+        <div class="tr-src">Lightning Shield answered by <b id="trSrc">–</b></div>
+        <ol class="ladder2" id="trLadder">
+          <li data-src="readable"><span class="k">1</span><span><b>Readable aura</b>Out of combat every aura reads plainly. Exact.</span></li>
+          <li data-src="oracle"><span class="k">2</span><span><b>Client's own answer</b>Any direct yes or no the client still gives for that spell.</span></li>
+          <li data-src="instance"><span class="k">3</span><span><b>Aura instance</b>The ID of an aura seen before combat, asked about again.</span></li>
+          <li data-src="bar"><span class="k">4</span><span><b>Buff bar icons</b>Blizzard's buff buttons stay readable until they are redrawn. Used only if checked out of combat.</span></li>
+          <li data-src="charges"><span class="k">5</span><span><b>Charge count</b>Each physical hit takes a Lightning Shield charge. Nature damage is ignored. A recast resets the count.</span></li>
+          <li data-src="lookup"><span class="k">6</span><span><b>Spell lookups</b>Trusted only if they have answered before.</span></li>
+          <li data-src="estimate"><span class="k">7</span><span><b>Cast estimate</b>Your last cast plus the duration measured earlier. Marked ?.</span></li>
+        </ol>
+        <p class="dropped">The first source that answers wins. When combat ends, the readable aura takes over again and corrects any estimate.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 8. FIELD USE ===================== -->
+  <section id="install">
+    <div class="col">
+      <span class="para">8-1</span>
+      <h2>Field use</h2>
+    </div>
+    <div class="two">
+      <div>
+        <h3>Install</h3>
+        <p>Copy the <code>SITREP</code> folder into the client's AddOns folder. The beta's product folder is <code>_classic_beta_</code>; the launch folder may differ.</p>
+        <pre class="cmd">World of Warcraft/_classic_beta_/Interface/AddOns/SITREP</pre>
+        <p>Bind <em>Broadcast contact report</em> under Key Bindings → AddOns, then type <code>/sitrep</code> to open the console. Unlock the HUD there and drag the modules into place: envelope, threat board, engagement bar, pressure gauge, allies and every unit frame.</p>
+        <h3 style="margin-top:22px">Duels</h3>
+        <p>An attackable player of your own faction is a duel opponent, since you can only duel your own faction. Nameplates are re-sorted into friend and foe on every scan, so a duel partner leaves your side the moment the countdown ends. The result comes from the game's own "has defeated … in a duel" message. Duels are tagged DUEL in the Intel Log, train only the duel curve, and build your win rate against each class.</p>
+        <h3 style="margin-top:22px">Reports</h3>
+        <p>The client's chat can't be copied, so SITREP writes its diagnostics into its saved settings, where they can be read after <code>/reload</code>. After every fight it saves a report with a timeline of each tracker's source and how many "who targets whom" checks the client answered.</p>
+        <pre class="cmd">/sitrep auraprobe   what each aura source answers
+/sitrep buffs       buff bar and tracker state
+/sitrep weapon      weapon imbue sources
+/sitrep tot         target's-target health feed</pre>
+        <h3 style="margin-top:22px">Verified headless</h3>
+        <pre class="cmd">luajit tests/run.lua
+684 passed, 0 failed  (LuaJIT 2.1 and Lua 5.5)</pre>
+        <p class="note">A client emulator drives scripted fights through every module. Its secret values throw on comparison, as the real ones do, and its buff bar turns secret on redraw, as the real one does. Source guards fail the build on the patterns that crashed in game: a boolean test on a secret cast flag, or a pcall whose second result gets dropped. A scan against the 6,045 global functions and 269 namespaces harvested from the Forever beta found no call to a missing API.</p>
+      </div>
+      <div>
+        <h3>Limits</h3>
+        <ol class="lim">
+          <li>The emulator reproduces the measured rules, not every quirk. Features reach the live client one test session at a time.</li>
+          <li>No addon can show where an enemy stands on Forever: the client blocks nameplate positions and offers no coordinates. SITREP shows distance and closure instead.</li>
+          <li>Enemy players may hide more identity than mobs. Contacts then fall back to GUID and "Unknown".</li>
+          <li>SavedVariables are written on <code>/reload</code> and logout, but a cold start may not load them (a beta bug). Tracker lists can be mirrored into macros, and Intel Log → Export profile is the backup.</li>
+          <li>In combat, a tracker watching an aura works from evidence, not from the aura. Charge counting cannot see a dispel; cast estimates cannot see a resist. The icon is marked ? while it estimates and corrects itself when combat ends.</li>
+          <li>TARGETED BY, HEALERS, MOBS and ALLIES count only the units SITREP can see (nameplates, group, target, focus) and only when the client answers the comparison. Counts of zero are not shown.</li>
+          <li>Shadow health drifts with absorbs and overheal. It resyncs whenever health is plain again.</li>
+          <li>The matchup matrix holds doctrine defaults, not measurements. Tune it to your realm.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="band foot">UNCLASSIFIED // FOR USE IN AZEROTH</div>
+  </section>
+</div>
+
+<script>
+(() => {
+"use strict";
+const TAU = Math.PI * 2;
+const $ = (id) => document.getElementById(id);
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const wrap = (a) => { a = ((a % TAU) + TAU) % TAU; return a > Math.PI ? a - TAU : a; };
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------------- Doctrine (mirrors Data.lua) ---------------- */
+const CLASSES = ["WARRIOR","PALADIN","HUNTER","ROGUE","PRIEST","SHAMAN","MAGE","WARLOCK","DRUID"];
+const NAME = {WARRIOR:"Warrior",PALADIN:"Paladin",HUNTER:"Hunter",ROGUE:"Rogue",PRIEST:"Priest",SHAMAN:"Shaman",MAGE:"Mage",WARLOCK:"Warlock",DRUID:"Druid"};
+const SHORT = {WARRIOR:"WAR",PALADIN:"PAL",HUNTER:"HUN",ROGUE:"ROG",PRIEST:"PRI",SHAMAN:"SHA",MAGE:"MAG",WARLOCK:"WLK",DRUID:"DRU"};
+const COLOR = {WARRIOR:"#c79c6e",PALADIN:"#f58cba",HUNTER:"#abd473",ROGUE:"#fff569",PRIEST:"#ffffff",SHAMAN:"#0070de",MAGE:"#40c7eb",WARLOCK:"#8787ed",DRUID:"#ff7d0a"};
+const POWER = {WARRIOR:1,PALADIN:.95,HUNTER:1,ROGUE:1.05,PRIEST:1,SHAMAN:1,MAGE:1.05,WARLOCK:1.05,DRUID:.95};
+const M0 = {
+  WARRIOR:[1,1.05,1.2,1.1,1.1,1.1,1.35,1.25,1.15], PALADIN:[.95,1,1,.9,.95,1.05,1.05,1.1,.9],
+  HUNTER:[.9,1.05,1,1.2,1,1.1,1.1,1.1,1.05], ROGUE:[1.05,1.15,1,1,1.15,1.05,1,1.25,1.05],
+  PRIEST:[1.05,1,1.05,1.15,1,1,1.05,1.1,.95], SHAMAN:[1,1,1,1.05,1.05,1,1.1,1.1,1],
+  MAGE:[.85,1,1.15,1.2,1.1,1.1,1,1.15,1.05], WARLOCK:[.9,1,1.1,.8,1.1,1.05,1.05,1,1.1],
+  DRUID:[1,1.05,1.05,1.05,1.05,1,1,1,1],
+};
+const matrixDefaults = () => { const m = {}; for (const r of CLASSES) { m[r] = {}; CLASSES.forEach((c, i) => m[r][c] = M0[r][i]); } return m; };
+const HVT = {PRIEST:1.5,SHAMAN:1.35,PALADIN:1.3,DRUID:1.25,MAGE:1.2,WARLOCK:1.15,HUNTER:1,WARRIOR:1,ROGUE:.85};
+const EXPOSURE = {PRIEST:1.25,MAGE:1.2,WARLOCK:1.2,DRUID:1,ROGUE:1,HUNTER:1,SHAMAN:1,PALADIN:.8,WARRIOR:.85};
+// Weapon engagement zones (mirrors Data.lua REACH): threat = distance at which the class becomes dangerous.
+const REACH = { WARRIOR: [25, "Charge / Intercept from 8-25 yd"], ROGUE: [8, "melee; Sprint and stealth openers"], PALADIN: [10, "Hammer of Justice at 10 yd"],
+  HUNTER: [35, "shots 8-35 yd"], MAGE: [30, "Frost Nova at 10"], WARLOCK: [30, "Fear at 20"], PRIEST: [30, "Psychic Scream at 8"],
+  SHAMAN: [30, "Earth Shock at 20"], DRUID: [30, "casters 30; cat and bear melee"] };
+const MY_RANGES = [5, 20, 30, 35]; // a mage's spellbook: melee, Fire Blast, Frostbolt, Fireball
+const ACCENTS = [["nvg","Night Vision","#5cff8d"],["amber","Amber CRT","#ffb833"],["arctic","Arctic","#66d9ff"],["crimson","Crimson","#ff5454"],["ghost","Ghost","#d9dee6"]];
+const ADVICE = {CLEAR:"#8c999e",ENGAGE:"var(--acc)",CONTEST:"#ffd94d",HOLD:"#ff8c33",BREAK:"#ff4d4d",DEFEND:"#ff338c"};
+
+const defaults = () => ({
+  enabled: true,
+  hud: { accent: "nvg", envelopeRange: 40, envelopeLanes: 6, boardRows: 6, showHealth: true },
+  sensors: { rate: 5, memory: 45, plateRange: 41, useSpellRange: true, useInteract: true, groupTargets: true, npcs: false },
+  threat: { targetingMe: 1.8, casting: 1.3, inCombat: 1.15, closing: 1.25, inReach: 1.2, levelBase: 1.12, falloff: 30, hvtMin: 60, matrix: matrixDefaults(), hvt: {...HVT} },
+  engage: { k: 2.2, bias: 0, autoCal: true, lr: 0.05, radius: 45, engageAt: 1.5, contestAt: 0.9, holdAt: 0.6, n: 0, brier: 0 },
+  pressure: { short: 3, long: 10, spikePct: 35, ttlWarn: 4 },
+  comms: { channel: "AUTO", share: true, shareRate: 2, template: "[SITREP] {n} hostile: {comp} | {range} | {zone} | {hvt}{advice} ({pwin})" },
+  alerts: { banner: true, flash: true, newContact: true, hvt: true, targeted: true, spike: true, ttl: true, closing: true },
+  layout: { scale: 1, alpha: 1, envelope: 1, board: 1, engage: 1, pressure: 1, allies: 1, player: 1, target: 1, pet: 1, targetpet: 1, party: 1 },
+  frames: { player: true, target: true, pet: true, targetPet: true, party: true, hideBlizzard: true, flash: true, execute: true, strip: true,
+    healersOnMe: true, targetCounts: true, mobsOnMe: true, myDebuffs: true, targetAuras: true, width: 264, hitGlow: true, dispelGlow: true,
+    costPreview: true, intel: true, totHealth: true, burstMax: 12 },
+  trackers: { enabled: true, mirror: false },
+});
+let P = defaults();
+
+/* ---------------- Model (mirrors Model.lua) ---------------- */
+const levelFactor = (t, m, base) => t == null ? 1 : t <= 0 ? 3 : clamp(Math.pow(base, t - m), .25, 3);
+const proximity = (r, f) => r == null ? .45 : Math.exp(-Math.max(0, r - 5) / f);
+const freshness = (age, mem) => Math.exp(-(age || 0) / Math.max(1, mem / 3));
+
+function score(c, me) {
+  const T = P.threat;
+  const lvl = levelFactor(c.level, me.level, T.levelBase);
+  const matchup = (T.matrix[me.class] || {})[c.class] || 1;
+  const prox = proximity(c.range, T.falloff);
+  const fresh = freshness(c.age, P.sensors.memory);
+  const beh = (c.targetingMe ? T.targetingMe : 1) * (c.casting ? T.casting : 1) * (c.inCombat ? T.inCombat : 1)
+    * (c.closing != null && c.closing <= -3 ? T.closing : 1) * (c.inTheirReach ? T.inReach : 1);
+  c.threat = 100 * (POWER[c.class] || 1) * matchup * lvl * prox * beh * fresh;
+  c.priority = 100 * (T.hvt[c.class] || 1) * (EXPOSURE[c.class] || 1) / Math.sqrt(lvl) * (.5 + .5 * prox) * (c.live ? 1 : .5) * fresh;
+}
+
+function engagement(friends, hostiles, me) {
+  const T = P.threat, E = P.engage;
+  let sumF = 0, nF = 0; const cls = [];
+  for (const f of friends) { sumF += (POWER[f.class] || 1) * levelFactor(f.level, me.level, T.levelBase) * clamp(f.hp ?? 1, .05, 1); nF++; cls.push(f.class); }
+  let sumH = 0, nH = 0;
+  for (const h of hostiles) {
+    if (h.range != null && h.range > E.radius) continue;
+    const w = freshness(h.age, P.sensors.memory);
+    let m = 0, k = 0; for (const c of cls) { const v = T.matrix[c] && T.matrix[c][h.class]; if (v) { m += v; k++; } }
+    m = k ? m / k : 1;
+    sumH += (POWER[h.class] || 1) * levelFactor(h.level, me.level, T.levelBase) * m * w; nH += w;
+  }
+  const pic = { nF, nH, pF: nF * sumF, pH: nH * sumH, rho: null, pwin: null, losses: 0, advice: "CLEAR", x: null };
+  if (nH < .05) return pic;
+  pic.rho = pic.pF / Math.max(pic.pH, 1e-6);
+  pic.x = Math.log(pic.rho);
+  pic.pwin = 1 / (1 + Math.exp(-(E.k * pic.x + E.bias)));
+  pic.losses = pic.rho > 1 ? nF * (1 - Math.sqrt(1 - 1 / pic.rho)) : nF;
+  pic.advice = pic.rho >= E.engageAt ? "ENGAGE" : pic.rho >= E.contestAt ? "CONTEST" : pic.rho >= E.holdAt ? "HOLD" : "BREAK";
+  return pic;
+}
+
+function calibrate(x, y) {
+  const E = P.engage;
+  const p = 1 / (1 + Math.exp(-(E.k * x + E.bias)));
+  E.n += 1; E.brier += ((p - y) ** 2 - E.brier) / E.n;
+  if (E.autoCal) { E.k = clamp(E.k + E.lr * (y - p) * x, .5, 6); E.bias = clamp(E.bias + E.lr * (y - p), -2, 2); }
+  return p;
+}
+
+/* ---------------- Scenarios ---------------- */
+// bearing only places the enemy in this simulation; the addon never learns it. reach: yards. dieAt: seconds after spawn.
+const SCEN = {
+  ambush: { zone: "Hillsbrad Foothills", sub: "Tarren Mill", friends: [], hostiles: [
+    { name: "Vex", class: "ROGUE", level: 60, spawn: .6, bearing: 28, dist: 39, speed: 6.5, stopAt: 3, dps: 270, reach: 5, attacks: true, opener: 3.2 },
+    { name: "Aldwin", class: "PRIEST", level: 60, spawn: 0, bearing: -38, dist: 34, speed: 0, stopAt: 34, dps: 70, reach: 36, attacks: true, caster: true, delay: 9 },
+    { name: "Grunk", class: "WARRIOR", level: 58, spawn: 8, bearing: 168, dist: 34, speed: 5, stopAt: 4, dps: 190, reach: 5, attacks: true },
+  ]},
+  sweep: { zone: "The Barrens", sub: "The Crossroads", friends: [{ class: "WARRIOR", level: 60 }, { class: "PRIEST", level: 60, heals: 130 }], hostiles: [
+    { name: "Thalen", class: "HUNTER", level: 60, spawn: .5, bearing: 12, dist: 40, speed: 3, stopAt: 30, dps: 150, reach: 36, attacks: true, dieAt: 15 },
+    { name: "Morrowgrim", class: "WARLOCK", level: 60, spawn: 1.5, bearing: -26, dist: 39, speed: 3, stopAt: 27, dps: 95, reach: 30, attacks: true, caster: true, dieAt: 19 },
+  ]},
+  outnumbered: { zone: "Alterac Mountains", sub: "Strahnbrad", mobs: [5, 2], friends: [{ class: "PALADIN", level: 60 }], hostiles: [
+    { name: "Sly", class: "ROGUE", level: 60, spawn: 1, bearing: 36, dist: 40, speed: 7, stopAt: 3, dps: 240, reach: 5, attacks: true, opener: 2.5 },
+    { name: "Ilyra", class: "MAGE", level: 60, spawn: 1.6, bearing: 52, dist: 40, speed: 3.5, stopAt: 26, dps: 170, reach: 30, attacks: true, caster: true },
+    { name: "Borak", class: "WARRIOR", level: 60, spawn: 3, bearing: 70, dist: 40, speed: 6, stopAt: 4, dps: 180, reach: 5, attacks: true },
+    { name: "Tuvaa", class: "SHAMAN", level: 60, spawn: 4, bearing: 22, dist: 40, speed: 3, stopAt: 24, dps: 60, reach: 30, attacks: false, caster: true },
+    { name: "Oakheart", class: "DRUID", level: -1, spawn: 6, bearing: 84, dist: 40, speed: 4, stopAt: 18, dps: 0, reach: 30, attacks: false },
+  ]},
+};
+
+/* ---------------- Simulation state ---------------- */
+let S, scenKey = "ambush", paused = false;
+const log = [], heat = {};
+let myClass = "MAGE";
+
+function reset(key) {
+  scenKey = key;
+  const sc = SCEN[key];
+  S = {
+    t: 0, me: { x: 0, y: 0, facing: 0, class: myClass, level: 60, hp: 4200, hpMax: 4200, combat: false, dead: false },
+    heading: 0, friends: sc.friends.map(f => ({ ...f, hp: 1 })),
+    hostiles: sc.hostiles.map((h, i) => {
+      const az = -h.bearing * Math.PI / 180;
+      return { ...h, id: key + i, x: h.dist * Math.cos(az), y: h.dist * Math.sin(az), alive: true, spawned: false, hitClock: 0, hits: 0, castT: Math.random() * 3 };
+    }),
+    contacts: new Map(), list: [], pic: { nF: 1, nH: 0, pF: 0, pH: 0, advice: "CLEAR" },
+    inc: [], heals: [], shadow: 4200, peak: 0, dmg: 0, hk: 0, lastSpike: -9, sumX: 0, nX: 0, ended: false, endAt: 0,
+    tick: 0, hvtId: null, lastAdvice: "CLEAR", lastDamage: -99, mana: 100, cast: null, castGap: 0,
+  };
+  $("loc").innerHTML = `${sc.zone} · <b>${sc.sub}</b>`;
+  $("aar").classList.remove("on");
+  document.querySelectorAll("[data-scen]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.scen === key)));
+}
+
+/* ---------------- Physics and damage ---------------- */
+function step(dt) {
+  S.t += dt;
+  const me = S.me;
+  for (const h of S.hostiles) {
+    if (!h.alive) continue;
+    if (!h.spawned && S.t >= h.spawn) { h.spawned = true; h.t0 = S.t; }
+    if (!h.spawned) continue;
+    const d = Math.hypot(h.x - me.x, h.y - me.y);
+    if (d > h.stopAt && h.speed > 0) {
+      const k = Math.min(1, h.speed * dt / d);
+      h.x += (me.x - h.x) * k; h.y += (me.y - h.y) * k;
+    }
+    h.dist = Math.hypot(h.x - me.x, h.y - me.y);
+    h.engaged = h.attacks && h.dist <= h.reach + 0.5 && (S.t - h.t0) >= (h.delay || 0);
+    h.combat = h.engaged || h.dist < 30;
+    h.castT += dt; h.casting = !!h.caster && h.engaged && (h.castT % 3.4) < 2.5;
+    if (h.dieAt && S.t - h.t0 >= h.dieAt) { h.alive = false; S.hk++; banner("HONORABLE KILL  ·  " + NAME[h.class].toUpperCase() + " " + h.name, "var(--acc)"); continue; }
+    if (h.engaged && !me.dead) {
+      h.hitClock += dt;
+      while (h.hitClock >= .5) {
+        h.hitClock -= .5;
+        let amt = h.dps * .5 * (.7 + Math.random() * .6);
+        if (h.opener && h.hits === 0) { amt *= h.opener; S.locUntil = S.t + 3; S.locText = "STUNNED"; addMyAura("Cheap Shot", "CS", null, 3); }
+        if (h.hits === 0 && ON_HIT[h.class]) addMyAura(...ON_HIT[h.class]);
+        h.hits++;
+        wound(amt);
+      }
+    }
+  }
+  const healer = S.friends.find(f => f.heals);
+  if (healer && S.t - S.lastDamage < 4 && !me.dead) {
+    S.healClock = (S.healClock || 0) + dt;
+    while (S.healClock >= 1) { S.healClock -= 1; heal(healer.heals * (.8 + Math.random() * .4)); }
+  }
+  me.combat = S.t - S.lastDamage < 5 || S.hostiles.some(h => h.alive && h.engaged);
+  ownCast(dt);
+  if (!S.ended) {
+    const alive = S.hostiles.filter(h => h.alive);
+    if (me.dead) end("LOSS");
+    else if (alive.length === 0) end(S.hk ? "WIN" : "BREAK");
+    else if (S.t > 45) end("BREAK");
+  } else if (S.t > S.endAt + 5) reset(scenKey);
+}
+
+function wound(amt) {
+  S.flashAt = S.t; S.flashCol = "#ff3333";
+  S.inc.push([S.t, amt]); S.dmg += amt; S.lastDamage = S.t;
+  S.me.hp = Math.max(0, S.me.hp - amt); S.shadow = Math.max(0, S.shadow - amt);
+  if (S.me.hp <= 0) S.me.dead = true;
+}
+// your own casts (mirrors the cost preview and heal prediction in UI/Frames.lua)
+// [spell, cast seconds, % of max mana, lowest heal or null]
+const OWN_SPELL = { MAGE: ["FROSTBOLT", 2.5, 11], WARLOCK: ["SHADOW BOLT", 2.5, 11], HUNTER: ["AIMED SHOT", 3, 9],
+  PRIEST: ["FLASH HEAL", 1.5, 13, 812], SHAMAN: ["HEALING WAVE", 2.5, 12, 1050], DRUID: ["REGROWTH", 2, 14, 700], PALADIN: ["HOLY LIGHT", 2.5, 12, 1100] };
+function ownCast(dt) {
+  const me = S.me, sp = OWN_SPELL[me.class];
+  if (!me.combat) S.mana = Math.min(100, S.mana + dt * 4);
+  if (!sp || me.dead || (S.locUntil || 0) > S.t) { S.cast = null; return; }
+  if (S.cast) {
+    if (S.t - S.cast.t0 >= sp[1]) { S.mana = Math.max(0, S.mana - sp[2]); if (sp[3]) heal(sp[3] * 1.1); S.cast = null; S.castGap = S.t + .9; }
+    return;
+  }
+  const wants = sp[3] ? me.combat && me.hp / me.hpMax < .8 : me.combat && S.list.length > 0;
+  if (wants && S.t >= S.castGap && S.mana >= sp[2]) S.cast = { t0: S.t };
+}
+function heal(amt) {
+  S.heals.push([S.t, amt]);
+  S.me.hp = Math.min(S.me.hpMax, S.me.hp + amt); S.shadow = Math.min(S.me.hpMax, S.shadow + amt);
+}
+
+function end(outcome) {
+  S.ended = true; S.endAt = S.t;
+  const x = S.nX ? S.sumX / S.nX : 0;
+  let p = null;
+  if (outcome !== "BREAK" && S.nX) p = calibrate(x, outcome === "WIN" ? 1 : 0);
+  const comp = {};
+  for (const h of S.hostiles) comp[h.class] = (comp[h.class] || 0) + 1;
+  const sc = SCEN[scenKey];
+  const rec = { outcome, zone: sc.zone, sub: sc.sub, dur: S.t, dmg: S.dmg, peak: S.peak, hk: S.hk, p, comp, n: S.hostiles.length };
+  log.unshift(rec); log.length = Math.min(log.length, 12);
+  const col = outcome === "WIN" ? "var(--acc)" : outcome === "LOSS" ? "var(--g-red)" : "var(--g-amber)";
+  $("aarK").textContent = "AFTER ACTION  ·  " + sc.sub.toUpperCase();
+  $("aarO").textContent = `${outcome}  ${Math.round(S.t)}s`; $("aarO").style.color = col;
+  $("aarL1").textContent = "vs " + Object.entries(comp).map(([c, n]) => (n > 1 ? n + " " : "") + NAME[c]).join(", ");
+  $("aarL2").textContent = `predicted ${p == null ? "–" : Math.round(p * 100) + "%"} · taken ${short(S.dmg)} · peak ${short(S.peak)} dps · HK ${S.hk}`;
+  $("aar").classList.add("on");
+  drawCurve(); // the page's curve shows the recalibrated model
+}
+
+/* ---------------- Sensing (mirrors Sensors.lua) ---------------- */
+const LADDER = () => {
+  const l = [];
+  if (P.sensors.useInteract) l.push({ min: 0, max: 10, name: "duel" }, { min: 0, max: 28, name: "follow" });
+  if (P.sensors.useSpellRange) l.push({ min: 0, max: 20, name: "Fire Blast" }, { min: 0, max: 30, name: "Frostbolt" }, { min: 0, max: 35, name: "Fireball" });
+  return l.sort((a, b) => a.max - b.max);
+};
+function bracket(dist, ceiling) {
+  let lo = 0, hi = ceiling;
+  for (const c of LADDER()) {
+    if (dist <= c.max) { if (hi == null || c.max < hi) hi = c.max; if (c.min > lo) lo = c.min; }
+    else if (c.min === 0 && c.max > lo) lo = c.max;
+  }
+  if (hi != null && lo > hi) lo = hi;
+  return [lo, hi];
+}
+
+// Envelope geometry (mirrors Model.lua M.Envelope)
+function envelopeOf(c) {
+  const threatAt = (REACH[c.class] || [30])[0], d = c.range, mine = MY_RANGES[MY_RANGES.length - 1];
+  c.inTheirReach = c.hi != null && c.hi <= threatAt ? true : c.lo != null && c.lo > threatAt ? false : d != null && d <= threatAt;
+  c.inMyReach = c.hi != null && c.hi <= mine ? true : c.lo != null && c.lo > mine ? false : d != null && d <= mine;
+  c.ttr = c.closing != null && c.closing < -1 && d != null && !c.inTheirReach ? (d - threatAt) / -c.closing : null;
+}
+// Closure from bracket-boundary crossings (mirrors Sensors.lua trackClosure)
+function trackClosure(c, pl, ph, lo, hi, now) {
+  let b = null;
+  if (hi != null && pl != null && hi <= pl) b = hi; else if (ph != null && lo != null && lo >= ph) b = lo;
+  if (b == null) return;
+  if (c.cross && now - c.cross.t <= 5 && now - c.cross.t > .1 && b !== c.cross.d) { c.closing = (b - c.cross.d) / (now - c.cross.t); c.closingAt = now; }
+  c.cross = { t: now, d: b };
+}
+
+function sense() {
+  const me = S.me, now = S.t;
+  const fresh = [];
+  for (const h of S.hostiles) {
+    if (!h.spawned) continue;
+    let c = S.contacts.get(h.id);
+    if (!h.alive) { if (c) S.contacts.delete(h.id); continue; }
+    const onPlate = h.dist <= P.sensors.plateRange;   // nameplates: identity and range, never direction
+    const viaTarget = h.engaged;
+    if (!onPlate && !viaTarget) continue;
+    const isNew = !c;
+    if (isNew) { c = { id: h.id, first: now }; S.contacts.set(h.id, c); }
+    Object.assign(c, { name: h.name, class: h.class, level: h.level, last: now, lastLive: now, inCombat: h.combat,
+      targetingMe: h.attacks && h.dist < 32, casting: h.casting, hpFrac: 1 });
+    const [lo, hi] = bracket(h.dist, onPlate ? P.sensors.plateRange : null);
+    trackClosure(c, c.lo, c.hi, lo, hi, now);
+    c.lo = lo; c.hi = hi;
+    c.range = hi != null ? (lo + hi) / 2 : lo > 0 ? lo + 5 : null;
+    if (isNew) fresh.push(c);
+  }
+  S.list = [];
+  for (const [id, c] of S.contacts) {
+    c.age = now - c.last;
+    if (c.age > P.sensors.memory) { S.contacts.delete(id); continue; }
+    c.live = now - c.lastLive < 1;
+    if (!c.live) { c.targetingMe = false; c.casting = false; }
+    if (c.closingAt != null && (now - c.closingAt > 3 || !c.live)) { c.closing = null; c.closingAt = null; }
+    envelopeOf(c);
+    S.list.push(c);
+  }
+  for (const c of S.list) score(c, me);
+  S.list.sort((a, b) => b.threat - a.threat);
+  const byP = [...S.list].sort((a, b) => b.priority - a.priority);
+  S.list.forEach(c => c.hvt = false);
+  const top = byP[0];
+  if (top && top.live && top.priority >= P.threat.hvtMin) {
+    top.hvt = true;
+    if (S.hvtId !== top.id) { S.hvtId = top.id; if (P.alerts.hvt) banner("HVT  ·  " + NAME[top.class].toUpperCase() + " " + top.name, "var(--acc)"); }
+  } else S.hvtId = null;
+  S.byP = byP;
+
+  const friends = [{ class: me.class, level: 60, hp: S.shadow / me.hpMax }, ...S.friends];
+  S.pic = engagement(friends, S.list, me);
+  pressure();
+  if (me.combat && S.ttl != null && S.ttl < P.pressure.ttlWarn) S.pic.advice = "DEFEND";
+  if (S.pic.x != null && me.combat) { S.sumX += S.pic.x; S.nX++; }
+  if (S.pic.advice !== S.lastAdvice) {
+    if (S.pic.advice === "DEFEND" && P.alerts.ttl) banner(`DEFEND  ·  TIME TO LIVE ${S.ttl.toFixed(1)}s`, ADVICE.DEFEND);
+    else if (S.pic.advice === "BREAK" && me.combat) banner("BREAK CONTACT  ·  OUTNUMBERED", ADVICE.BREAK);
+    S.lastAdvice = S.pic.advice;
+  }
+  for (const c of S.list) {
+    if (c.targetingMe && !c.wasT && P.alerts.targeted) { banner("TARGETED BY " + NAME[c.class].toUpperCase() + " " + c.name, "var(--g-red)"); flash(); }
+    c.wasT = c.targetingMe;
+    if (c.ttr != null && c.ttr <= 3 && !c.warned) { c.warned = true; if (P.alerts.closing) banner(`${NAME[c.class].toUpperCase()} CLOSING  ·  IN REACH IN ${c.ttr.toFixed(1)}s`, "var(--g-amber)"); }
+    else if (c.closing != null && c.closing > 1) c.warned = false;
+  }
+  if (fresh.length && P.alerts.newContact) {
+    const c = fresh[0];
+    if (fresh.length > 1) banner(fresh.length + " NEW CONTACTS", "var(--g-amber)");
+    else banner(`CONTACT  ·  ${NAME[c.class].toUpperCase()} ${c.level > 0 ? c.level : "??"}  ·  ${rangeText(c)}`, COLOR[c.class]);
+  }
+  for (const c of fresh) { const k = SCEN[scenKey].zone + " / " + SCEN[scenKey].sub; heat[k] = (heat[k] || 0) + 1; }
+}
+
+function pressure() {
+  const now = S.t, Pp = P.pressure, me = S.me;
+  S.inc = S.inc.filter(e => e[0] >= now - 12); S.heals = S.heals.filter(e => e[0] >= now - 12);
+  const sum = (arr, since) => arr.reduce((s, e) => e[0] >= since ? s + e[1] : s, 0);
+  S.dps = sum(S.inc, now - Pp.short) / Pp.short;
+  S.hps = sum(S.heals, now - Pp.short) / Pp.short;
+  S.peak = Math.max(S.peak, S.dps);
+  const net = S.dps - S.hps;
+  S.ttl = net > 0 ? S.shadow / net : null;
+  const burst = sum(S.inc, now - 1.5) / me.hpMax * 100;
+  if (burst >= Pp.spikePct && now - S.lastSpike > 3) {
+    S.lastSpike = now;
+    if (P.alerts.spike) { banner(`SPIKE  -${Math.round(burst)}% IN 1.5s`, "#ff4d8c"); flash(); }
+  }
+  S.spark = new Array(20).fill(0);
+  for (const [t, a] of S.inc) { const b = 19 - Math.floor((now - t) / .5); if (b >= 0 && b < 20) S.spark[b] += a; }
+  if (!me.combat) S.shadow = me.hp; // health is plain again: resync
+}
+
+/* ---------------- Formatting (mirrors Comms.lua) ---------------- */
+function rangeText(c) {
+  if (c.lo != null && c.hi != null) return c.hi - c.lo <= 2 ? `${c.hi}y` : `${c.lo}-${c.hi}y`;
+  if (c.range != null) return `~${Math.round(c.range)}y`;
+  if (c.lo) return `>${c.lo}y`;
+  return "?";
+}
+const short = (v) => v >= 10000 ? (v / 1000).toFixed(0) + "k" : v >= 1000 ? (v / 1000).toFixed(1) + "k" : String(Math.round(v || 0));
+
+function compose(template) {
+  const recent = S.list.filter(c => c.age < 15);
+  if (!recent.length) return null;
+  const counts = {};
+  let lo = null, hi = null;
+  for (const c of recent) {
+    counts[c.class] = (counts[c.class] || 0) + 1;
+    const a = c.lo ?? c.range, b = c.hi ?? c.range;
+    if (a != null) lo = lo == null ? a : Math.min(lo, a);
+    if (b != null) hi = hi == null ? b : Math.max(hi, b);
+  }
+  const comp = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([c, k]) => (k > 1 ? k + " " : "") + NAME[c]).join(", ");
+  const top = S.byP && S.byP[0];
+  const sc = SCEN[scenKey];
+  const tok = {
+    n: recent.length, comp, range: lo != null && hi != null ? (hi - lo < 3 ? `${Math.round(hi)}y` : `${Math.round(lo)}-${Math.round(hi)}y`) : "?",
+    zone: `${sc.zone} - ${sc.sub}`,
+    hvt: top && top.hvt ? `HVT ${NAME[top.class]} ${top.name} | ` : "", advice: S.pic.advice,
+    pwin: S.pic.pwin != null ? `P(win) ${Math.round(S.pic.pwin * 100)}%` : "no estimate", ratio: S.pic.rho != null ? S.pic.rho.toFixed(1) + ":1" : "-",
+  };
+  return (template ?? P.comms.template).replace(/\{(\w+)\}/g, (_, k) => tok[k] ?? "");
+}
+
+/* ---------------- Alerts ---------------- */
+let bannerTimer;
+function banner(text, color) {
+  if (!P.alerts.banner) return;
+  const b = $("banner");
+  b.textContent = text; b.style.color = color;
+  b.classList.add("on");
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => b.classList.remove("on"), 2400);
+}
+function flash() {
+  if (!P.alerts.flash) return;
+  const f = $("flash");
+  f.classList.add("on");
+  requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove("on")));
+}
+
+/* ---------------- Envelope (mirrors HUD.lua) ---------------- */
+function accentHex() { return (ACCENTS.find(a => a[0] === P.hud.accent) || ACCENTS[0])[2]; }
+const envEl = $("env"), envAxis = $("envAxis");
+const lanes = [];
+function buildEnvelope() {
+  envEl.innerHTML = ""; lanes.length = 0;
+  for (let i = 0; i < P.hud.envelopeLanes; i++) {
+    const l = document.createElement("div");
+    l.className = "lane"; l.hidden = true;
+    l.innerHTML = `<span class="lbl"></span><span class="trk"><i class="zone"></i>${MY_RANGES.map(() => '<i class="ml"></i>').join("")}<i class="bar"></i><b class="more">&gt;</b><i class="edge"></i></span><span class="inf"></span>`;
+    envEl.appendChild(l); lanes.push(l);
+  }
+  const e = document.createElement("div"); e.className = "env-empty"; e.id = "envEmpty"; e.textContent = "NO CONTACT"; envEl.appendChild(e);
+  envEl.style.minHeight = (P.hud.envelopeLanes * 34) + "px";
+}
+function renderEnvelope() {
+  const maxR = P.hud.envelopeRange, pct = (yd) => Math.min(Math.max(yd || 0, 0), maxR) / maxR * 100;
+  let axis = "";
+  for (let yd = 0; yd <= maxR; yd += 5) axis += `<i class="t" style="left:${pct(yd)}%;height:${yd % 10 ? 3 : 6}px"></i>` + (yd % 10 ? "" : `<span class="n" style="left:${pct(yd)}%">${yd}</span>`);
+  axis += `<i class="mine" style="width:${pct(MY_RANGES[MY_RANGES.length - 1])}%"></i>`;
+  envAxis.innerHTML = axis;
+  let theirs = 0, mine = 0, closing = 0;
+  for (const c of S.list) if (c.live) { if (c.inTheirReach) theirs++; if (c.inMyReach) mine++; if (c.closing != null && c.closing <= -3) closing++; }
+  lanes.forEach((l, i) => {
+    const c = S.list[i];
+    l.hidden = !c;
+    if (!c) return;
+    const reach = (REACH[c.class] || [30])[0];
+    l.classList.toggle("hot", !!(c.inTheirReach && c.live));
+    l.classList.toggle("lost", !c.live);
+    const lbl = l.querySelector(".lbl"); lbl.textContent = SHORT[c.class] + (c.hvt ? "*" : ""); lbl.style.color = COLOR[c.class];
+    l.querySelector(".zone").style.width = pct(reach) + "%";
+    l.querySelectorAll(".ml").forEach((m, k) => { m.style.left = pct(MY_RANGES[k]) + "%"; });
+    let x0, x1;
+    if (c.lo != null && c.hi != null) { x0 = pct(c.lo); x1 = pct(c.hi); }
+    else if (c.lo > 0) { x0 = pct(c.lo); x1 = 100; }
+    else if (c.range != null) { x0 = pct(c.range) - 1; x1 = pct(c.range) + 1; }
+    else { x0 = 98; x1 = 100; }
+    const bar = l.querySelector(".bar"); bar.style.left = x0 + "%"; bar.style.width = Math.max(1.5, x1 - x0) + "%"; bar.style.background = COLOR[c.class];
+    l.querySelector(".more").hidden = !(c.hi == null && c.lo > 0);
+    const edge = l.querySelector(".edge");
+    edge.style.background = c.targetingMe ? "var(--g-red)" : c.hvt ? "var(--acc)" : "transparent";
+    const rate = c.closing != null ? (c.closing < 0 ? ` <span class="t-red">&lt;&lt;${Math.round(-c.closing)}</span>` : ` <span style="color:var(--g-dim)">&gt;&gt;${Math.round(c.closing)}</span>`) : "";
+    const sub = c.inTheirReach && c.live ? '<span class="t-red">IN ITS REACH</span>' : c.ttr != null ? `<span class="t-amb">REACH IN ${c.ttr.toFixed(1)}s</span>` : c.inMyReach && c.live ? "IN MY RANGE" : !c.live ? `LOST ${Math.round(c.age)}s` : "";
+    l.querySelector(".inf").innerHTML = `${rangeText(c)}${rate}<small>${sub}</small>`;
+    l.title = `${c.name}: ${NAME[c.class]} reach ${reach} yd (${(REACH[c.class] || [0, ""])[1]})`;
+  });
+  $("envEmpty").hidden = S.list.length > 0;
+  const st = $("envStatus");
+  st.textContent = `THEIRS ${theirs} · MINE ${mine} · CLOSING ${closing}`;
+  st.style.color = theirs ? "var(--g-red)" : "";
+}
+
+/* ---------------- Board, engagement, pressure DOM ---------------- */
+const board = $("board");
+const rows = [];
+function buildBoard() {
+  board.innerHTML = ""; rows.length = 0;
+  for (let i = 0; i < P.hud.boardRows; i++) {
+    const r = document.createElement("div");
+    r.className = "brow";
+    r.innerHTML = `<i class="strip"></i><span class="ico"></span><span class="nm"><b></b><span class="tags"></span></span><span class="where"></span><i class="tbar"></i><i class="hp"><span></span></i>`;
+    board.appendChild(r); rows.push(r);
+  }
+  const e = document.createElement("div"); e.className = "board-empty"; e.textContent = "NO CONTACT"; e.id = "boardEmpty"; board.appendChild(e);
+  board.style.minHeight = (P.hud.boardRows * 40) + "px";
+}
+function threatColor(t) { return t >= 70 ? "var(--g-red)" : t >= 35 ? "var(--g-amber)" : "var(--acc)"; }
+function renderBoard() {
+  const list = S.list, scale = Math.max(100, list[0] ? list[0].threat : 0);
+  rows.forEach((r, i) => {
+    const c = list[i];
+    r.hidden = !c;
+    if (!c) return;
+    const tc = threatColor(c.threat);
+    r.classList.toggle("lkp", !c.live);
+    r.querySelector(".strip").style.background = tc;
+    const ico = r.querySelector(".ico"); ico.style.background = COLOR[c.class]; ico.textContent = SHORT[c.class][0];
+    const nm = r.querySelector(".nm b"); nm.style.color = COLOR[c.class];
+    nm.innerHTML = `${c.name}<i>${c.level > 0 ? c.level : "??"}</i>`;
+    const tags = [];
+    if (c.targetingMe) tags.push('<span class="t-red">&gt;&gt; YOU</span>');
+    if (c.hvt) tags.push('<span class="t-acc">HVT</span>');
+    if (c.casting) tags.push('<span class="t-amb">CAST</span>');
+    if (c.inCombat) tags.push("COMBAT");
+    if (!c.live) tags.push(`LKP ${Math.round(c.age)}s`);
+    r.querySelector(".tags").innerHTML = tags.join(" &nbsp;");
+    r.querySelector(".where").innerHTML = `${rangeText(c)}<small>${c.closing != null && c.closing < -1 ? "CLOSING" : c.closing > 1 ? "OPENING" : ""}</small>`;
+    const bar = r.querySelector(".tbar"); bar.style.background = tc; bar.style.width = `calc(${Math.min(1, c.threat / scale) * 100}% - 3px)`;
+    const hp = r.querySelector(".hp"); hp.hidden = !(P.hud.showHealth && c.live);
+  });
+  $("boardEmpty").hidden = list.length > 0;
+  const top = S.byP && S.byP[0];
+  const bs = $("boardStatus");
+  if (top && top.hvt) { bs.textContent = "HVT  " + top.name; bs.className = "hot"; } else { bs.textContent = list.length + " TRACKED"; bs.className = ""; }
+}
+function renderEngage() {
+  const pic = S.pic, E = P.engage;
+  const a = $("advice"); a.textContent = pic.advice; a.style.color = ADVICE[pic.advice];
+  const share = pic.pF + pic.pH > 0 ? pic.pF / (pic.pF + pic.pH) : 1;
+  $("tugF").style.width = (share * 100) + "%";
+  document.querySelectorAll("#tug .tick").forEach((t, i) => { const at = [E.holdAt, E.contestAt, E.engageAt][i]; t.style.left = (at / (1 + at) * 100) + "%"; });
+  $("ratio").textContent = pic.rho != null ? `RATIO  ${pic.rho.toFixed(2)} : 1` : "RATIO  –";
+  $("pwin").textContent = pic.pwin != null ? `P(WIN)  ${Math.round(pic.pwin * 100)}%` : "P(WIN)  –";
+  $("forces").textContent = `FRIENDLY ${pic.nF} · HOSTILE ${pic.nH.toFixed(1)}`;
+  $("losses").textContent = pic.rho != null ? `EXP. LOSSES ${pic.losses.toFixed(1)}` : "";
+  $("engStatus").textContent = `k ${E.k.toFixed(2)} · n ${E.n}`;
+}
+const sparkEls = [];
+for (let i = 0; i < 20; i++) { const s = document.createElement("span"); s.style.opacity = .3 + .6 * i / 20; $("spark").appendChild(s); sparkEls.push(s); }
+function renderPressure() {
+  $("dps").textContent = short(S.dps || 0);
+  $("hps").textContent = `HEAL IN ${short(S.hps || 0)}`;
+  const ttl = $("ttl");
+  if (S.ttl != null && S.ttl < 60) { ttl.textContent = `TTL  ${S.ttl.toFixed(1)}s`; ttl.style.color = S.ttl < P.pressure.ttlWarn ? "var(--g-red)" : "var(--g-text)"; }
+  else { ttl.textContent = "TTL  --"; ttl.style.color = "var(--g-dim)"; }
+  const peak = Math.max(1, ...(S.spark || [0]));
+  sparkEls.forEach((s, i) => s.style.height = Math.max(1, 30 * ((S.spark || [])[i] || 0) / peak) + "px");
+  const frac = clamp(S.shadow / S.me.hpMax, 0, 1);
+  const hp = $("hpFill"); hp.style.width = (frac * 100) + "%"; hp.style.background = frac < .35 ? "var(--g-red)" : "rgba(90,240,130,.9)";
+  $("hpState").textContent = S.me.combat ? `HP EST ${Math.round(frac * 100)}%` : "HP LIVE";
+}
+
+/* ---------------- Controls ---------------- */
+document.querySelectorAll("[data-scen]").forEach(b => b.addEventListener("click", () => reset(b.dataset.scen)));
+$("pause").addEventListener("click", () => { paused = !paused; $("pause").textContent = paused ? "Resume" : "Pause"; });
+const sel = $("myClass");
+for (const c of CLASSES) { const o = document.createElement("option"); o.value = c; o.textContent = NAME[c]; if (c === myClass) o.selected = true; sel.appendChild(o); }
+sel.addEventListener("change", () => { myClass = sel.value; S.me.class = myClass; renderConsole(); });
+$("reportBtn").addEventListener("click", () => {
+  const line = compose();
+  banner(line ? "REPORT SENT TO PARTY" : "NO CONTACTS IN THE LAST 15s", line ? "var(--acc)" : "var(--g-dim)");
+  lastReport = line;
+  if (current === "comms") renderConsole();
+});
+let lastReport = null;
+
+/* ---------------- Lanchester calculator (page section) ---------------- */
+const curve = $("curve"), cctx = curve.getContext("2d");
+function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function drawCurve() {
+  const nF = +$("cF").value, nH = +$("cH").value, q = +$("cQ").value;
+  $("cFo").textContent = nF; $("cHo").textContent = nH; $("cQo").textContent = q.toFixed(2) + "×";
+  const rho = (nF * nF) / (nH * nH * q), E = P.engage;
+  const pw = 1 / (1 + Math.exp(-(E.k * Math.log(rho) + E.bias)));
+  $("cR").textContent = rho >= 10 ? rho.toFixed(0) : rho.toFixed(2);
+  $("cP").textContent = Math.round(pw * 100) + "%";
+  $("cL").textContent = rho > 1 ? (nF * (1 - Math.sqrt(1 - 1 / rho))).toFixed(2) : "all";
+  const dpr = Math.min(2, window.devicePixelRatio || 1), w = curve.clientWidth * dpr, h = w * 7 / 16;
+  if (curve.width !== Math.round(w)) { curve.width = Math.round(w); curve.height = Math.round(h); }
+  const W = curve.width, H = curve.height, pad = { l: 44 * dpr, r: 12 * dpr, t: 12 * dpr, b: 30 * dpr };
+  const ink = css("--ink"), ink2 = css("--ink-2"), rule = css("--rule"), olive = css("--olive"), signal = css("--signal");
+  cctx.clearRect(0, 0, W, H);
+  const lo = Math.log(.25), hi = Math.log(4);
+  const X = (lr) => pad.l + (lr - lo) / (hi - lo) * (W - pad.l - pad.r);
+  const Y = (p) => pad.t + (1 - p) * (H - pad.t - pad.b);
+  const bands = [[.25, E.holdAt, "BREAK"], [E.holdAt, E.contestAt, "HOLD"], [E.contestAt, E.engageAt, "CONTEST"], [E.engageAt, 4, "ENGAGE"]];
+  cctx.font = `600 ${11 * dpr}px "Barlow Condensed", sans-serif`; cctx.textAlign = "center";
+  bands.forEach(([a, b, name], i) => {
+    const x1 = X(Math.log(a)), x2 = X(Math.log(b));
+    cctx.fillStyle = i % 2 ? "rgba(128,128,100,.10)" : "rgba(128,128,100,.04)";
+    cctx.fillRect(x1, pad.t, x2 - x1, H - pad.t - pad.b);
+    cctx.fillStyle = ink2; if (x2 - x1 > 40 * dpr) cctx.fillText(name, (x1 + x2) / 2, pad.t + 14 * dpr);
+  });
+  cctx.strokeStyle = rule; cctx.lineWidth = dpr; cctx.textAlign = "right"; cctx.fillStyle = ink2;
+  for (const p of [0, .25, .5, .75, 1]) { cctx.beginPath(); cctx.moveTo(pad.l, Y(p)); cctx.lineTo(W - pad.r, Y(p)); cctx.stroke(); cctx.fillText(Math.round(p * 100) + "%", pad.l - 6 * dpr, Y(p) + 4 * dpr); }
+  cctx.textAlign = "center";
+  for (const r of [.25, .5, 1, 2, 4]) cctx.fillText(r + ":1", X(Math.log(r)), H - 10 * dpr);
+  cctx.strokeStyle = olive; cctx.lineWidth = 2.5 * dpr; cctx.beginPath();
+  for (let i = 0; i <= 120; i++) { const lr = lo + (hi - lo) * i / 120, p = 1 / (1 + Math.exp(-(E.k * lr + E.bias))); i ? cctx.lineTo(X(lr), Y(p)) : cctx.moveTo(X(lr), Y(p)); }
+  cctx.stroke();
+  const lr = clamp(Math.log(rho), lo, hi);
+  cctx.fillStyle = signal; cctx.beginPath(); cctx.arc(X(lr), Y(1 / (1 + Math.exp(-(E.k * lr + E.bias)))), 5 * dpr, 0, TAU); cctx.fill();
+  cctx.fillStyle = ink;
+}
+["cF", "cH", "cQ"].forEach(id => $(id).addEventListener("input", drawCurve));
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawCurve);
+new MutationObserver(drawCurve).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+window.addEventListener("resize", drawCurve);
+
+/* ---------------- Console replica ---------------- */
+const SECTIONS = [["overview","Overview"],["sensors","Sensors"],["threat","Threat Model"],["matrix","Matchup Matrix"],["engage","Engagement"],["pressure","Pressure"],["comms","Comms"],["alerts","Alerts"],["display","Display"],["layout","Layout"],["frames","Unit Frames"],["log","Intel Log"],["trackers","Trackers"]];
+let current = "overview";
+const liveUpdaters = [];
+const nav = $("gnav"), page = $("gpage");
+SECTIONS.forEach(([id, label], i) => {
+  const b = document.createElement("button");
+  b.type = "button"; b.dataset.id = id;
+  b.innerHTML = `<span class="num">${String(i + 1).padStart(2, "0")}</span>${label}`;
+  b.addEventListener("click", () => { current = id; renderConsole(); });
+  nav.appendChild(b);
+});
+const getPath = (p) => p.split(".").reduce((o, k) => o[k], P);
+const setPath = (p, v) => { const ks = p.split("."), last = ks.pop(); ks.reduce((o, k) => o[k], P)[last] = v; onChange(p); };
+function onChange(p) {
+  if (p === "trackers.layout" || p === "trackers.enabled") renderTrackers();
+  if (p === "hud.accent") applyAccent();
+  if (p === "hud.boardRows") buildBoard();
+  if (p === "hud.envelopeLanes") buildEnvelope();
+  if (p.startsWith("engage")) drawCurve();
+}
+function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+let uid = 0;
+function slider(label, path, min, max, step, fmt = (v) => v, after) {
+  const id = "g" + (++uid), w = el("div", "gs");
+  w.innerHTML = `<div class="gs-top"><label for="${id}">${label}</label><output for="${id}"></output></div><input type="range" id="${id}" min="${min}" max="${max}" step="${step}">`;
+  const inp = w.querySelector("input"), out = w.querySelector("output");
+  inp.value = getPath(path); out.textContent = fmt(+inp.value);
+  inp.addEventListener("input", () => { setPath(path, +inp.value); out.textContent = fmt(+inp.value); after && after(); });
+  return w;
+}
+function toggle(label, path, desc) {
+  const w = el("div", "sw-wrap"), b = el("button", "sw", `<span class="pill"></span>${label}`);
+  b.type = "button"; b.setAttribute("role", "switch"); b.id = "g" + (++uid);
+  const sync = () => b.setAttribute("aria-checked", String(!!getPath(path)));
+  sync(); b.addEventListener("click", () => { setPath(path, !getPath(path)); sync(); });
+  w.appendChild(b); if (desc) w.appendChild(el("div", "d", desc));
+  return w;
+}
+function header(title, sub) { const f = document.createDocumentFragment(); f.appendChild(el("div", "gw-h", `<h3>${title}</h3>`)); f.appendChild(el("div", "gw-sub", sub)); return f; }
+function cols(a, b) { const g = el("div", "gcols"), c1 = el("div"), c2 = el("div"); a.forEach(x => c1.appendChild(x)); b.forEach(x => c2.appendChild(x)); g.append(c1, c2); return g; }
+function gcanvas(h) { const c = el("canvas", "gcanvas"); c.width = 520; c.height = h * 2; c.style.aspectRatio = `520 / ${h * 2}`; return c; }
+function plot(c, fn, bandsFn) {
+  const x = c.getContext("2d"), W = c.width, H = c.height, acc = accentHex();
+  x.clearRect(0, 0, W, H);
+  if (bandsFn) bandsFn(x, W, H);
+  x.strokeStyle = "rgba(255,255,255,.07)"; x.lineWidth = 1;
+  for (let i = 1; i < 4; i++) { x.beginPath(); x.moveTo(0, H * i / 4); x.lineTo(W, H * i / 4); x.stroke(); }
+  x.strokeStyle = acc; x.lineWidth = 3; x.beginPath();
+  for (let i = 0; i <= 80; i++) { const t = i / 80, y = H - clamp(fn(t), 0, 1) * (H - 6) - 3; i ? x.lineTo(t * W, y) : x.moveTo(t * W, y); }
+  x.stroke();
+}
+function pillColor(s) { return s === "LIVE" ? "var(--acc)" : s === "PARTIAL" ? "#ffcc4d" : s === "SECRET" || s === "LOCKED" ? "#ff8c33" : s === "DARK" ? "#e05050" : "var(--g-dim)"; }
+function feeds() {
+  const c = S.me.combat;
+  return [
+    ["Nameplates", "LIVE", `${S.list.filter(x => x.live).length} hostile plates`], ["Unit identity", "LIVE", "captured while plain"],
+    ["Range checks", "LIVE", `${LADDER().length} gates armed`], ["Direction", "DARK", "not exposed"],
+    ["Own position", "LIVE", "shared with group"], ["Enemy health", c ? "SECRET" : "LIVE", c ? "bars only, no maths" : ""],
+    ["Damage numbers", "LIVE", "UNIT_COMBAT amounts"], ["Auras", c ? "LOCKED" : "LIVE", c ? "locked in combat" : ""],
+    ["Combat log", "DARK", "not needed"], ["Addon net", "LIVE", "party channel"],
+  ];
+}
+
+const PAGES = {
+  overview() {
+    page.appendChild(header("Overview", "Observe, orient, decide, act: the loop SITREP runs five times a second."));
+    const row = el("div", "gcard-row");
+    const cards = ["OBSERVE", "ORIENT", "DECIDE", "ACT"].map((l, i) => { const c = el("div", "gcard", `<div class="i">0${i + 1}</div><div class="l">${l}</div><div class="b"></div><div class="s"></div>`); row.appendChild(c); return c; });
+    page.appendChild(row);
+    const fg = el("div", "feedgrid");
+    const stats = el("div", null); stats.style.cssText = "font-size:15px;line-height:1.55";
+    page.appendChild(cols([toggle("SITREP active", "enabled", "Master switch for sensors, HUD and comms."), fg], [toggle("Lock HUD", "hud.locked", "Unlock to drag the four HUD modules into place."), stats]));
+    liveUpdaters.push(() => {
+      const f = feeds(), live = f.filter(x => x[1] === "LIVE").length, top = S.list[0];
+      cards[0].querySelector(".b").textContent = S.list.length; cards[0].querySelector(".s").innerHTML = `contacts tracked<br>${live} of ${f.length} feeds live`;
+      cards[1].querySelector(".b").textContent = top ? Math.round(top.threat) : "–"; cards[1].querySelector(".s").innerHTML = top ? `top threat<br>${NAME[top.class]} ${top.name}` : "top threat<br>none";
+      const b = cards[2].querySelector(".b"); b.textContent = S.pic.advice; b.style.color = ADVICE[S.pic.advice];
+      cards[2].querySelector(".s").innerHTML = S.pic.pwin != null ? `P(win) ${Math.round(S.pic.pwin * 100)}%<br>ratio ${S.pic.rho.toFixed(2)} : 1` : "no hostile force<br>in range";
+      cards[3].querySelector(".b").textContent = `${S.list.filter(x => x.live).length * 3}/${S.friends.length * 2}`; cards[3].querySelector(".s").innerHTML = "net sent / received<br>report key bound";
+      fg.innerHTML = f.map(([n, s, t]) => `<div><span class="gpill" style="color:${pillColor(s)}">${s}</span><span>${n}</span><span class="nt">${t}</span></div>`).join("");
+      const E = P.engage, w = log.filter(l => l.outcome === "WIN").length, lo = log.filter(l => l.outcome === "LOSS").length;
+      stats.innerHTML = `<div class="glabel">Session</div>Engagements ${log.length} · wins ${w} · losses ${lo}<br><br><div class="glabel">Model</div>k ${E.k.toFixed(2)} · bias ${E.bias >= 0 ? "+" : ""}${E.bias.toFixed(2)} · fights ${E.n}<br>Brier ${E.n ? E.brier.toFixed(3) : "–"}`;
+    });
+  },
+  sensors() {
+    page.appendChild(header("Sensors", "What the client lets us see, and how hard we look."));
+    const lad = el("div");
+    lad.innerHTML = `<div class="glabel">Range ladder</div><div class="ladder"></div>`;
+    const drawLad = () => {
+      const L = lad.querySelector(".ladder"); let h = `<div class="ax"></div>`;
+      for (let y = 0; y <= 45; y += 5) h += `<i class="t" style="left:${y / 45 * 100}%;height:${y % 10 ? 3 : 6}px"></i>` + (y % 10 ? "" : `<span class="tn" style="left:${y / 45 * 100}%">${y}</span>`);
+      LADDER().forEach((c, i) => { h += `<i class="mk" style="left:${c.max / 45 * 100}%"></i><span class="ml" style="left:${c.max / 45 * 100}%;top:${i % 2 ? 2 : 16}px">${c.name} ${c.max}</span>`; });
+      h += `<i class="mk" style="left:${P.sensors.plateRange / 45 * 100}%;background:var(--g-dim)"></i>`;
+      L.innerHTML = h;
+    };
+    drawLad();
+    const tg = (l, p, d) => { const t = toggle(l, p, d); t.querySelector("button").addEventListener("click", drawLad); return t; };
+    page.appendChild(cols([
+      slider("Scan rate", "sensors.rate", 1, 10, 1, v => v + " Hz"),
+      slider("Contact memory", "sensors.memory", 10, 120, 5, v => v + "s"),
+      slider("Nameplate distance", "sensors.plateRange", 20, 60, 1, v => v + "y", drawLad),
+    ], [
+      tg("Spellbook range checks", "sensors.useSpellRange", "Every harmful spell with a range becomes a range gate."),
+      tg("Interact-distance checks", "sensors.useInteract", "10 and 28 yard gates that work for any class."),
+      toggle("Sight through group targets", "sensors.groupTargets", "Contacts your group targets join the picture."),
+      toggle("Track hostile NPCs", "sensors.npcs", "Guards and elites count as contacts."),
+    ]));
+    lad.style.marginTop = "18px";
+    page.appendChild(lad);
+  },
+  threat() {
+    page.appendChild(header("Threat Model", "Threat = power × matchup × level × proximity × behaviour × freshness."));
+    const g = gcanvas(70), redraw = () => plot(g, t => proximity(t * 60, P.threat.falloff));
+    const st = el("div", "steppers");
+    const drawSt = () => {
+      st.innerHTML = "";
+      for (const c of CLASSES) {
+        const d = el("div", null, `<b style="color:${COLOR[c]}">${NAME[c]}</b><span>${P.threat.hvt[c].toFixed(2)}</span>`);
+        for (const [s, dv] of [["−", -.05], ["+", .05]]) {
+          const b = el("button", null, s); b.type = "button"; b.setAttribute("aria-label", `${s === "+" ? "Raise" : "Lower"} ${NAME[c]} worth`);
+          b.addEventListener("click", () => { P.threat.hvt[c] = clamp(Math.round((P.threat.hvt[c] + dv) * 100) / 100, .5, 2); drawSt(); });
+          d.appendChild(b);
+        }
+        st.appendChild(d);
+      }
+    };
+    drawSt();
+    const gl = el("div", "glabel", "weight vs distance, 0–60 yd");
+    page.appendChild(cols([
+      slider("Targeting me", "threat.targetingMe", 1, 3, .05, v => "×" + v.toFixed(2)),
+      slider("Casting", "threat.casting", 1, 2, .05, v => "×" + v.toFixed(2)),
+      slider("In combat", "threat.inCombat", 1, 2, .05, v => "×" + v.toFixed(2)),
+      slider("Closing faster than 3 y/s", "threat.closing", 1, 2, .05, v => "×" + v.toFixed(2)),
+      slider("Inside its reach", "threat.inReach", 1, 2, .05, v => "×" + v.toFixed(2)),
+      slider("Per level of difference", "threat.levelBase", 1, 1.3, .01, v => "×" + v.toFixed(2)),
+      slider("HVT designation threshold", "threat.hvtMin", 0, 200, 5),
+    ], [slider("Proximity falloff", "threat.falloff", 10, 60, 1, v => v + "y", redraw), g, gl, el("div", "glabel", "High-value-target worth"), st]));
+    redraw();
+  },
+  matrix() {
+    page.appendChild(header("Matchup Matrix", "How dangerous each class is to each defender. Click +0.05, right-click −0.05, wheel to nudge."));
+    const heatC = (v) => { if (v < 1) { const t = clamp((1 - v) / .3, 0, 1); return `rgb(${(.16 - .06 * t) * 255},${(.18 + .3 * t) * 255},${(.19 + .05 * t) * 255})`; } const t = clamp((v - 1) / .4, 0, 1); return `rgb(${(.16 + .6 * t) * 255},${(.18 - .06 * t) * 255},${(.19 - .08 * t) * 255})`; };
+    const wrapM = el("div"); wrapM.style.cssText = "display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start";
+    const mw = el("div", "matrix-wrap"), grid = el("div", "matrix");
+    const draw = () => {
+      grid.innerHTML = `<span class="ch" style="text-align:left;color:var(--g-faint)">DEF ↓ ATT →</span>` + CLASSES.map(c => `<span class="ch" style="color:${COLOR[c]}">${SHORT[c]}</span>`).join("");
+      for (const me of CLASSES) {
+        grid.appendChild(el("span", "rh", `<span style="color:${COLOR[me]}">${NAME[me]}</span>`));
+        for (const th of CLASSES) {
+          const v = P.threat.matrix[me][th], b = el("button", me === myClass ? "mine" : "", v.toFixed(2));
+          b.type = "button"; b.style.background = heatC(v);
+          b.style.color = v > 1.02 ? "#ffdcd2" : v < .98 ? "#d2ffdc" : "var(--g-dim)";
+          b.setAttribute("aria-label", `${NAME[th]} against ${NAME[me]}: ${v.toFixed(2)}`);
+          b.title = `${NAME[th]} is ${Math.round(Math.abs(v - 1) * 100)}% ${v >= 1 ? "more" : "less"} dangerous to a ${NAME[me]} than average`;
+          const bump = (d) => { P.threat.matrix[me][th] = clamp(Math.round((v + d) * 100) / 100, .5, 2); draw(); };
+          b.addEventListener("click", () => bump(.05));
+          b.addEventListener("contextmenu", (e) => { e.preventDefault(); bump(-.05); });
+          b.addEventListener("wheel", (e) => { e.preventDefault(); bump(e.deltaY < 0 ? .05 : -.05); }, { passive: false });
+          grid.appendChild(b);
+        }
+      }
+    };
+    draw(); mw.appendChild(grid);
+    const side = el("div", "mx-side");
+    const leg = el("div", "legend"); for (let i = 0; i <= 13; i++) leg.appendChild(Object.assign(el("span"), { style: `background:${heatC(.7 + i * .05)}` }));
+    side.append(el("div", "glabel", "Legend"), leg, el("div", null, "<span style='font-size:11px'>0.70 safe · · · 1.35 lethal</span>"),
+      el("div", null, `Your row (${NAME[myClass]}) is framed. It orders the threat board. The whole matrix feeds the group engagement maths.`));
+    const rb = el("button", "gbtn", "Reset matrix"); rb.type = "button"; rb.addEventListener("click", () => { P.threat.matrix = matrixDefaults(); draw(); });
+    side.appendChild(rb);
+    wrapM.append(mw, side); page.appendChild(wrapM);
+  },
+  engage() {
+    page.appendChild(header("Engagement Calculus", "Lanchester square law: strength = N × Σ quality. P(win) = σ(k·ln ρ + b)."));
+    const g = gcanvas(110), ro = el("div"); ro.style.fontSize = "15px";
+    const lo = Math.log(.25), hi = Math.log(4), xOf = (r) => (Math.log(r) - lo) / (hi - lo);
+    const redraw = () => {
+      const E = P.engage;
+      plot(g, t => 1 / (1 + Math.exp(-(E.k * (lo + t * (hi - lo)) + E.bias))), (x, W, H) => {
+        const edges = [0, xOf(E.holdAt), xOf(E.contestAt), xOf(E.engageAt), 1], cs = ["255,77,77", "255,140,51", "255,217,77", "92,255,141"];
+        for (let i = 0; i < 4; i++) { x.fillStyle = `rgba(${cs[i]},.1)`; x.fillRect(edges[i] * W, 0, (edges[i + 1] - edges[i]) * W, H); }
+      });
+      ro.innerHTML = `k ${E.k.toFixed(2)} · b ${E.bias >= 0 ? "+" : ""}${E.bias.toFixed(2)} · fights ${E.n}<br><span style="color:var(--g-dim)">Brier ${E.n ? E.brier.toFixed(3) : "–"} (0.25 = coin flip)</span>`;
+    };
+    const rb = el("button", "gbtn", "Reset calibration"); rb.type = "button";
+    rb.addEventListener("click", () => { Object.assign(P.engage, { k: 2.2, bias: 0, n: 0, brier: 0 }); redraw(); drawCurve(); });
+    page.appendChild(cols([
+      slider("ENGAGE at ratio ≥", "engage.engageAt", 1, 3, .05, v => v.toFixed(2), redraw),
+      slider("CONTEST at ratio ≥", "engage.contestAt", .5, 1.5, .05, v => v.toFixed(2), redraw),
+      slider("HOLD at ratio ≥", "engage.holdAt", .2, 1, .05, v => v.toFixed(2), redraw),
+      slider("Engagement radius", "engage.radius", 20, 80, 5, v => v + "y"),
+    ], [toggle("Self-calibrate from fights", "engage.autoCal", "Wins and losses nudge k and b by logistic regression."),
+      slider("Learning rate", "engage.lr", .01, .2, .01, v => v.toFixed(2)), g,
+      el("div", "glabel", "ratio 0.25 · · · 1:1 · · · 4.0"), ro, rb]));
+    redraw(); liveUpdaters.push(redraw);
+  },
+  pressure() {
+    page.appendChild(header("Pressure", "Incoming damage from UNIT_COMBAT. Shadow health keeps a time-to-live while real health is secret."));
+    page.appendChild(cols([
+      slider("Short window", "pressure.short", 1, 6, .5, v => v.toFixed(1) + "s"),
+      slider("Long window", "pressure.long", 5, 20, 1, v => v + "s"),
+    ], [
+      slider("Spike: % of max health in 1.5s", "pressure.spikePct", 10, 60, 1, v => v + "%"),
+      slider("DEFEND when time-to-live below", "pressure.ttlWarn", 2, 10, .5, v => v.toFixed(1) + "s"),
+    ]));
+    const n = el("p", null, "Shadow health = last plain reading − damage taken + healing received. It resyncs whenever the client shows plain health again, which is out of combat. Absorbs and overheal cause most of the drift. The gauge marks the value EST while it runs on the shadow.");
+    n.style.cssText = "font-family:var(--body);font-size:13px;color:var(--g-dim);max-width:62ch;margin:18px 0 0";
+    page.appendChild(n);
+  },
+  comms() {
+    page.appendChild(header("Comms", "Contact reports on a key press, and a shared picture over the addon channel."));
+    const chId = "g" + (++uid), sw = el("div");
+    sw.innerHTML = `<label class="glabel" for="${chId}" style="display:block;margin-bottom:6px">Report channel</label>`;
+    const s = el("select", "ginput"); s.id = chId;
+    for (const [v, t] of [["AUTO", "Auto (instance › raid › party)"], ["PARTY", "Party"], ["RAID", "Raid"], ["INSTANCE_CHAT", "Instance"], ["GUILD", "Guild"], ["SAY", "Say"], ["SELF", "Only me (chat frame)"]]) {
+      const o = el("option", null, t); o.value = v; if (P.comms.channel === v) o.selected = true; s.appendChild(o);
+    }
+    s.addEventListener("change", () => P.comms.channel = s.value); sw.appendChild(s);
+    const tId = "g" + (++uid), tw = el("div");
+    tw.innerHTML = `<label class="glabel" for="${tId}" style="display:block;margin:18px 0 6px">Report template</label>`;
+    const inp = el("input", "ginput"); inp.id = tId; inp.value = P.comms.template; tw.appendChild(inp);
+    tw.appendChild(el("div", "glabel", "{n} {comp} {range} {zone} {hvt} {advice} {pwin} {ratio}")).style.cssText = "margin-top:6px;letter-spacing:.06em;text-transform:none";
+    const pv = el("div", "preview");
+    const upd = () => { P.comms.template = inp.value; pv.textContent = compose(inp.value) || "(no contacts in the last 15 s: start a scenario above)"; };
+    inp.addEventListener("input", upd);
+    page.appendChild(cols([sw], [toggle("Share contacts with group", "comms.share", "Your sightings appear on your group's HUDs, and theirs on yours."), slider("Share rate", "comms.shareRate", .5, 5, .5, v => v.toFixed(1) + " msg/s")]));
+    page.appendChild(tw);
+    const pl = el("div", "glabel", "Preview · party chat"); pl.style.margin = "16px 0 6px";
+    page.append(pl, pv);
+    if (lastReport) { const l = el("div", "glabel", "Last broadcast"); l.style.margin = "14px 0 6px"; const p2 = el("div", "preview"); p2.textContent = lastReport; page.append(l, p2); }
+    upd(); liveUpdaters.push(() => { if (document.activeElement !== inp) upd(); });
+  },
+  alerts() {
+    page.appendChild(header("Alerts", "What interrupts you, and how."));
+    const tests = [
+      ["alerts.newContact", "New contact", () => banner("CONTACT  ·  MAGE 60  ·  20-28y", COLOR.MAGE)],
+      ["alerts.closing", "Closing: in reach within 3 s", () => banner("WARRIOR CLOSING  ·  IN REACH IN 1.8s", "var(--g-amber)")],
+      ["alerts.hvt", "HVT designated", () => banner("HVT  ·  PRIEST ALDWIN", "var(--acc)")],
+      ["alerts.targeted", "Targeted by a hostile", () => { banner("TARGETED BY ROGUE VEX", "var(--g-red)"); flash(); }],
+      ["alerts.spike", "Damage spike", () => { banner("SPIKE  -42% IN 1.5s", "#ff4d8c"); flash(); }],
+      ["alerts.ttl", "DEFEND (time-to-live)", () => banner("DEFEND  ·  TIME TO LIVE 3.1s", ADVICE.DEFEND)],
+    ].map(([p, l, fn]) => {
+      const r = el("div"); r.style.cssText = "display:flex;justify-content:space-between;align-items:center;gap:10px";
+      const b = el("button", "gbtn", "Test"); b.type = "button"; b.addEventListener("click", () => { fn(); $("inst").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" }); });
+      r.append(toggle(l, p), b); return r;
+    });
+    page.appendChild(cols([toggle("Banner", "alerts.banner", "A short line near the top of the screen."), toggle("Screen-edge flash", "alerts.flash", "A red vignette when you are targeted or take a damage spike."), toggle("Sound", "alerts.sound")], tests));
+  },
+  display() {
+    page.appendChild(header("Display", "Theme, which modules are on screen, and when."));
+    const chips = el("div", "chips");
+    const drawChips = () => {
+      chips.innerHTML = "";
+      for (const [k, n, hex] of ACCENTS) {
+        const c = el("button", "chip", `<i style="background:${hex}"></i>${n}`); c.type = "button";
+        c.style.setProperty("--chipc", hex); c.setAttribute("aria-pressed", String(P.hud.accent === k));
+        c.addEventListener("click", () => { setPath("hud.accent", k); drawChips(); });
+        chips.appendChild(c);
+      }
+    };
+    drawChips();
+    const cl = el("div", "glabel", "Accent"); cl.style.marginBottom = "8px";
+    page.append(cl, chips);
+    const sp = el("div"); sp.style.height = "18px"; page.appendChild(sp);
+    page.appendChild(cols([
+      slider("Envelope range", "hud.envelopeRange", 30, 45, 5, v => v + "y"),
+      slider("Envelope lanes", "hud.envelopeLanes", 3, 8, 1),
+      slider("Threat board rows", "hud.boardRows", 3, 10, 1),
+    ], [toggle("Enemy health bars", "hud.showHealth", "Drawn by the client, even while health is secret.")]));
+  },
+  layout() {
+    page.appendChild(header("Layout", "Global size and opacity, and the size of each frame on its own."));
+    const sz = [["envelope", "Envelope"], ["board", "Threat board"], ["engage", "Engagement bar"], ["pressure", "Pressure gauge"], ["allies", "Allies"],
+      ["player", "Player frame"], ["target", "Target frame"], ["pet", "Pet frame"], ["targetpet", "Target's pet"], ["party", "Party frames"]]
+      .map(([k, l]) => slider(l, "layout." + k, .5, 2, .05, v => v.toFixed(2)));
+    const n = el("div", "d", "Each frame's size is multiplied with the HUD scale. Frames holding click-to-target buttons change size after combat.");
+    n.style.cssText = "font-family:var(--body);font-size:12.5px;color:var(--g-dim);margin:4px 0 14px";
+    page.appendChild(cols([slider("HUD scale (everything)", "layout.scale", .6, 1.6, .05, v => v.toFixed(2)), slider("HUD opacity", "layout.alpha", .3, 1, .05, v => Math.round(v * 100) + "%"), n, ...sz.slice(0, 4)], sz.slice(4)));
+  },
+  frames() {
+    page.appendChild(header("Unit Frames", "Your frames, your target's, pets and party: what each shows, and how."));
+    const pair = (a, ka, b, kb) => { const r = el("div"); r.style.cssText = "display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"; r.append(toggle(a, "frames." + ka), toggle(b, "frames." + kb)); return r; };
+    page.appendChild(cols([
+      pair("Player frame", "player", "Target frame", "target"), pair("Pet frame", "pet", "Target's pet", "targetPet"), pair("Party frames", "party", "Hide Blizzard's", "hideBlizzard"),
+      toggle("Hit and heal flash", "frames.flash"), toggle("Execute marker", "frames.execute"), toggle("Range strip on the target", "frames.strip"),
+      toggle("Healers on you (player frame)", "frames.healersOnMe"), toggle("Who is on your target (allies, healers)", "frames.targetCounts"),
+      toggle("Mobs on you (player frame)", "frames.mobsOnMe"), toggle("Your debuffs", "frames.myDebuffs", "Outlined when you can remove them."),
+    ], [
+      slider("Frame width", "frames.width", 220, 340, 4, v => v + "px"),
+      toggle("Under attack highlight", "frames.hitGlow", "Red border while being attacked."), toggle("Dispel highlight", "frames.dispelGlow", "Border when you can dispel something."),
+      toggle("Cost preview on your power bar", "frames.costPreview", "Hovered or casting spell: blue, red if short."), toggle("Intel line", "frames.intel"),
+      toggle("Health bar for its target", "frames.totHealth"), slider("Highlight its buffs lasting at most", "frames.burstMax", 5, 30, 1, v => v + "s"),
+    ]));
+  },
+  trackers() {
+    page.appendChild(header("Trackers", "Your spells as icons: on cooldown, on your target, on you (or, inverted, NOT). Place each one anywhere."));
+    const list = el("div", "logrows");
+    list.innerHTML = TRK.map(t => `<div><b style="font-weight:500;color:${{ red: "#ff4033", orange: "#ff9e26", green: "#59eb6b" }[t.b] || "var(--g-text)"}">${t.name}</b><span class="z">${t.inv ? "NOT " : ""}${t.kind}</span><span class="m">${t.size}px · ${Math.round(t.alpha * 100)}%</span></div>`).join("");
+    const add = el("div"); add.style.cssText = "display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px";
+    for (const l of ["+ Cooldown", "+ On target", "+ On me", "+ On weapon"]) { const b = el("button", "gbtn", l); b.type = "button"; add.appendChild(b); }
+    const sel = TRK[0], ed = el("div");
+    ed.innerHTML = `<div class="glabel">Selected · ${sel.name}</div><div style="font-size:15px;line-height:1.6">Shows when: <b style="font-weight:500">NOT ${sel.kind}</b><br>Buff watched: Lightning Shield<br>Border: <span style="color:#ff4033">red</span> · Count physical hits: on</div>`;
+    page.appendChild(cols([toggle("Show tracker icons", "trackers.enabled"), el("div", "glabel", "Your trackers"), list, add],
+      [ed, toggle("Mirror into macros", "trackers.mirror", "Keeps the list in general macros, which survive a client that forgets addon settings."),
+       toggle("Layout mode", "trackers.layout", "Every icon shows, labelled. Drag them anywhere; click one to edit it.")]));
+  },
+  log() {
+    page.appendChild(header("Intel Log", "After-action reviews and where the enemy has been seen."));
+    const lr = el("div", "logrows"), hm = el("div", "heat");
+    const draw = () => {
+      lr.innerHTML = log.length ? log.map(e => `<div><b style="color:${e.outcome === "WIN" ? "var(--acc)" : e.outcome === "LOSS" ? "var(--g-red)" : "var(--g-amber)"};font-weight:500">${e.outcome}</b><span class="z">${e.sub}</span><span class="m">${e.n} hostile · ${Math.round(e.dur)}s${e.p != null ? " · pred " + Math.round(e.p * 100) + "%" : ""}</span></div>`).join("")
+        : `<div><span></span><span class="m">No engagements yet. Let a scenario above run to its end.</span><span></span></div>`;
+      const arr = Object.entries(heat).sort((a, b) => b[1] - a[1]), top = arr[0] ? arr[0][1] : 1;
+      hm.innerHTML = arr.map(([k, v]) => `<div><i style="width:${v / top * 100}%"></i><span>${k}</span><span>${v}</span></div>`).join("") || `<div><span style="color:var(--g-dim)">No sightings yet.</span></div>`;
+    };
+    draw(); liveUpdaters.push(draw);
+    const exp = el("button", "gbtn", "Export profile"); exp.type = "button";
+    const box = el("textarea", "ginput"); box.rows = 3; box.id = "g" + (++uid); box.setAttribute("aria-label", "Profile string"); box.readOnly = true;
+    exp.addEventListener("click", () => { box.value = "SR1:" + btoa(unescape(encodeURIComponent(JSON.stringify(P)))).slice(0, 180) + "…"; box.select(); });
+    page.appendChild(cols([el("div", "glabel", "Recent engagements"), lr], [el("div", "glabel", "Contact heat by subzone"), hm, exp, box]));
+  },
+};
+
+function renderConsole() {
+  liveUpdaters.length = 0;
+  page.innerHTML = "";
+  nav.querySelectorAll("button").forEach(b => b.dataset.id === current ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+  PAGES[current]();
+}
+function applyAccent() { document.documentElement.style.setProperty("--acc", accentHex()); if (current === "engage" || current === "threat") renderConsole(); }
+
+
+
+/* ---------------- Auras (mirrors UI/Auras.lua) ---------------- */
+const DISPEL_COL = { Magic: "#3399ff", Curse: "#a330c9", Disease: "#996600", Poison: "#00a000", Enrage: "#ff7319" };
+const CLEANSE = { PRIEST: ["Magic", "Disease"], PALADIN: ["Magic", "Poison", "Disease"], SHAMAN: ["Poison", "Disease"], DRUID: ["Curse", "Poison"], MAGE: ["Curse"], WARLOCK: ["Magic"] };
+const PURGE = { PRIEST: ["Magic"], SHAMAN: ["Magic"], WARLOCK: ["Magic"], HUNTER: ["Enrage"] };
+// what each class leaves on you with its first hit: [name, abbreviation, type, seconds]
+const ON_HIT = { ROGUE: ["Crippling Poison", "CP", "Poison", 12], PRIEST: ["Shadow Word: Pain", "SWP", "Magic", 18], WARLOCK: ["Curse of Agony", "CoA", "Curse", 24],
+  HUNTER: ["Serpent Sting", "SS", "Poison", 15], MAGE: ["Frostbolt", "FB", "Magic", 9], WARRIOR: ["Hamstring", "HS", null, 15], SHAMAN: ["Frost Shock", "FS", "Magic", 8] };
+// buffs an enemy of each class wears: [name, abbreviation, type, big defensive]
+const CLASS_BUFFS = { PRIEST: [["Power Word: Fortitude", "PWF", "Magic"], ["Inner Fire", "IF", "Magic"]], PALADIN: [["Divine Shield", "DS", "Magic", true], ["Blessing of Might", "BoM", "Magic"]],
+  MAGE: [["Ice Barrier", "IB", "Magic"], ["Arcane Intellect", "AI", "Magic"]], WARLOCK: [["Demon Armor", "DA", "Magic"]], WARRIOR: [["Battle Shout", "BS", null]],
+  ROGUE: [["Evasion", "EV", null, true]], HUNTER: [["Aspect of the Hawk", "AH", null]], SHAMAN: [["Lightning Shield", "LS", "Magic"]], DRUID: [["Mark of the Wild", "MW", "Magic"], ["Rejuvenation", "RJ", "Magic"]] };
+const MY_DEBUFF = { MAGE: ["Frostbolt", "FB", "Magic"], WARLOCK: ["Corruption", "COR", "Magic"], PRIEST: ["Shadow Word: Pain", "SWP", "Magic"], ROGUE: ["Rupture", "RUP", null],
+  WARRIOR: ["Rend", "RND", null], HUNTER: ["Serpent Sting", "SS", "Poison"], DRUID: ["Moonfire", "MF", "Magic"], SHAMAN: ["Flame Shock", "FS", "Magic"], PALADIN: ["Judgement", "JDG", "Magic"] };
+function addMyAura(name, abbr, type, dur) {
+  S.myAuras = (S.myAuras || []).filter(a => a.name !== name);
+  S.myAuras.push({ name, abbr, type, start: S.t, dur });
+}
+function auraTile(a, mode) {
+  const list = mode === "purge" ? (PURGE[myClass] || []) : (CLEANSE[myClass] || []);
+  const can = (mode === "cleanse" || mode === "purge") && a.type && list.includes(a.type);
+  const left = a.dur ? Math.max(0, a.dur - (S.t - a.start)) : null;
+  const cls = ["aura"]; if (can) cls.push("can"); if (mode === "mine-dim" || (mode !== "mine" && mode !== "none" && !can)) cls.push("dim");
+  const border = a.big ? "#ff4026" : DISPEL_COL[a.type] || "#3f4547";
+  return `<div class="${cls.join(" ")}" style="border-color:${border}" title="${a.name}${a.type ? " (" + a.type + ")" : ""}${can ? " · you can remove it" : ""}">` +
+    (left != null ? `<i class="sw" style="--p:${(1 - left / a.dur) * 100}%"></i>` : "") + `<span>${a.abbr}</span>` + (a.big ? '<b class="bg">!</b>' : "") + "</div>";
+}
+function renderAuras(c, t) {
+  S.myAuras = (S.myAuras || []).filter(a => !a.dur || S.t - a.start < a.dur);
+  const rank = (a) => ((CLEANSE[myClass] || []).includes(a.type) ? 0 : 1);
+  $("pfAuras").innerHTML = [...S.myAuras].sort((a, b) => rank(a) - rank(b)).map(a => auraTile(a, "cleanse")).join("");
+  if (!c || !t) { $("tfDebuffs").innerHTML = $("tfBuffs").innerHTML = ""; return; }
+  const buffs = (CLASS_BUFFS[c.class] || []).map(([name, abbr, type, big]) => ({ name, abbr, type, big }));
+  const pr = (a) => a.big ? 0 : (PURGE[myClass] || []).includes(a.type) ? 1 : 2;
+  $("tfBuffs").innerHTML = buffs.sort((a, b) => pr(a) - pr(b)).map(a => auraTile(a, "purge")).join("");
+  const engagedFor = S.t - t.t0;
+  const deb = [];
+  if (engagedFor > 2 && MY_DEBUFF[myClass]) { const [name, abbr, type] = MY_DEBUFF[myClass]; deb.push({ ...{ name, abbr, type }, start: t.t0 + 2, dur: 18, mine: true }); }
+  if (S.friends[0] && engagedFor > 4) deb.push({ name: "Hamstring", abbr: "HS", type: null, start: t.t0 + 4, dur: 15 });
+  $("tfDebuffs").innerHTML = deb.map(a => auraTile(a, a.mine ? "mine" : "mine-dim")).join("");
+}
+
+/* ---------------- Unit frames (mirrors UI/Frames.lua) ---------------- */
+const EXECUTE = { WARRIOR: [20, "EXECUTE"], PALADIN: [20, "WRATH"] };
+const POWER_COL = { WARRIOR: "#ff4040", ROGUE: "#ffe040", DRUID: "#4088ff" };
+$("tfTicks").innerHTML = [10, 20, 30, 40, 50, 60, 70, 80, 90].map(p => `<i class="tk" style="left:${p}%"></i>`).join("");
+$("tfTrk").insertAdjacentHTML("beforeend", MY_RANGES.map(() => '<i class="ml"></i>').join(""));
+for (let i = 0; i < 5; i++) $("tfPips").insertAdjacentHTML("beforeend", "<i></i>");
+document.querySelectorAll("#anatomy li").forEach(li => {
+  const on = (v) => document.querySelectorAll(`[data-part="${li.dataset.for}"]`).forEach(e => e.classList.toggle("lit", v));
+  li.addEventListener("mouseenter", () => on(true)); li.addEventListener("mouseleave", () => on(false));
+  li.addEventListener("focus", () => on(true)); li.addEventListener("blur", () => on(false));
+});
+const HEAL_CLASS = { PRIEST: true, SHAMAN: true, DRUID: true, PALADIN: true };
+const HIT_HOLD = 1.0, HIT_FADE = 1.5;
+function hitAlpha(at) { const d = S.t - at; return d < HIT_HOLD ? 1 : d < HIT_HOLD + HIT_FADE ? 1 - (d - HIT_HOLD) / HIT_FADE : 0; }
+function renderFrames() {
+  const me = S.me, frac = clamp(S.shadow / me.hpMax, 0, 1), FR = P.frames;
+  // ---- player
+  const hpf = clamp(me.hp / me.hpMax, 0, 1);
+  const pf = $("pfFill"); pf.style.width = (hpf * 100) + "%";
+  pf.style.background = frac < .3 ? "#ff4d4d" : frac < .6 ? "#ffbf40" : "#52e67a";
+  $("pfHpT").textContent = short(me.hp);
+  $("pfPct").textContent = (me.combat ? "~" : "") + Math.round(frac * 100) + "%";
+  const locLeft = (S.locUntil || 0) - S.t;
+  $("pfLoc").hidden = !(locLeft > 0);
+  $("ufP").classList.toggle("cc", locLeft > 0);
+  if (locLeft > 0) { $("pfLocT").textContent = S.locText; $("pfLocS").textContent = locLeft.toFixed(1) + "s"; }
+  const healer = S.friends.find(f => f.heals);
+  const sp = OWN_SPELL[me.class];
+  // heal prediction: a friend's heal, or your own cast at its lowest value
+  let pred = 0;
+  if (S.cast && sp && sp[3]) pred = sp[3] / me.hpMax;
+  else if (healer && me.combat) pred = healer.heals * 1.4 / me.hpMax;
+  const pp = $("pfPred"); pp.style.left = (hpf * 100) + "%"; pp.style.width = (Math.min(pred, 1 - hpf) * 100) + "%";
+  $("pfAbs").style.width = (scenKey === "sweep" ? 18 : 0) + "%";
+  $("pfHeal").style.width = (healer && me.combat ? 9 : 0) + "%";
+  // power and the cost preview
+  const usesMana = !!sp;
+  const pw = usesMana ? S.mana : me.class === "WARRIOR" ? Math.min(100, S.dmg / 40) : 100 - (S.t * 9) % 60;
+  $("pfPw").style.width = pw + "%";
+  $("pfPw").style.background = POWER_COL[me.class] || "#4088ff";
+  const cost = $("pfCost"), showCost = FR.costPreview && usesMana && (S.cast || (me.combat && S.t < S.castGap + .6));
+  if (showCost) {
+    const shortOf = S.mana < sp[2];
+    cost.style.background = shortOf ? "rgba(255,64,51,.95)" : "rgba(158,219,255,.95)";
+    cost.style.left = (shortOf ? 0 : S.mana - sp[2]) + "%"; cost.style.width = (shortOf ? S.mana : sp[2]) + "%";
+  } else cost.style.width = "0";
+  $("pfCast").hidden = !S.cast;
+  if (S.cast && sp) { $("pfCastT").textContent = sp[0]; $("pfCastF").style.width = Math.min(1, (S.t - S.cast.t0) / sp[1]) * 100 + "%"; }
+  $("pfRest").hidden = me.combat || S.t > 3;
+  // who is on you
+  const tags = [];
+  const tb = S.list.filter(c => c.live && c.targetingMe).length;
+  if (tb) tags.push(`<span class="t-red">TARGETED BY ${tb}</span>`);
+  const hc = me.combat ? S.friends.filter(f => HEAL_CLASS[f.class]).length : 0;
+  if (FR.healersOnMe && hc) tags.push(`<span class="t-grn">HEALERS ${hc}</span>`);
+  const mb = SCEN[scenKey].mobs, mo = mb && S.t >= mb[0] && !S.ended ? mb[1] : 0;
+  if (FR.mobsOnMe && mo) tags.push(`<span class="t-org">MOBS ${mo}</span>`);
+  if (me.combat) tags.push('<span class="t-red">COMBAT</span>');
+  tags.push(scenKey === "ambush" ? "PVP" : "PVP 4:32");
+  $("pfTags").innerHTML = tags.join(" &nbsp;");
+  // highlights: hit, and something you can dispel
+  $("pfGlow").style.opacity = FR.hitGlow ? hitAlpha(S.lastDamage) : 0;
+  const mine = (S.myAuras || []).find(a => a.type && (CLEANSE[myClass] || []).includes(a.type));
+  const dp = $("pfDisp");
+  dp.style.borderColor = mine ? DISPEL_COL[mine.type] : "transparent";
+  dp.style.opacity = FR.dispelGlow && mine ? .55 + .45 * Math.abs(Math.sin(S.t * 3)) : 0;
+  let exposed = 0, closingN = 0;
+  for (const c of S.list) if (c.live) { if (c.inTheirReach) exposed++; if (c.closing != null && c.closing <= -3) closingN++; }
+  const parts = [exposed ? `<span class="t-red">IN REACH OF ${exposed}</span>` : '<span style="color:var(--g-dim)">NOT IN REACH</span>'];
+  if (closingN) parts.push(`<span class="t-amb">${closingN} CLOSING</span>`);
+  if (S.dps > 0) parts.push(`${short(S.dps)} DPS IN`);
+  $("pfLine").innerHTML = parts.join(" · ");
+  const ttl = $("pfTtl");
+  if (S.ttl != null && S.ttl < 30) { ttl.textContent = `TTL ${S.ttl.toFixed(1)}s`; ttl.style.color = S.ttl < P.pressure.ttlWarn ? "var(--g-red)" : ""; } else ttl.textContent = "";
+  const fl = $("pfFlash");
+  if (S.flashAt != null && S.t - S.flashAt < .45) { fl.style.transition = "none"; fl.style.background = S.flashCol; fl.style.opacity = 1; }
+  else { fl.style.transition = ""; fl.style.opacity = 0; }
+
+  // ---- target: the top threat
+  const c = S.list[0];
+  const t = c && S.hostiles.find(h => h.id === c.id);
+  renderAuras(c, t);
+  $("ufT").style.opacity = c && t ? 1 : .25; // in game: hidden without a target
+  if (!c || !t) {
+    $("tfName").textContent = "NO TARGET"; $("tfName").style.color = "var(--g-faint)";
+    ["tfTags", "tfLv", "tfPct", "tfHpT", "tfInf", "tfIntel", "tfTot", "tfRec"].forEach(id => $(id).innerHTML = "");
+    $("tfFill").style.width = "0"; $("tfCast").hidden = true; $("tfTotHp").hidden = true; $("tfExec").hidden = $("tfExecL").hidden = true; $("tfBar").style.width = "0";
+    return;
+  }
+  const col = COLOR[c.class];
+  $("tfName").textContent = c.name; $("tfName").style.color = col; $("tfIco").style.background = col;
+  $("tfLv").innerHTML = c.level <= 0 ? '<span class="t-red">??</span>' : c.level !== me.level ? c.level : "";
+  const thp = t.dieAt ? clamp(1 - (S.t - t.t0) / t.dieAt, .02, 1) : clamp(1 - Math.max(0, S.t - t.t0 - 6) / 40, .3, 1);
+  const tf = $("tfFill"); tf.style.width = (thp * 100) + "%"; tf.style.background = col; tf.style.opacity = .85;
+  $("tfPct").textContent = Math.round(thp * 100) + "%";
+  $("tfHpT").textContent = short(thp * 4400);
+  $("tfPw").style.width = (t.caster ? 100 - Math.min(70, (S.t - t.t0) * 2) : 60) + "%";
+  $("tfPw").style.background = POWER_COL[c.class] || "#4088ff";
+  const ex = EXECUTE[me.class];
+  $("tfExec").hidden = $("tfExecL").hidden = !ex;
+  if (ex) { $("tfExec").style.left = ex[0] + "%"; $("tfExecL").style.left = `calc(${ex[0]}% + 4px)`; $("tfExecL").textContent = ex[1]; }
+  $("tfCast").hidden = !c.casting;
+  if (c.casting) { const prog = Math.min(1, (t.castT % 3.4) / 2.5); $("tfCast").classList.toggle("hot", prog >= .75); $("tfCastF").style.width = prog * 100 + "%"; $("tfCastT").textContent = { PRIEST: "MIND BLAST", MAGE: "FROSTBOLT", WARLOCK: "SHADOW BOLT", SHAMAN: "LIGHTNING BOLT" }[c.class] || "CASTING"; }
+  const pipsOn = me.class === "ROGUE" || me.class === "DRUID";
+  const cp = pipsOn ? Math.min(5, Math.floor(Math.max(0, S.t - t.t0) / 1.5)) : 0;
+  $("tfPips").querySelectorAll("i").forEach((p, i) => { p.style.visibility = pipsOn ? "visible" : "hidden"; p.classList.toggle("on", i < cp); });
+  const maxR = P.hud.envelopeRange, pct = (yd) => Math.min(Math.max(yd || 0, 0), maxR) / maxR * 100;
+  $("tfZone").style.width = pct((REACH[c.class] || [30])[0]) + "%";
+  $("tfZone").style.background = c.inTheirReach ? "rgba(255,64,64,.36)" : "rgba(255,64,64,.16)";
+  let x0, x1;
+  if (c.lo != null && c.hi != null) { x0 = pct(c.lo); x1 = pct(c.hi); } else if (c.lo > 0) { x0 = pct(c.lo); x1 = 100; } else { x0 = pct(c.range) - 1; x1 = pct(c.range) + 1; }
+  const bar = $("tfBar"); bar.style.left = x0 + "%"; bar.style.width = Math.max(2, x1 - x0) + "%"; bar.style.background = col;
+  $("tfTrk").querySelectorAll(".ml").forEach((m, k) => m.style.left = pct(MY_RANGES[k]) + "%");
+  const spells = MY_RANGES.slice(1), reach = c.hi != null ? spells.filter(r => r >= c.hi).length : 0;
+  const rate = c.closing != null ? (c.closing < 0 ? ` <span class="t-red">&lt;&lt;${Math.round(-c.closing)}</span>` : ` <span style="color:var(--g-dim)">&gt;&gt;${Math.round(c.closing)}</span>`) : "";
+  $("tfInf").innerHTML = `${rangeText(c)}${rate} <span style="color:${reach ? "var(--acc)" : "var(--g-dim)"}">${reach}/${spells.length}</span>`;
+  const tg = [], plainLen = [];
+  if (c.hvt) { tg.push('<span class="t-acc">HVT</span>'); plainLen.push("HVT"); }
+  const threatAt = tg.length; tg.push("THREAT " + Math.round(c.threat)); plainLen.push("THREAT " + Math.round(c.threat));
+  if (P.frames.targetCounts) {
+    const al = me.combat ? S.friends.length : 0;
+    if (al) { tg.push(`<span class="t-grn">ALLIES ${al}</span>`); plainLen.push("ALLIES " + al); }
+    const eh = S.list.filter(o => o.live && o.id !== c.id && HEAL_CLASS[o.class]).length;
+    if (eh) { tg.push(`<span class="t-org">HEALERS ${eh}</span>`); plainLen.push("HEALERS " + eh); }
+  }
+  if (plainLen.join("  ").length > 34) tg.splice(threatAt, 1); // the frame is narrow: THREAT goes first
+  $("tfTags").innerHTML = tg.join(" &nbsp;");
+  const m = (P.threat.matrix[me.class] || {})[c.class] || 1;
+  const verdict = m >= 1.15 ? '<span class="t-red">DANGEROUS</span>' : m <= .9 ? '<span class="t-acc">FAVOURABLE</span>' : "EVEN";
+  $("tfIntel").innerHTML = `MATCHUP ×${m.toFixed(2)} ${verdict} · ${((REACH[c.class] || [0, ""])[1]).toUpperCase()}`;
+  const ally = S.friends[0];
+  $("tfTot").innerHTML = c.targetingMe ? '<span class="t-red">&gt;&gt; YOU</span>' : t.attacks || !ally ? "" :
+    `<span style="color:${COLOR[ally.class]}">&gt;&gt; ${NAME[ally.class]}</span> <span style="color:var(--g-dim)">${SHORT[ally.class]}</span>`;
+  const totOn = P.frames.totHealth && (c.targetingMe || (!t.attacks && ally));
+  $("tfTotHp").hidden = !totOn;
+  if (totOn) { const who = c.targetingMe ? me.class : ally.class; $("tfTotF").style.width = (c.targetingMe ? hpf : ally.hp ?? 1) * 100 + "%"; $("tfTotF").style.background = COLOR[who]; }
+  let w = 0, l = 0;
+  for (const e of log) if (e.comp && e.comp[c.class]) { if (e.outcome === "WIN") w++; else if (e.outcome === "LOSS") l++; }
+  $("tfRec").textContent = w + l ? `FIGHTS ${w}-${l} VS ${SHORT[c.class]}` : "NO RECORD YET";
+}
+
+/* ---------------- Pets and party (mirrors buildPetFrame / buildParty) ---------------- */
+const PARTY = [
+  { name: "Brannoc", class: "WARRIOR", level: 60, yd: 6 },
+  { name: "Selene", class: "PRIEST", level: 60, yd: 44 },
+  { name: "Kazrok", class: "ROGUE", level: 59, yd: 12, debuff: ["Crippling Poison", "CP", "Poison"] },
+  { name: "Mirela", class: "DRUID", level: 60, yd: 27, debuff: ["Curse of Agony", "CoA", "Curse"] },
+];
+const partyRows = $("partyRows");
+partyRows.innerHTML = PARTY.map((m, i) => `<div class="uf mini pm" id="pm${i}"><i class="uf-glow"></i><i class="uf-disp"></i>
+  <div class="uf-name"><i class="ico" style="background:${COLOR[m.class]}"></i><b style="color:${COLOR[m.class]}">${m.name}</b><span class="lv">${m.level}</span><span class="pm-tags"></span><span class="dist"></span></div>
+  <div class="uf-hp"><i class="fill" style="background:${COLOR[m.class]};opacity:.85"></i><i class="pred"></i><span class="tx c"></span></div>
+  <div class="uf-pw"><i style="background:${POWER_COL[m.class] || "#4088ff"};width:${m.class === "WARRIOR" ? 45 : 75}%"></i></div>
+  <div class="uf-auras"></div></div>`).join("");
+let PT = 0;
+function renderParty(dt) {
+  PT += dt;
+  const ph = PT % 14; // a 14 s loop: the warrior is focused, the priest heals him back
+  const hit = ph > 1 && ph < 8;
+  PARTY.forEach((m, i) => {
+    const row = $("pm" + i);
+    let hp = 1, pred = 0, tb = 0, lastHit = -99;
+    if (i === 0) { hp = hit ? 1 - (ph - 1) * .085 : ph >= 8 ? Math.min(1, .4 + (ph - 8) * .15) : 1; tb = hit ? 2 : 0; if (hit) lastHit = PT - ((ph - 1) % .7); pred = ph > 5 && ph < 10 ? .22 : 0; }
+    if (i === 2) { hp = .78; tb = ph > 9 ? 1 : 0; if (ph > 9 && ph < 12) lastHit = PT - ((ph - 9) % .8); }
+    if (i === 3) hp = .64 - ((PT * .01) % .1);
+    row.querySelector(".fill").style.width = hp * 100 + "%";
+    const pr = row.querySelector(".pred"); pr.style.left = hp * 100 + "%"; pr.style.width = Math.min(pred, 1 - hp) * 100 + "%";
+    row.querySelector(".tx").textContent = Math.round(hp * 100) + "%";
+    row.querySelector(".pm-tags").innerHTML = tb ? `<span class="t-red" style="font-size:12px;letter-spacing:.06em">TARGETED BY ${tb}</span>` : "";
+    const heals = m.yd <= 40;
+    row.querySelector(".dist").innerHTML = `<span style="color:${heals ? "#59eb6b" : "#ff4d40"}">${m.yd}y</span>`;
+    row.querySelector(".uf-glow").style.opacity = P.frames.hitGlow ? (lastHit > -99 ? 1 : 0) : 0;
+    const d = m.debuff, can = d && (CLEANSE[myClass] || []).includes(d[2]);
+    const dp = row.querySelector(".uf-disp");
+    dp.style.borderColor = can ? DISPEL_COL[d[2]] : "transparent";
+    dp.style.opacity = P.frames.dispelGlow && can ? .55 + .45 * Math.abs(Math.sin(PT * 3)) : 0;
+    row.querySelector(".uf-auras").innerHTML = d ? `<div class="aura${can ? " can" : ""}" style="border-color:${DISPEL_COL[d[2]]}" title="${d[0]} (${d[2]})"><span>${d[1]}</span></div>` : "";
+  });
+  // your imp casts Firebolt; the hunter's cat is on you
+  const pc = PT % 2.5, casting = pc < 1.5;
+  $("petCast").hidden = !casting; $("petCastF").style.width = (casting ? pc / 1.5 * 100 : 0) + "%";
+  const ph2 = .55 + .35 * Math.cos(PT / 3);
+  $("petFill").style.width = ph2 * 100 + "%"; $("petPct").textContent = Math.round(ph2 * 100) + "%";
+  const th = .9 - ((PT / 30) % .6);
+  $("tpetFill").style.width = th * 100 + "%"; $("tpetPct").textContent = Math.round(th * 100) + "%";
+}
+
+/* ---------------- Trackers (mirrors UI/Trackers.lua) ---------------- */
+// kind, inverted, border, x/y on the mock screen, size, opacity
+const TRK = [
+  { id: "ls", name: "Lightning Shield", ab: "LS", kind: "ON ME", inv: true, b: "red", x: 46, y: 42, size: 52, alpha: 1 },
+  { id: "ft", name: "Flametongue", ab: "FT", kind: "ON WEAPON", inv: true, b: "orange", x: 112, y: 42, size: 52, alpha: 1 },
+  { id: "fs", name: "Flame Shock", ab: "FS", kind: "ON TARGET", inv: false, b: "green", x: 250, y: 120, size: 40, alpha: .9 },
+  { id: "es", name: "Earth Shock", ab: "ES", kind: "ON COOLDOWN", inv: false, b: null, x: 300, y: 120, size: 40, alpha: .9 },
+  { id: "gt", name: "Grounding Totem", ab: "GT", kind: "ON COOLDOWN", inv: true, b: "green", x: 350, y: 120, size: 40, alpha: .7 },
+];
+const TR = { combat: true, charges: 0, barSecret: true, castAt: -99, imbueLeft: 14, layout: false, t: 0 };
+const trScreen = $("trScreen");
+trScreen.insertAdjacentHTML("beforeend", TRK.map(t => `<div class="trk-i" id="trk-${t.id}" data-b="${t.b || ""}" style="left:${t.x}px;top:${t.y}px;width:${t.size}px;height:${t.size}px">
+  <i class="sw"></i><span class="ab">${t.ab}</span><span class="tm"></span><span class="ct"></span><span class="q"></span><span class="lb">${t.inv ? "NOT " : ""}${t.kind}</span></div>`).join(""));
+function placeTrackers() {
+  const w = trScreen.clientWidth, k = Math.min(1, w / 420);
+  TRK.forEach(t => { const e = $("trk-" + t.id); e.style.left = t.x * k + "px"; e.style.top = t.y + "px"; const sz = Math.round(t.size * Math.max(.8, k)); e.style.width = e.style.height = sz + "px"; });
+}
+window.addEventListener("resize", placeTrackers);
+function lsSource() {
+  if (!TR.combat) return "readable";
+  if (!TR.barSecret) return "bar";
+  return "charges";
+}
+const SRC_NAME = { readable: "readable aura", bar: "buff bar icon", charges: "charge count" };
+function renderTrackers() {
+  const layout = TR.layout || P.trackers.layout, on = P.trackers.enabled;
+  trScreen.classList.toggle("layout", !!layout);
+  const ph = TR.t % 18, cd = TR.t % 9;
+  const state = {
+    ls: { present: TR.charges > 0, count: TR.charges, est: TR.combat && TR.barSecret },
+    ft: { present: TR.imbueLeft > 0, time: TR.imbueLeft },
+    fs: { present: ph < 12, time: 12 - ph, frac: ph / 12 },
+    es: { present: cd < 6, time: 6 - cd, frac: cd / 6 },
+    gt: { present: (TR.t % 15) < 11 },
+  };
+  for (const t of TRK) {
+    const e = $("trk-" + t.id), st = state[t.id], show = t.inv ? !st.present : st.present;
+    e.style.opacity = !on ? 0 : show ? t.alpha : layout ? .35 : 0;
+    const timed = !t.inv && st.present && st.time != null;
+    e.querySelector(".tm").textContent = timed ? Math.ceil(st.time) + "s" : t.id === "ft" && st.present && layout ? Math.ceil(st.time) + "s" : "";
+    e.querySelector(".sw").style.setProperty("--p", (timed && st.frac != null ? st.frac * 100 : 0) + "%");
+    e.querySelector(".ct").textContent = t.id === "ls" && layout && st.count ? st.count : "";
+    e.querySelector(".q").textContent = st.est && show ? "?" : "";
+    e.title = `${t.name} · shows ${t.inv ? "while NOT " : "while "}${t.kind.toLowerCase()}`;
+  }
+  const src = lsSource();
+  $("trSrc").textContent = SRC_NAME[src];
+  $("trLadder").querySelectorAll("li").forEach(li => li.classList.toggle("on", li.dataset.src === src));
+  $("trLegend").innerHTML = `<div><b>LS</b> NOT ON ME · red · charges ${TR.charges}/3${TR.charges ? " · hidden while up" : " · <span class='t-red'>rebuff</span>"}</div>
+    <div><b>FT</b> NOT ON WEAPON · orange · ${TR.imbueLeft > 0 ? "imbue " + Math.ceil(TR.imbueLeft) + "s left" : "<span class='t-red'>reimbue</span>"}</div>
+    <div><b>FS</b> ON TARGET · green &nbsp; <b>ES</b> ON COOLDOWN &nbsp; <b>GT</b> NOT ON COOLDOWN (ready)</div>`;
+}
+$("trCombat").addEventListener("click", (e) => {
+  TR.combat = !TR.combat; e.currentTarget.setAttribute("aria-pressed", String(TR.combat));
+  e.currentTarget.textContent = TR.combat ? "In combat" : "Out of combat";
+  if (!TR.combat) TR.barSecret = false; renderTrackers();
+});
+$("trHit").addEventListener("click", () => { if (TR.charges > 0) TR.charges--; if (TR.combat) TR.barSecret = true; renderTrackers(); });
+$("trNature").addEventListener("click", () => { if (TR.combat) TR.barSecret = true; renderTrackers(); });
+$("trLS").addEventListener("click", () => { TR.charges = 3; TR.castAt = TR.t; renderTrackers(); });
+$("trLayout").addEventListener("click", (e) => { TR.layout = !TR.layout; e.currentTarget.setAttribute("aria-pressed", String(TR.layout)); renderTrackers(); });
+function stepTrackers(dt) {
+  TR.t += dt;
+  if (TR.imbueLeft > 0) { TR.imbueLeft = Math.max(0, TR.imbueLeft - dt); }
+  else if ((TR.reimbue = (TR.reimbue || 0) + dt) > 4) { TR.imbueLeft = 14; TR.reimbue = 0; }
+}
+placeTrackers();
+
+/* ---------------- Main loop ---------------- */
+reset("ambush");
+buildBoard();
+buildEnvelope();
+renderConsole();
+drawCurve();
+let last = performance.now(), tickAcc = 0, uiAcc = 0, trAcc = 0;
+function frame(now) {
+  const dt = Math.min(.1, (now - last) / 1000); last = now;
+  if (!paused && P.enabled) {
+    step(dt);
+    tickAcc += dt;
+    if (tickAcc >= 1 / P.sensors.rate) { tickAcc = 0; sense(); renderEnvelope(); renderBoard(); renderEngage(); renderPressure(); renderFrames(); }
+  }
+  if (!paused) { renderParty(dt); stepTrackers(dt); }
+  trAcc += dt; if (trAcc > .2) { trAcc = 0; renderTrackers(); }
+  const m = Math.floor(S.t / 60), s = Math.floor(S.t % 60);
+  $("clock").textContent = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  uiAcc += dt;
+  if (uiAcc > .5) {
+    uiAcc = 0;
+    liveUpdaters.forEach(f => f());
+    $("gstatus").textContent = `${P.enabled ? "ONLINE" : "STANDBY"} · ${S.list.length} CONTACTS · ${S.pic.advice}`;
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
