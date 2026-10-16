@@ -4447,7 +4447,7 @@ do
 	local function snippet(code, env)
 		local fn
 		if setfenv then fn = assert(loadstring(code)); setfenv(fn, env) else fn = assert(load(code, "snippet", "t", env)) end
-		fn()
+		return fn()
 	end
 	-- the skin
 	local b = ActionButton1
@@ -4589,7 +4589,11 @@ do
 	e1:GetAttribute("clickbutton"):Click() -- what the secure click does
 	local wrap
 	for _, w in ipairs(W.wraps) do if w.frame == e1 then wrap = w end end
-	snippet(wrap.post, { self = e1, owner = list })
+	-- as the client runs a wrap: the pre-body, then the post-body only when it gave a message
+	do
+		local _, msg = snippet(wrap.pre, { self = e1, owner = list, button = "LeftButton", down = false })
+		if msg ~= nil then snippet(wrap.post, { self = e1, owner = list, message = msg, button = "LeftButton" }) end
+	end
 	check("picking an entry clicks Blizzard's button and closes the list", W.microClicks[1] == "CharacterMicroButton" and not list:IsShown())
 	snippet(mb:GetAttribute("_onclick"), { self = mb })
 	snippet(mb:GetAttribute("_onclick"), { self = mb })

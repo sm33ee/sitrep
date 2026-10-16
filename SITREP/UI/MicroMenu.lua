@@ -152,9 +152,11 @@ local function build()
 		r.binding, r.friends = e.binding, e.friends
 		r:HookScript("OnEnter", function(self) self.hl:SetAlpha(1) end)
 		r:HookScript("OnLeave", function(self) self.hl:SetAlpha(0) end)
-		-- close the list after the click (in the secure environment: works in combat)
+		-- close the list after the click (in the secure environment: works in combat).
+		-- A wrap's post-body runs only when its pre-body returns a message (until
+		-- 4.11.5 the pre-body returned nothing: the list stayed open)
 		if SecureHandlerWrapScript then
-			SecureHandlerWrapScript(r, "OnClick", list, "", [=[ self:GetParent():Hide() ]=])
+			SecureHandlerWrapScript(r, "OnClick", list, [=[ return button, "close" ]=], [=[ owner:Hide() ]=])
 		end
 		list.rows[i] = r
 	end
