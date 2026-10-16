@@ -34,6 +34,8 @@
 --   mate ring   (plates.mateRing) your group's members: a party-blue ring round the
 --               bar and the name in the same blue; never see-through (other friends
 --               are, plates.friendOpacity)
+--   beacon      the member whose party frame the mouse is on: drawn as your target,
+--               the brackets party blue and a party-blue frame pulsing round them
 --   dispel orbs friendly plates: a small orb left of the bar for each kind of debuff
 --               you can dispel on it, in that kind's colour (frames round a plate
 --               mean target and enemy; a dispel is something to do, not a kind of unit)
@@ -556,6 +558,22 @@ local function build(plate, hb)
 		s.kill.pulse = ag
 	end
 	s.kill:Hide()
+	-- the member whose frame the mouse is on: a party-blue frame pulsing round its
+	-- brackets (N.Beacon); solid through the client's fading of plates
+	s.beacon = CreateFrame("Frame", nil, s)
+	s.beacon:SetPoint("TOPLEFT", -SEL_GAP - 4, SEL_GAP + 4)
+	s.beacon:SetPoint("BOTTOMRIGHT", SEL_GAP + 4, -SEL_GAP - 4)
+	K.Border(s.beacon, { MATE[1], MATE[2], MATE[3], 1 }, 2, 4)
+	if s.beacon.SetIgnoreParentAlpha then pcall(s.beacon.SetIgnoreParentAlpha, s.beacon, true) end
+	local bg = s.beacon.CreateAnimationGroup and s.beacon:CreateAnimationGroup()
+	if bg then
+		local a = bg:CreateAnimation("Alpha")
+		if a.SetFromAlpha then a:SetFromAlpha(1); a:SetToAlpha(0.2) end
+		if a.SetDuration then a:SetDuration(0.45) end
+		if bg.SetLooping then bg:SetLooping("BOUNCE") end
+		s.beacon.pulse = bg
+	end
+	s.beacon:Hide()
 	-- text above the bar, one line centred over it: level, full name, tags; drawn
 	-- over the brackets and side lines (placed by N.PlaceText)
 	s.text = CreateFrame("Frame", nil, s)
@@ -1089,7 +1107,7 @@ function N.Refresh(s)
 	-- (the bar itself keeps the class colour for players)
 	local rc = N.Reaction(unit, s)
 	if friend and s.isPlayer == false and read(UnitPlayerControlled, unit) ~= true then rc = NPC_NAME end
-	for _, t in ipairs(s.sel.parts) do t:SetVertexColor(rc[1], rc[2], rc[3], 1) end
+	s.selColor = rc -- (the brackets: N.Beacon)
 	if s.mate and P().mateRing ~= false then rc = MATE end -- (the brackets stay friend green)
 	s.name:SetTextColor(rc[1], rc[2], rc[3])
 	-- tags
@@ -1155,6 +1173,7 @@ function N.Refresh(s)
 	N.Size(s)
 	N.Health(s)
 	s.sel:SetShown(isTarget)
+	N.Beacon(s)
 	N.PlaceText(s, isTarget)
 	N.PaintDot(s, isTarget)
 	if ns.PlateNPC then pcall(ns.PlateNPC.Paint, s) end
@@ -1224,6 +1243,8 @@ local function detach(s)
 	s.mana:Hide()
 	s.mateRing:Hide()
 	s.mate = nil
+	s.beacon:Hide()
+	if s.beacon.pulse then s.beacon.pulse:Stop() end
 	s.isBig, s.sizeKey = false, nil
 	ns.Heals.FeedTo(s.healN, nil)
 	ns.Heals.FeedTo(s.healB, nil)
@@ -1460,13 +1481,32 @@ end)
 
 -- A plate drawn as your target's: your target, or the unit whose frame the mouse is
 -- on (N.highlight: hovering a party member's frame finds its plate at a glance).
-local function marked(unit, s)
-	if read(UnitIsUnit, unit, "target") == true then return true end
+local function hovered(unit, s)
 	local h = N.highlight
 	if not h then return false end
 	if read(UnitIsUnit, unit, h) == true then return true end
 	local g = read(UnitGUID, h) -- (the comparison may be secret in combat: the GUID)
 	return g ~= nil and s.guid == g
+end
+local function marked(unit, s)
+	if read(UnitIsUnit, unit, "target") == true then return true end
+	return hovered(unit, s)
+end
+N.Hovered = hovered
+
+-- The plate of the member whose frame the mouse is on: on top of the target's look,
+-- its brackets in party blue and a party-blue frame pulsing round them (s.beacon).
+function N.Beacon(s)
+	local on = hovered(s.unit, s) and true or false
+	local c = on and MATE or s.selColor
+	if c and c ~= s.selPainted then
+		for _, t in ipairs(s.sel.parts) do t:SetVertexColor(c[1], c[2], c[3], 1) end
+		s.selPainted = c
+	end
+	if on ~= (s.beacon:IsShown() and true or false) then
+		s.beacon:SetShown(on)
+		if s.beacon.pulse then if on then s.beacon.pulse:Play() else s.beacon.pulse:Stop() end end
+	end
 end
 
 N.Marked = marked
@@ -1477,6 +1517,7 @@ local function paintTargets()
 		s.isTarget = isTarget
 		N.Size(s)
 		s.sel:SetShown(isTarget)
+		N.Beacon(s)
 		N.PlaceText(s, isTarget)
 		N.PaintDot(s, isTarget)
 		if ns.PlateAuras then pcall(ns.PlateAuras.Place, s) end -- (your target's a little larger)

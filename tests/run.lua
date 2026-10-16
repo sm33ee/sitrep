@@ -2884,10 +2884,19 @@ do
 		check("before: the member's plate not marked", not friend.sel:IsShown())
 		m._scripts.OnEnter(m)
 		check("hovering the member's frame: its plate gets the target brackets", friend.sel:IsShown() and not mage.sel:IsShown())
+		local MATE = ns.Plates.MATE
+		check("...in party blue, a party-blue frame pulsing round them", friend.beacon:IsShown() and not mage.beacon:IsShown()
+			and W.vc(friend.sel.parts[1])[1] == MATE[1] and W.vc(friend.sel.parts[1])[3] == MATE[3] and friend.beacon._ignoreParentAlpha == true)
 		ns.Plates.Refresh(friend) -- (the plates' regular update)
-		check("...and keeps them while the mouse stays", friend.sel:IsShown())
+		check("...and keeps them while the mouse stays", friend.sel:IsShown() and friend.beacon:IsShown() and W.vc(friend.sel.parts[1])[1] == MATE[1])
 		m._scripts.OnLeave(m)
-		check("mouse off its frame: as before", not friend.sel:IsShown())
+		check("mouse off its frame: as before", not friend.sel:IsShown() and not friend.beacon:IsShown())
+		S.units.target = S.units.nameplate81
+		W.Fire("PLAYER_TARGET_CHANGED")
+		check("...targeted, its brackets in the friend colour again", not friend.beacon:IsShown()
+			and W.vc(friend.sel.parts[1])[1] == ns.Plates.Reaction("nameplate81", friend)[1] and W.vc(friend.sel.parts[1])[1] ~= MATE[1])
+		S.units.target = nil
+		W.Fire("PLAYER_TARGET_CHANGED")
 		S.units.party1 = nil
 	end)()
 	-- A PLATE FRAME REUSED FOR ANOTHER PLAYER (3.41.1): the game hands the frame of a
