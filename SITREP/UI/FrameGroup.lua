@@ -210,6 +210,21 @@ local function buildParty()
 	c.title = K.Font(c, 10, C.dim, K.FONT, "")
 	c.title:SetPoint("BOTTOMLEFT", 2, 3)
 	c.title:SetText("PARTY")
+	-- compact or full: a small arrow right of the title (frames.partyCompact)
+	local fold = CreateFrame("Button", nil, c)
+	fold:SetSize(16, 14)
+	fold:SetPoint("LEFT", c.title, "RIGHT", 4, 0)
+	fold.icon = fold:CreateTexture(nil, "OVERLAY")
+	fold.icon:SetSize(12, 12)
+	fold.icon:SetPoint("CENTER")
+	fold.icon:SetTexture(K.MEDIA .. "glyph_up")
+	fold.icon:SetVertexColor(C.dim[1], C.dim[2], C.dim[3], 1)
+	fold:SetScript("OnEnter", function(self) self.icon:SetVertexColor(C.text[1], C.text[2], C.text[3], 1) end)
+	fold:SetScript("OnLeave", function(self) self.icon:SetVertexColor(C.dim[1], C.dim[2], C.dim[3], 1) end)
+	fold:RegisterForClicks("LeftButtonUp")
+	fold:SetScript("OnClick", function() F.ToggleCompact() end)
+	K.Tooltip(fold, "Party: compact", "Click: each member as a slim row (name, thin health bar, class colour) or full again. In combat it changes once the fight is over.")
+	c.fold = fold
 	c.status = K.Font(c, 10, C.dim, K.FONT, "")
 	c.status:SetPoint("BOTTOMRIGHT", -2, 3)
 	c.unlock = K.Tex(c, "OVERLAY", { 1, 1, 1, 0.04 })
@@ -312,6 +327,8 @@ F.BuildParty = buildParty
 -- highlights and dispel orbs); everything else steps aside.
 function F.PartyLayout(compact)
 	compact = compact and true or false
+	-- the arrow points the way a click goes: up to compact, down to full
+	if party and party.fold then party.fold.icon:SetTexture(K.MEDIA .. (compact and "glyph_down" or "glyph_up")) end
 	for i, f in ipairs(F.partyMembers) do
 		local h, gap = compact and COMPACT_H or MEMBER_H, compact and COMPACT_GAP or MEMBER_GAP
 		f:SetHeight(h)
@@ -336,6 +353,14 @@ function F.PartyLayout(compact)
 		end
 	end
 	F.compact = compact
+end
+
+-- The header's arrow: compact on or off (secure frames: in combat, once it is over).
+function F.ToggleCompact()
+	local P = ns.P.frames
+	P.partyCompact = not P.partyCompact
+	ns.Changed("frames.partyCompact")
+	if InCombatLockdown() then ns.print(P.partyCompact and "Party frames: compact after this fight." or "Party frames: full after this fight.") end
 end
 
 -- Health colour like your own: green above 75 %, orange from 50 %, red below.

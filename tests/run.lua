@@ -1516,6 +1516,23 @@ end)()
 	W.Fire("PLAYER_REGEN_ENABLED"); W.Update(0.25)
 	check("...and is full again after it", pm1:GetHeight() == h0 and pm1.power:IsShown() and pm1.hp:GetHeight() == 14
 		and pm1.cast:GetAlpha() == 1 and ns.Auras.rows.party1:IsShown() and W.unitWatch[pm1.tgtBtn] == true)
+	-- the arrow on the header
+	local fold = ns.Frames.party.fold
+	check("header arrow: right of the title, up (to compact)", fold and fold:IsShown() and ({ fold:GetPoint(1) })[2] == ns.Frames.party.title
+		and fold.icon:GetTexture():find("glyph_up", 1, true))
+	fold._scripts.OnClick(fold)
+	check("...a click: compact, the arrow down", ns.P.frames.partyCompact == true and pm1:GetHeight() == 26
+		and fold.icon:GetTexture():find("glyph_down", 1, true))
+	fold._scripts.OnClick(fold)
+	check("...again: full", ns.P.frames.partyCompact == false and pm1:GetHeight() == h0 and fold.icon:GetTexture():find("glyph_up", 1, true))
+	S.me.combat = true
+	local n0 = #W.prints
+	fold._scripts.OnClick(fold)
+	check("...in combat: waits, and says so", pm1:GetHeight() == h0 and table.concat(W.prints, "\n", n0 + 1):find("after this fight", 1, true))
+	S.me.combat = false
+	W.Fire("PLAYER_REGEN_ENABLED")
+	check("...after the fight: compact", pm1:GetHeight() == 26)
+	ns.P.frames.partyCompact = false; ns.Changed("frames.partyCompact")
 end)()
 S.units.party1, S.group.n, S.auras.party1 = nil, 0, nil
 S.units.player.class = "MAGE"
