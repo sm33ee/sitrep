@@ -1452,11 +1452,18 @@ S.auras.party1 = { { id = 805, harmful = true, icon = "m.blp", dispel = "Magic",
 W.Fire("GROUP_ROSTER_UPDATE"); W.Update(0.25)
 local pm1 = ns.Frames.partyMembers[1]
 check("party member: dispel border (magic)", pm1.disp:IsShown() and near(W.vc(pm1.disp.border[1])[3], ns.Data.DISPEL_COLOR.Magic[3]))
+check("...and an orb right of the frame, in its colour", pm1.orbs:IsShown() and pm1.orbs.orbs[1]:IsShown() and not pm1.orbs.orbs[2]:IsShown()
+	and near(W.vc(pm1.orbs.orbs[1].dot)[3], ns.Data.DISPEL_COLOR.Magic[3])
+	and ({ pm1.orbs.orbs[1]:GetPoint(1) })[1] == "LEFT" and ({ pm1.orbs.orbs[1]:GetPoint(1) })[3] == "RIGHT")
+S.auras.party1[2] = { id = 980, harmful = true, icon = "d.blp", dispel = "Disease", name = "Plague" }
+W.Fire("UNIT_AURA", "party1")
+check("...one orb per kind (magic and disease)", pm1.orbs.orbs[2]:IsShown() and not pm1.orbs.orbs[3]:IsShown())
+S.auras.party1[2] = nil
 W.Fire("UNIT_COMBAT", "party1", "WOUND", 0, 300, 1)
 check("party member attacked: red highlight", pm1.hit:GetAlpha() == 1)
 ns.P.frames.dispelGlow = false
 W.Fire("UNIT_AURA", "party1")
-check("dispel highlight switch off", not pm1.disp:IsShown())
+check("dispel highlight switch off", not pm1.disp:IsShown() and not pm1.orbs:IsShown())
 ns.P.frames.dispelGlow = true
 S.units.party1, S.group.n, S.auras.party1 = nil, 0, nil
 S.units.player.class = "MAGE"

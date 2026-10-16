@@ -232,6 +232,8 @@ local function buildParty()
 		-- the mouse on a member's frame: its plate drawn as your target's
 		f:HookScript("OnEnter", function(self) if ns.Plates then ns.Plates.Highlight(self.unit) end end)
 		f:HookScript("OnLeave", function() if ns.Plates then ns.Plates.Highlight(nil) end end)
+		-- what you can dispel on them: orbs right of the frame (Units.PaintOrbs)
+		f.orbs = ns.Units.Orbs(f, 3, 9, function(o, j) o:SetPoint("LEFT", f, "RIGHT", 5 + (j - 1) * (9 + 5), 0) end)
 		-- hit / heal flash and the class edge share the left side
 		f.flash = K.Tex(f, "OVERLAY")
 		f.flash:SetPoint("TOPLEFT"); f.flash:SetPoint("BOTTOMLEFT")

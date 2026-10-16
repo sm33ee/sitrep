@@ -274,6 +274,53 @@ function U.PaintDispel(f, unit)
 	end
 end
 
+-- Dispel orbs: a small disc for each kind of debuff you can dispel on a unit, in
+-- that kind's colour (nameplates: left of the bar; party frames: right of the frame).
+-- U.Orbs(parent, n, size, place): place(orb, i) anchors each; the holder is returned.
+function U.Orbs(parent, n, size, place)
+	local d = CreateFrame("Frame", nil, parent)
+	d:SetAllPoints(parent)
+	d.orbs = {}
+	for i = 1, n do
+		local o = CreateFrame("Frame", nil, d)
+		o:SetSize(size + 2, size + 2)
+		place(o, i)
+		o.ring = K.Disc(o, "BORDER", size + 2)
+		o.ring:SetPoint("CENTER")
+		o.ring:SetVertexColor(0, 0, 0, 0.75)
+		o.dot = K.Disc(o, "ARTWORK", size)
+		o.dot:SetPoint("CENTER")
+		o:Hide()
+		d.orbs[i] = o
+	end
+	d:Hide()
+	return d
+end
+-- One orb per kind you can dispel (readable), or one the client colours (locked:
+-- transparent when nothing can be dispelled, so its dark rim goes too).
+function U.PaintOrbs(d, unit)
+	local n = 0
+	d.plain = false
+	if ns.P.frames.dispelGlow and ns.Auras and read(UnitExists, unit) then
+		local kind, a, b = ns.Auras.Removables(unit)
+		if kind == "plain" then
+			d.plain = true
+			for i = 1, math.min(#a, #d.orbs) do
+				local c = a[i]
+				d.orbs[i].dot:SetVertexColor(c[1], c[2], c[3], 1)
+				d.orbs[i].ring:Show()
+				n = i
+			end
+		elseif kind == "client" and ns.Auras.ClientColor(d.orbs[1].dot, unit, a, b) then
+			d.orbs[1].ring:Hide()
+			n = 1
+		end
+	end
+	for i = 1, #d.orbs do d.orbs[i]:SetShown(i <= n) end
+	d:SetShown(n > 0)
+	return n
+end
+
 -- Health colours: green above 75 %, orange from 50 to 75 %, red below 50 %.
 -- The client's colour curve can evaluate secret health itself; if that path is
 -- not available, SITREP's plain estimate decides.

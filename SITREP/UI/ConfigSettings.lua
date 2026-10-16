@@ -377,7 +377,7 @@ local function buildFrames()
 	-- column 2: size and the highlights
 	p:Place(K.Slider(p, "Frame width", 220, 640, 4, get("frames", "width"), set("frames", "width"), function(v) return v .. "px" end), 2)
 	tog(2, "Under attack highlight", "hitGlow", "Red border while being attacked.")
-	tog(2, "Dispel highlight", "dispelGlow", "Border when you can dispel something.")
+	tog(2, "Dispel highlight", "dispelGlow", "Border when you can dispel something; on party frames also an orb right of the frame for each kind (poison, curse, magic, disease).")
 	tog(2, "Cost preview on your power bar", "costPreview", "Hovered or casting spell: blue, red if short.")
 	tog(2, "Damage and heal numbers on you", "popNumbers")
 	tog(2, "Health bar for its target", "totHealth")

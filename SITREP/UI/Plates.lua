@@ -518,22 +518,7 @@ local function build(plate, hb)
 	s.mateRing:Hide()
 	-- friendly plates: what you can dispel, as orbs left of the bar (s.disp: shown
 	-- while there is any, .plain: known for certain; N.PaintDispel)
-	s.disp = CreateFrame("Frame", nil, s)
-	s.disp:SetAllPoints(s)
-	s.disp.orbs = {}
-	for i = 1, ORBS do
-		local o = CreateFrame("Frame", nil, s.disp)
-		o:SetSize(ORB + 2, ORB + 2)
-		o:SetPoint("RIGHT", s, "LEFT", -5 - (i - 1) * (ORB + 4), 0)
-		o.ring = K.Disc(o, "BORDER", ORB + 2)
-		o.ring:SetPoint("CENTER")
-		o.ring:SetVertexColor(0, 0, 0, 0.75)
-		o.dot = K.Disc(o, "ARTWORK", ORB)
-		o.dot:SetPoint("CENTER")
-		o:Hide()
-		s.disp.orbs[i] = o
-	end
-	s.disp:Hide()
+	s.disp = ns.Units.Orbs(s, ORBS, ORB, function(o, i) o:SetPoint("RIGHT", s, "LEFT", -5 - (i - 1) * (ORB + 4), 0) end)
 	-- enemy healers: their mana, a thin blue bar under the plate (the client's values
 	-- as they are, secret or not)
 	s.mana = CreateFrame("StatusBar", nil, s)
@@ -1084,30 +1069,8 @@ end
 setLine = ns.Timed("plates: name line", setLine)
 paintHealth = ns.Timed("plates: paint health", paintHealth)
 hideBlizzard = ns.Timed("plates: hide Blizzard's", hideBlizzard)
--- The orbs: one per kind you can dispel (readable), or one the client colours
--- (locked: transparent when nothing can be dispelled, so its dark rim goes too).
-N.PaintDispel = ns.Timed("plates: dispel orbs", function(s, unit)
-	local d = s.disp
-	local n = 0
-	d.plain = false
-	if ns.P.frames.dispelGlow and ns.Auras and read(UnitExists, unit) then
-		local kind, a, b = ns.Auras.Removables(unit)
-		if kind == "plain" then
-			d.plain = true
-			for i = 1, math.min(#a, ORBS) do
-				local c = a[i]
-				d.orbs[i].dot:SetVertexColor(c[1], c[2], c[3], 1)
-				d.orbs[i].ring:Show()
-				n = i
-			end
-		elseif kind == "client" and ns.Auras.ClientColor(d.orbs[1].dot, unit, a, b) then
-			d.orbs[1].ring:Hide()
-			n = 1
-		end
-	end
-	for i = 1, ORBS do d.orbs[i]:SetShown(i <= n) end
-	d:SetShown(n > 0)
-end)
+-- The orbs (Units.PaintOrbs).
+N.PaintDispel = ns.Timed("plates: dispel orbs", function(s, unit) ns.Units.PaintOrbs(s.disp, unit) end)
 
 -- A tag on the name line: a glyph with at most a number (Kit.Glyph: a shape and a
 -- colour say it from the corner of the eye), or a short word.

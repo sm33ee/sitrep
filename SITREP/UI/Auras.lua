@@ -510,7 +510,9 @@ function A.Update(which)
 			local show = P.party and read(UnitExists, unit) and true or false
 			r:SetShown(show)
 			if show then fillRow(r, unit, "HARMFUL", "cleanse") end
-			ns.Units.PaintDispel(ns.Frames.partyMembers[i], unit)
+			local m = ns.Frames.partyMembers[i]
+			ns.Units.PaintDispel(m, unit)
+			if m and m.orbs then ns.Units.PaintOrbs(m.orbs, unit) end
 		end
 	end
 end
