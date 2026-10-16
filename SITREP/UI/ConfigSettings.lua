@@ -409,7 +409,7 @@ local function buildPlates()
 	tog(1, "Friendly plates", "friendly", "Class colour. Friendly plates need Shift+V (or Options > Nameplates). Plates the client forbids to addons (often friendly plates in instances) stay Blizzard's.")
 	p:Place(K.Slider(p, "Size of the nameplates", 0.5, 3, 0.05, get("plates", "scale"), set("plates", "scale"), fp), 1)
 	local half = (p.colW - 12) / 2
-	-- friendly players you have not targeted: see-through, and smaller in combat
+	-- friendly players you have not targeted: see-through (not your group), and smaller in combat
 	local fo = K.Slider(p, "Friends: opacity", 0.05, 1, 0.05, get("plates", "friendOpacity"), set("plates", "friendOpacity"), fp, half)
 	fo.fixedWidth = true
 	p:Place(fo, 1)
@@ -452,6 +452,7 @@ local function buildPlates()
 	p:Place(K.Slider(p, "Aura size", 0.5, 2, 0.05, get("plates", "auraScale"), set("plates", "auraScale"), fp), 2)
 	tog(2, "Combo points on your target", "combo", "Rogues and druids: your combo points as pips under your target's plate.")
 	tog(2, "Enemy players: coral ring", "foeRing", "A solid coral ring round every enemy player's bar: the one red frame on the plates.")
+	tog(2, "Your group: blue ring", "mateRing", "Your party and raid members: a ring in party-chat blue round the bar and their name in the same blue, so they stand out among other friends.")
 	tog(2, "Group focus", "groupFocus", "An enemy your group is on: a mint ring round its plate, wider the more of you, and how many beside it (filled: the one most of you are on).")
 	tog(2, "Friendly zen", "friendZen", "Only enemies, your group and your target keep their bar. Every other friendly plate: the name over a thin health line.")
 	tog(2, "NPCs: icon and title", "npcIcons", "Friendly NPCs (and neutral traders) without a bar: the name, its title under it and an icon for what it does (repair, inn, flight, bank...). Turn on friendly NPC plates in the game's options to see them.")

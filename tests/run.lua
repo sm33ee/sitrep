@@ -3587,6 +3587,29 @@ do
 	check("...a setting", not mage.foe:IsShown())
 	ns.P.plates.foeRing = true; N.Refresh(mage)
 	;(function()
+		-- one of your group: a party-blue ring, the name blue, never see-through
+		local realInParty = UnitInParty
+		UnitInParty = function(u) return u == "nameplate81" end
+		W.Fire("GROUP_ROSTER_UPDATE")
+		local M = N.MATE
+		check("your group: a blue ring round the bar, solid", friend.mate and friend.mateRing:IsShown()
+			and friend.mateRing._ignoreParentAlpha == true and not mage.mateRing:IsShown() and not mob.mateRing:IsShown())
+		local tc = friend.name._tc
+		check("...the name in the same blue", tc[1] == M[1] and tc[2] == M[2] and tc[3] == M[3])
+		check("...never see-through (other friends are)", not friend.faint and friend.uf:GetAlpha() == 1)
+		check("...the legend says so", (ns.PlateHover.Legend("nameplate81") or ""):find("in your group", 1, true) ~= nil)
+		ns.P.plates.mateRing = false; N.Refresh(friend)
+		check("...a setting (ring and name colour)", not friend.mateRing:IsShown() and friend.name._tc[1] ~= M[1])
+		ns.P.plates.mateRing = true
+		friend.hb:Hide(); N.Refresh(friend)
+		check("...no ring on a name-only plate", not friend.mateRing:IsShown())
+		friend.hb:Show()
+		UnitInParty = realInParty
+		W.Fire("GROUP_ROSTER_UPDATE")
+		check("leaves the group: ring gone, faint again", not friend.mate and not friend.mateRing:IsShown() and friend.name._tc[1] ~= M[1]
+			and (friend.faint or friend.isTarget))
+	end)()
+	;(function()
 		-- the game's aura frame on a plate: one row over the name, icons in SITREP's look
 		local uf = mage.uf
 		local af = CreateFrame("Frame", nil, uf)

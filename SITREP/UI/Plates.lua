@@ -31,6 +31,9 @@
 --   foe ring    enemy players: a solid coral ring hugging the bar, the one red frame
 --               on any plate (friendly plates have none while hit: two red frames
 --               could not be told apart in a fight)
+--   mate ring   (plates.mateRing) your group's members: a party-blue ring round the
+--               bar and the name in the same blue; never see-through (other friends
+--               are, plates.friendOpacity)
 --   dispel orbs friendly plates: a small orb left of the bar for each kind of debuff
 --               you can dispel on it, in that kind's colour (frames round a plate
 --               mean target and enemy; a dispel is something to do, not a kind of unit)
@@ -65,9 +68,13 @@ local FOE_GAP = 2 -- the enemy players' ring: right round the bar
 local ORB, ORBS = 7, 3 -- the dispel orbs: size, how many at most
 local PIP_W, PIP_H, PIP_GAP = 10, 3, 2 -- combo pips on your target's plate
 local FOE = { 1, 0.36, 0.30 } -- its coral (the design's colour for danger)
+-- your group's members: the game's party chat blue, for their ring and name
+local MATE = { 0.67, 0.67, 1 }
+N.MATE = MATE
 local FADE_ALPHA = 0.45
 -- friendly NPCs' names: the one colour no other mark uses (green is players, yellow
--- neutral, red and coral danger, mint group focus, gold quests, violet experience)
+-- neutral, red and coral danger, mint group focus, gold quests, violet experience,
+-- party blue your group)
 local NPC_NAME = { 0.55, 0.78, 1 }
 N.NPC_NAME = NPC_NAME
 local COL_ON_YOU, COL_HOSTILE, COL_NEUTRAL, COL_FRIEND, COL_TAPPED =
@@ -292,9 +299,17 @@ function N.Zen(s)
 	-- an NPC: who it is instead of a bar (PlateNPC)
 	if ns.PlateNPC and ns.PlateNPC.On(s) then return true end
 	if not (P().friendZen and s.friend and not s.isTarget) then return false end
-	if read(UnitInParty, s.unit) or read(UnitInRaid, s.unit) then return false end
+	if N.Mate(s) then return false end
 	return true
 end
+
+-- A member of your group (party or raid): the plate stands out among friends.
+function N.Mate(s)
+	if not (s.friend and s.isPlayer) then return false end
+	return (read(UnitInParty, s.unit) or read(UnitInRaid, s.unit)) and true or false
+end
+-- See-through: a friend you have not targeted, unless one of your group.
+function N.Faint(s) return s.friend and not s.isTarget and not s.mate end
 
 -- The scale the client hands health curves is not measured (secret even for you):
 -- 0 to 1 or 0 to 100. Health curves get their points on both: past 1.0001 the same
@@ -489,6 +504,13 @@ local function build(plate, hb)
 	-- (the client fades plates you have not selected: the ring stays solid)
 	if s.foe.SetIgnoreParentAlpha then pcall(s.foe.SetIgnoreParentAlpha, s.foe, true) end
 	s.foe:Hide()
+	-- your group's members: the same ring in party blue (N.Mate)
+	s.mateRing = CreateFrame("Frame", nil, s)
+	s.mateRing:SetPoint("TOPLEFT", -FOE_GAP, FOE_GAP)
+	s.mateRing:SetPoint("BOTTOMRIGHT", FOE_GAP, -FOE_GAP)
+	K.Border(s.mateRing, { MATE[1], MATE[2], MATE[3], 1 }, 2, 4)
+	if s.mateRing.SetIgnoreParentAlpha then pcall(s.mateRing.SetIgnoreParentAlpha, s.mateRing, true) end
+	s.mateRing:Hide()
 	-- friendly plates: what you can dispel, as orbs left of the bar (s.disp: shown
 	-- while there is any, .plain: known for certain; N.PaintDispel)
 	s.disp = CreateFrame("Frame", nil, s)
@@ -742,6 +764,8 @@ local function hideBlizzard(s)
 	-- a new key, so the 10 % of 3.21.2 does not stick) - all but the text
 	local a = faintAlpha(s)
 	s:SetAlpha(bar and 1 or 0)
+	-- one of your group: the party-blue ring (it ignores the plate's alpha: none on a name-only plate)
+	s.mateRing:SetShown(bar and P().mateRing ~= false and s.mate and not s.zenOn or false)
 	if s.uf then pcall(s.uf.SetAlpha, s.uf, a) end
 	s.cast:SetAlpha(a)
 	applyFade(s)
@@ -1055,6 +1079,7 @@ function N.Refresh(s)
 	s.friend, s.isPlayer, s.reaction = friend, read(UnitIsPlayer, unit), read(UnitReaction, unit, "player")
 	local isTarget = N.Marked(unit, s) -- (your target, or the member whose frame the mouse is on)
 	s.isTarget = isTarget
+	s.mate = N.Mate(s)
 	-- friendly plates: what you can dispel
 	if friend and p.borders then N.PaintDispel(s, unit) else s.disp:Hide() end
 	s.zenOn = N.Zen(s)
@@ -1064,8 +1089,9 @@ function N.Refresh(s)
 	-- (the bar itself keeps the class colour for players)
 	local rc = N.Reaction(unit, s)
 	if friend and s.isPlayer == false and read(UnitPlayerControlled, unit) ~= true then rc = NPC_NAME end
-	s.name:SetTextColor(rc[1], rc[2], rc[3])
 	for _, t in ipairs(s.sel.parts) do t:SetVertexColor(rc[1], rc[2], rc[3], 1) end
+	if s.mate and P().mateRing ~= false then rc = MATE end -- (the brackets stay friend green)
+	s.name:SetTextColor(rc[1], rc[2], rc[3])
 	-- tags
 	local tags = wipe(N.tagsBuf)
 	s.kinds = s.kinds and wipe(s.kinds) or {}
@@ -1134,7 +1160,7 @@ function N.Refresh(s)
 	if ns.PlateNPC then pcall(ns.PlateNPC.Paint, s) end
 	-- (over the name line: after it is placed; never allowed to break the refresh)
 	if ns.PlateAuras then pcall(ns.PlateAuras.Place, s) end
-	s.faint = friend and not isTarget
+	s.faint = N.Faint(s)
 	-- range: beyond your longest spell (helpful for friends, harmful for enemies)
 	-- the bar fades; the same distance as the target's marker, for every plate
 	s.far = p.rangeFade and N.Far(unit, friend) or false
@@ -1196,6 +1222,8 @@ local function detach(s)
 	s.kill:Hide()
 	if s.kill.pulse then s.kill.pulse:Stop() end
 	s.mana:Hide()
+	s.mateRing:Hide()
+	s.mate = nil
 	s.isBig, s.sizeKey = false, nil
 	ns.Heals.FeedTo(s.healN, nil)
 	ns.Heals.FeedTo(s.healB, nil)
@@ -1452,17 +1480,17 @@ local function paintTargets()
 		N.PlaceText(s, isTarget)
 		N.PaintDot(s, isTarget)
 		if ns.PlateAuras then pcall(ns.PlateAuras.Place, s) end -- (your target's a little larger)
-		s.faint = s.friend and not isTarget
+		s.faint = N.Faint(s)
 		hideBlizzard(s)
 		-- zen (and an NPC's look) ends on your target and starts again when it is not
 		if (s.friend or s.isPlayer == false) and N.Zen(s) ~= (s.zenOn or false) then N.Refresh(s) end
 	end
 end
 ns.On("PLAYER_TARGET_CHANGED", paintTargets)
--- zen: someone joins or leaves your group, their bar comes or goes
+-- someone joins or leaves your group: their ring (and zen bar) comes or goes
 ns.On("GROUP_ROSTER_UPDATE", function()
 	for _, s in pairs(current()) do
-		if s.friend and N.Zen(s) ~= (s.zenOn or false) then N.Refresh(s) end
+		if s.friend and (N.Zen(s) ~= (s.zenOn or false) or N.Mate(s) ~= (s.mate or false)) then N.Refresh(s) end
 	end
 end)
 -- into and out of combat: friendly players shrink and grow back

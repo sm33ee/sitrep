@@ -237,7 +237,7 @@ end
 
 -- The marks its plate shows right now, each with what it means: rings, orbs and
 -- tags (in the plate's own glyphs and words), one line each.
-local RING = { foe = { 1, 0.36, 0.30 }, group = { 0.44, 0.94, 0.65 }, kill = { 1, 0.45, 0.1 } }
+local RING = { foe = { 1, 0.36, 0.30 }, group = { 0.44, 0.94, 0.65 }, kill = { 1, 0.45, 0.1 }, mate = { 0.67, 0.67, 1 } }
 local MEANS = {
 	you = "targets you", targeted = "enemy players on this friend", healer = "a healer", hvt = "high-value target",
 	oom = "healer nearly out of mana", faker = "fakes casts (stops them)", locked = "your kick locked a school",
@@ -253,6 +253,7 @@ function PH.Legend(unit)
 	local out = {}
 	local function ring(c, text) out[#out + 1] = K.Glyph("ring", c[1], c[2], c[3], 10) .. "  " .. text end
 	if s.foe and s.foe:IsShown() then ring(RING.foe, "enemy player") end
+	if s.mateRing and s.mateRing:IsShown() then ring(RING.mate, "in your group") end
 	if s.grp and s.grp:IsShown() and s.grpN then
 		ring(RING.group, format("%d of your group on it%s", s.grpN, s.grpTop and ", the most of you" or ""))
 	end

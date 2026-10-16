@@ -288,7 +288,7 @@ function ns.Defaults()
 		},
 		plates = {
 			enabled = true, enemy = true, friendly = true, level = true, tags = true, cast = true, rangeFade = true, borders = true, dot = true, friendOpacity = 0.7, shiftX = 12, shiftY = -4,
-			hoverInfo = true, hoverWhere = "frame", hoverLegend = true, incoming = true, scale = 1, heals = true, questMobs = true, friendCombatScale = 0.6, mobPvpScale = 0.75, friendZen = false, npcIcons = true, groupFocus = true, foeRing = true, combo = true, auras = true, auraScale = 1, killWindow = true, killPct = 20, aggroRadar = true, enemyMana = true,
+			hoverInfo = true, hoverWhere = "frame", hoverLegend = true, incoming = true, scale = 1, heals = true, questMobs = true, friendCombatScale = 0.6, mobPvpScale = 0.75, friendZen = false, npcIcons = true, groupFocus = true, foeRing = true, mateRing = true, combo = true, auras = true, auraScale = 1, killWindow = true, killPct = 20, aggroRadar = true, enemyMana = true,
 		},
 		-- the game's own interface in SITREP's style (UI/Minimap, XP, Bags, Chat)
 		ui = {
