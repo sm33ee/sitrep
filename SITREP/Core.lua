@@ -281,7 +281,7 @@ function ns.Defaults()
 		-- (5 % = dead from full in 20 s, 10 % = in 10 s)
 		pressure = { short = 3, long = 10, spikePct = 35, ttlWarn = 4, warnPct = 5, dangerPct = 10 },
 		frames = {
-			player = true, target = true, pet = true, targetPet = true, party = true, partyTarget = true, hitGlow = true, dispelGlow = true, costPreview = true, totHealth = true, healersOnMe = true, targetCounts = true, mobsOnMe = true, popNumbers = true, hideBlizzard = true, width = 264,
+			player = true, target = true, pet = true, targetPet = true, party = true, partyTarget = true, partyCompact = false, hitGlow = true, dispelGlow = true, costPreview = true, totHealth = true, healersOnMe = true, targetCounts = true, mobsOnMe = true, popNumbers = true, hideBlizzard = true, width = 264,
 			execute = true, strip = true, intel = true, flash = true,
 			myDebuffs = true, targetAuras = true, burst = true, burstMax = 15, druidMana = true,
 			emergency = true, emergencyPct = 35,

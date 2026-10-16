@@ -373,6 +373,7 @@ local function buildFrames()
 	tog(1, "Mobs on you (player frame)", "mobsOnMe")
 	tog(1, "Druids: mana in forms, shift cost", "druidMana")
 	tog(1, "Your debuffs", "myDebuffs", "Outlined when you can remove them.")
+	tog(1, "Party: compact", "partyCompact", "Each member as a slim row: the name, a thin health bar and the class colour at the side. Debuffs, power, casts, distance and their target step aside (dispel orbs stay). Changes out of combat.")
 	tog(1, "Party: each member's target", "partyTarget", "In each party frame, bottom right: what they have targeted (red hostile, yellow neutral, green friendly, mint your target too) and, from 2 on, how many of you are on it. Click it to target it as well.")
 	tog(1, "Target's buffs and debuffs", "targetAuras", "Purgeable buffs outlined.")
 	-- column 2: size and the highlights

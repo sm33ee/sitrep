@@ -507,7 +507,7 @@ function A.Update(which)
 	for i = 1, 4 do
 		local unit, r = "party" .. i, rows["party" .. i]
 		if r and (which == nil or which == unit) then
-			local show = P.party and read(UnitExists, unit) and true or false
+			local show = P.party and not P.partyCompact and read(UnitExists, unit) and true or false
 			r:SetShown(show)
 			if show then fillRow(r, unit, "HARMFUL", "cleanse") end
 			local m = ns.Frames.partyMembers[i]

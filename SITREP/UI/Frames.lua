@@ -174,6 +174,7 @@ function F.Apply()
 		m:SetWidth(P.width)
 		m.hpTicks.Layout(P.width - 16)
 	end
+	F.PartyLayout(P.partyCompact)
 	if P.party and ns.P.enabled and not ns.hudHidden then
 		if not H.locked and ns.Config and ns.Config.IsOpen() then
 			pcall(UnregisterStateDriver, party, "visibility")

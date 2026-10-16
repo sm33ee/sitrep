@@ -195,6 +195,8 @@ F.UpdatePet, F.UpdateTargetPet = updatePet, updateTargetPet
 local party
 local MEMBER_H, MEMBER_GAP = 72, 7 -- room between members for the highlight borders
 local TGT_W = 96 -- a member's target: right of their debuffs (8 of 15 px)
+-- compact (frames.partyCompact): the name, a thin health bar, the class edge
+local COMPACT_H, COMPACT_GAP, COMPACT_HP = 26, 5, 4
 F.partyMembers = {}
 
 local function buildParty()
@@ -304,6 +306,37 @@ local function buildParty()
 	end
 end
 F.BuildParty = buildParty
+
+-- The members' layout, full or compact (F.Apply: out of combat only, the frames are
+-- secure). Compact keeps the name, a thin health bar and the class edge (and the
+-- highlights and dispel orbs); everything else steps aside.
+function F.PartyLayout(compact)
+	compact = compact and true or false
+	for i, f in ipairs(F.partyMembers) do
+		local h, gap = compact and COMPACT_H or MEMBER_H, compact and COMPACT_GAP or MEMBER_GAP
+		f:SetHeight(h)
+		f:ClearAllPoints()
+		f:SetPoint("TOPLEFT", party, "BOTTOMLEFT", 0, -(i - 1) * (h + gap) - 3)
+		f.name:ClearAllPoints()
+		f.name:SetPoint("TOPLEFT", 8, compact and -4 or -5)
+		f.name:SetPoint("RIGHT", f, "RIGHT", compact and -8 or -120, 0)
+		f.hp:ClearAllPoints()
+		f.hp:SetPoint("TOPLEFT", 8, compact and -18 or -20)
+		f.hp:SetPoint("TOPRIGHT", -8, compact and -18 or -20)
+		f.hp:SetHeight(compact and COMPACT_HP or 14)
+		for _, tx in ipairs(f.hpTicks) do tx:SetShown(not compact) end
+		for _, x in ipairs({ f.dist, f.tags, f.hpText, f.pctText, f.power, f.tgt }) do x:SetShown(not compact) end
+		f.cast:SetAlpha(compact and 0 or 1) -- (its own updates show and hide it)
+		f.tgtN:SetAlpha(compact and 0 or 1)
+		if compact then
+			pcall(UnregisterUnitWatch, f.tgtBtn)
+			f.tgtBtn:Hide()
+		elseif RegisterUnitWatch then
+			pcall(RegisterUnitWatch, f.tgtBtn)
+		end
+	end
+	F.compact = compact
+end
 
 -- Health colour like your own: green above 75 %, orange from 50 %, red below.
 local function memberHealthColor(bar, unit)

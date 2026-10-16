@@ -1495,6 +1495,28 @@ ns.P.frames.dispelGlow = true
 	check("...the target gone: the line empty", pm1.tgt:GetText() == "")
 	S.units.nameplate97 = nil
 end)()
+;(function()
+	-- compact party frames: the name, a thin health bar, the class edge
+	local h0 = pm1:GetHeight()
+	ns.P.frames.partyCompact = true; ns.Changed("frames.partyCompact"); W.Update(0.25)
+	local pm2 = ns.Frames.partyMembers[2]
+	check("compact: a slim row", pm1:GetHeight() == 26 and pm1:GetHeight() < h0 and ({ pm2:GetPoint(1) })[5] == -(26 + 5) - 3)
+	check("...the name and a thin health bar, the class edge", pm1.name:IsShown() and pm1.hp:IsShown() and pm1.hp:GetHeight() == 4
+		and pm1.edge:IsShown() and pm1.edge:GetWidth() == 2)
+	check("...the rest steps aside", not pm1.power:IsShown() and not pm1.hpText:IsShown() and not pm1.pctText:IsShown()
+		and not pm1.dist:IsShown() and not pm1.tags:IsShown() and not pm1.tgt:IsShown() and pm1.cast:GetAlpha() == 0
+		and not pm1.tgtBtn:IsShown() and not pm1.hpTicks[1]:IsShown())
+	check("...no debuff row", not ns.Auras.rows.party1:IsShown())
+	check("...the dispel orbs stay", pm1.orbs:IsShown())
+	-- in combat: the secure frames wait
+	S.me.combat = true
+	ns.P.frames.partyCompact = false; ns.Changed("frames.partyCompact")
+	check("...switched off in combat: waits", pm1:GetHeight() == 26)
+	S.me.combat = false
+	W.Fire("PLAYER_REGEN_ENABLED"); W.Update(0.25)
+	check("...and is full again after it", pm1:GetHeight() == h0 and pm1.power:IsShown() and pm1.hp:GetHeight() == 14
+		and pm1.cast:GetAlpha() == 1 and ns.Auras.rows.party1:IsShown() and W.unitWatch[pm1.tgtBtn] == true)
+end)()
 S.units.party1, S.group.n, S.auras.party1 = nil, 0, nil
 S.units.player.class = "MAGE"
 W.Fire("GROUP_ROSTER_UPDATE")
