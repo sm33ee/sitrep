@@ -3451,6 +3451,47 @@ do
 		W.Fire("QUEST_LOG_UPDATE")
 		N.Refresh(mob)
 		check("quest mob: from the tooltip data too", (mob.name:GetText() or ""):find("glyph_bang", 1, true) ~= nil and (mob.name:GetText() or ""):find("2/8", 1, true) ~= nil, mob.name:GetText())
+		-- in a group the tooltip shows the members' progress too: only yours counts as yours
+		local me = UnitName("player")
+		local savedN, savedP1 = S.group.n, S.units.party1
+		S.group.n = 1
+		S.units.party1 = { name = "Mira", guid = "Player-1-M1", isPlayer = true, class = "MAGE", level = 7 }
+		Enum.TooltipDataLineType = { QuestObjective = 8, QuestTitle = 17, QuestPlayer = 18 }
+		S.quests = { { id = 101, title = "Kobold Camp Cleanup", level = 7, zone = "Elwynn Forest", objectives = { { "Kobold Vermin slain: 4/8" } } } }
+		local tip
+		C_TooltipInfo.GetUnit = function() return { lines = tip } end
+		-- yours first, then a plain line with a member's name and theirs
+		tip = { { type = 2, leftText = "Kobold Vermin" }, { type = 17, leftText = "Kobold Camp Cleanup" }, { type = 8, leftText = " - Kobold Vermin slain: 3/8" },
+			{ type = 0, leftText = "Mira" }, { type = 8, leftText = " - Kobold Vermin slain: 6/8" } }
+		local r = Q.TipQuestLines(tip)
+		check("tooltip in a group: yours and the member's apart", r.mine:find("3/8", 1, true) and #r.party == 1 and r.party[1].name == "Mira"
+			and r.party[1].text:find("6/8", 1, true))
+		-- the member's lines first (their own line type), yours after your name
+		tip = { { type = 17, leftText = "Kobold Camp Cleanup" }, { type = 18, leftText = "Mira" }, { type = 8, leftText = " - Kobold Vermin slain: 6/8" },
+			{ type = 18, leftText = me }, { type = 8, leftText = " - Kobold Vermin slain: 3/8" } }
+		r = Q.TipQuestLines(tip)
+		check("...the member's first: still yours is yours", r.mine and r.mine:find("3/8", 1, true) and r.party[1].text:find("6/8", 1, true), r.mine)
+		-- your count from your log (the tooltip's may lag or be a member's)
+		W.Fire("QUEST_LOG_UPDATE")
+		N.Refresh(mob)
+		check("quest mob in a group: your own count on its plate (4/8), not Mira's 6/8", (mob.name:GetText() or ""):find("4/8", 1, true) ~= nil
+			and not (mob.name:GetText() or ""):find("6/8", 1, true), mob.name:GetText())
+		S.units.mouseover = S.units[mob.unit]
+		ns.PlateHover.Fill("mouseover")
+		local hf = ns.PlateHover.frame
+		check("hover: your count, and the group line from the tooltip (Mira still needs 2)", hf.quest:GetText():find("4/8", 1, true)
+			and (hf.group:GetText() or ""):find("Mira |cffe0e8e52|r", 1, true), hf.quest:GetText() .. " | " .. tostring(hf.group:GetText()))
+		-- only Mira still needs it: not yours (no "!"), the hover says it is the group's
+		tip = { { type = 17, leftText = "Kobold Camp Cleanup" }, { type = 18, leftText = "Mira" }, { type = 8, leftText = " - Kobold Vermin slain: 6/8" } }
+		W.Fire("QUEST_LOG_UPDATE")
+		N.Refresh(mob)
+		check("only a member needs it: no '!' on its plate", not (mob.name:GetText() or ""):find("glyph_bang", 1, true), mob.name:GetText())
+		ns.PlateHover.Fill("mouseover")
+		check("...the hover: the quest and the member's need", hf.quest:GetText() == "" and hf.questTitle:GetText() == "Kobold Camp Cleanup"
+			and (hf.group:GetText() or ""):find("Mira", 1, true), hf.questTitle:GetText())
+		ns.PlateHover.Fill(nil)
+		S.units.mouseover = nil
+		S.group.n, S.units.party1 = savedN, savedP1
 		C_TooltipInfo.GetUnit, Enum.TooltipDataLineType = savedTip, savedEnum
 		-- not a quest mob: nothing; switched off: nothing
 		S.quests = {}

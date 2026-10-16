@@ -96,6 +96,21 @@ end
 
 -- "Group: Mira 3 · Bob": what your group's members (those with SITREP: QuestShare)
 -- still need of the objective a unit is for; a name in green is done. nil: no one shares it.
+-- The group members' lines from the tooltip itself ("Mira 2" = still needs 2): for
+-- members without SITREP too.
+function PH.TipGroup(party)
+	if type(party) ~= "table" or #party == 0 then return nil end
+	local parts = {}
+	for _, p in ipairs(party) do
+		local have, need = ns.Quests.Counts(p.text)
+		local name = (p.name or "?"):match("^(%S+)") or p.name
+		if have and need and have >= need then parts[#parts + 1] = "|cff5cff8d" .. name .. "|r"
+		elseif have and need then parts[#parts + 1] = format("%s |cffe0e8e5%d|r", name, need - have)
+		else parts[#parts + 1] = name end
+	end
+	return "|cff8a9492Group|r  " .. table.concat(parts, " · ")
+end
+
 function PH.Group(objective, title)
 	if not (ns.QuestShare and IsInGroup and IsInGroup()) then return nil end
 	local q, n = ns.Quests.Match(objective, title)
@@ -160,9 +175,23 @@ function PH.Probe()
 			if read(UnitExists, unit) == true then
 				local lines = tipLines(unit)
 				ns.print("%s: %s, title: %s", unit, lines and (#lines .. " lines") or "no tooltip data (secret or missing)", tostring(PH.Title(unit)))
+				-- the line types by name (the client's Enum.TooltipDataLineType)
+				local typeName = {}
+				for k, v in pairs(Enum and Enum.TooltipDataLineType or {}) do typeName[v] = k end
 				for n, l in ipairs(lines or {}) do
-					ns.print("  %d [type %s] %s%s", n, tostring(ns.plain(l.type)), tostring(clean(l.leftText)),
+					local t = ns.plain(l.type)
+					ns.print("  %d [type %s%s] %s%s", n, tostring(t), typeName[t] and (" " .. typeName[t]) or "", tostring(clean(l.leftText)),
 						clean(l.rightText) and ("  |  " .. clean(l.rightText)) or "")
+				end
+				-- how SITREP reads its quest lines: yours, the group's
+				local r = lines and ns.Quests.TipQuestLines(lines)
+				if r then
+					local party = {}
+					for _, p in ipairs(r.party) do party[#party + 1] = p.name .. ": " .. tostring(clean(p.text)) end
+					local have, need
+					if r.mine then have, need = ns.Quests.MyCounts(r.mine, r.title) end
+					ns.print("  SITREP reads: quest %s; yours: %s (your log: %s); the group's: %s", tostring(r.title), tostring(r.mine and clean(r.mine)),
+						have and need and (have .. "/" .. need) or "-", #party > 0 and table.concat(party, "; ") or "none")
 				end
 			else
 				ns.print("%s: none", unit)
@@ -394,13 +423,20 @@ function PH.Fill(unit)
 	f.guild:SetText(type(guild) == "string" and ("<" .. guild .. ">") or "")
 	f.intel:SetText(ns.Frames.IntelText and ns.Frames.IntelText(unit) or "")
 	f.dispel:SetText(PH.Dispel(unit) or "")
-	local objective, title = ns.Quests.ForUnit(unit)
+	local objective, title, party, groupTitle = ns.Quests.ForUnit(unit)
 	if objective or title then
-		local o = objective and ns.QuestTracker.ObjectiveText({ text = objective, have = select(1, ns.Quests.Counts(objective)),
-			need = select(2, ns.Quests.Counts(objective)) }) or ""
+		-- your own count (your log), not one the tooltip shows for a member
+		local have, need
+		if objective then have, need = ns.Quests.MyCounts(objective, title) end
+		local o = objective and ns.QuestTracker.ObjectiveText({ text = objective, have = have, need = need }) or ""
 		f.quest:SetText("! " .. o)
 		f.questTitle:SetText(title or "")
-		f.group:SetText(PH.Group(objective, title) or "")
+		f.group:SetText(PH.Group(objective, title) or PH.TipGroup(party) or "")
+	elseif groupTitle then
+		-- only the group still needs it
+		f.quest:SetText("")
+		f.questTitle:SetText(groupTitle)
+		f.group:SetText(PH.TipGroup(party) or "")
 	else
 		f.quest:SetText("")
 		f.questTitle:SetText("")
@@ -468,11 +504,12 @@ function PH.Update()
 	l:SetText(text or "")
 	l:SetShown(text ~= nil)
 	-- part of one of your quests: the objective and the quest
-	local objective, title = ns.Quests.ForUnit(unit)
+	local objective, title, party = ns.Quests.ForUnit(unit)
 	if objective or title then
-		local o = objective and ns.QuestTracker.ObjectiveText({ text = objective, have = select(1, ns.Quests.Counts(objective)),
-			need = select(2, ns.Quests.Counts(objective)) }) or ""
-		local group = PH.Group(objective, title)
+		local have, need
+		if objective then have, need = ns.Quests.MyCounts(objective, title) end
+		local o = objective and ns.QuestTracker.ObjectiveText({ text = objective, have = have, need = need }) or ""
+		local group = PH.Group(objective, title) or PH.TipGroup(party)
 		s.hoverQuest:SetText("! " .. o .. (title and ("  |cff9a9a9a" .. title .. "|r") or "") .. (group and ("\n" .. group) or ""))
 		s.hoverQuest:Show()
 	else

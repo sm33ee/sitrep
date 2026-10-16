@@ -597,6 +597,57 @@ end
 -- text and the quest's title, or nil. The client's own tooltip lines first (they
 -- know drops too); else the NPC's name inside an open objective ("Kobold Vermin
 -- slain: 3/8").
+-- In a group the tooltip lists the members' progress too: a line naming a member
+-- (its own line type, QuestPlayer, or a plain line with a member's name) and their
+-- objective lines under it. Only lines under no other name are yours (until 4.11.5
+-- the first objective line was taken, whoever's: a member's count showed as yours).
+-- Their lines come back third ({ { name, text } }); a mob only the group still needs:
+-- nil, nil, those lines, the quest's title.
+local function groupNames()
+	local out = {}
+	if not (IsInGroup and IsInGroup()) then return out end
+	local raid = IsInRaid and IsInRaid()
+	for i = 1, raid and 40 or 4 do
+		local nm = read(UnitName, (raid and "raid" or "party") .. i)
+		if type(nm) == "string" and nm ~= "" then out[#out + 1] = nm end
+	end
+	return out
+end
+local function sameName(a, b)
+	if ns.Targeting and ns.Targeting.SameName then return ns.Targeting.SameName(a, b) end
+	return a == b
+end
+-- The quest lines of a unit's tooltip, read: { title, mine (your first objective),
+-- mineSeen, party = { { name, text } } } (nil: no quest lines).
+function Q.TipQuestLines(lines)
+	local kinds = Enum and Enum.TooltipDataLineType or {}
+	local me = read(UnitName, "player")
+	local members = groupNames()
+	local r = { party = {} }
+	local owner -- nil: yours
+	for _, l in ipairs(lines) do
+		local kind, text = plain(l.type), plain(l.leftText)
+		if type(text) == "string" then
+			local bare = text:match("^%s*(.-)%s*$")
+			if kind == kinds.QuestTitle then
+				r.title = r.title or text
+				owner = nil
+			elseif kinds.QuestPlayer and kind == kinds.QuestPlayer then
+				owner = not (me and sameName(bare, me)) and bare or nil
+			elseif kind == kinds.QuestObjective then
+				if owner then r.party[#r.party + 1] = { name = owner, text = text }
+				else r.mineSeen = true; r.mine = r.mine or text end
+			elseif r.title then
+				for _, nm in ipairs(members) do
+					if sameName(bare, nm) then owner = nm break end
+				end
+				if me and sameName(bare, me) then owner = nil end
+			end
+		end
+	end
+	if not (r.title or r.mineSeen or #r.party > 0) then return nil end
+	return r
+end
 function Q.ForUnit(unit)
 	if read(UnitIsPlayer, unit) == true then return nil end
 	local T = C_TooltipInfo and C_TooltipInfo.GetUnit
@@ -604,15 +655,13 @@ function Q.ForUnit(unit)
 	if T and kinds and kinds.QuestObjective then
 		local ok, data = pcall(T, unit)
 		if ok and type(data) == "table" and not ns.isSecret(data) and type(data.lines) == "table" then
-			local title, objective
-			for _, l in ipairs(data.lines) do
-				local kind, text = plain(l.type), plain(l.leftText)
-				if type(text) == "string" then
-					if kind == kinds.QuestTitle and not title then title = text end
-					if kind == kinds.QuestObjective and not objective then objective = text end
-				end
+			local r = Q.TipQuestLines(data.lines)
+			if r then
+				-- yours (or a quest with no objective lines at all, as a loot quest shows)
+				if r.mine or (r.title and #r.party == 0) then return r.mine, r.title, r.party end
+				-- only the group's lines: not yours to do
+				return nil, nil, r.party, r.title
 			end
-			if objective or title then return objective, title end
 		end
 	end
 	local name = read(UnitName, unit)
@@ -753,13 +802,23 @@ function Q.LearnMob(questID, n, npc, name)
 	SITREP_DB.questMobs[questID] = m
 	m[npc] = { n = n, name = type(name) == "string" and name or (m[npc] and m[npc].name) }
 end
+-- Your own count of an objective a tooltip names: from your quest log (the tooltip
+-- may show a group member's), else the words' own numbers.
+function Q.MyCounts(objective, title)
+	local q, n = Q.Match(objective, title)
+	local o = q and n and q.objectives[n]
+	if o and o.have and o.need then return o.have, o.need end
+	return counts(objective)
+end
 function Q.MobOf(unit, guid)
 	local npc = Q.NpcID(guid)
 	local key = npc or ("U:" .. unit)
 	local c = mobCache[key]
 	if c == nil then
 		local objective, title = Q.ForUnit(unit)
-		c = (objective or title) and { objective, title, objective and objective:match("(%d+%s*/%s*%d+)") } or false
+		local have, need
+		if objective then have, need = Q.MyCounts(objective, title) end
+		c = (objective or title) and { objective, title, have and need and format("%d/%d", have, need) or nil } or false
 		mobCache[key] = c
 		if c and objective and npc then
 			local q, n = Q.Match(objective, title)

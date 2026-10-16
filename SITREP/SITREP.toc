@@ -2,7 +2,7 @@
 ## Title: |cff5cff8dSITREP|r
 ## Notes: A calm glass HUD for World of Warcraft: Forever: unit frames, nameplates, quest navigation that learns where quests are (flights, ways, spawns, drop rates), bestiary, chat. Built for the secret-value client.
 ## Author: SITREP
-## Version: 4.11.4
+## Version: 4.11.5
 ## SavedVariables: SITREP_DB
 ## IconTexture: Interface\Icons\Ability_Hunter_SniperShot
 ## Category: Interface
