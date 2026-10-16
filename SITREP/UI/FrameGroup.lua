@@ -194,6 +194,7 @@ F.UpdatePet, F.UpdateTargetPet = updatePet, updateTargetPet
 ---------------------------------------------------------------------------
 local party
 local MEMBER_H, MEMBER_GAP = 72, 7 -- room between members for the highlight borders
+local TGT_W = 96 -- a member's target: right of their debuffs (8 of 15 px)
 F.partyMembers = {}
 
 local function buildParty()
@@ -269,6 +270,23 @@ local function buildParty()
 
 		castBar(f, f.power, 6)
 		f.ownCast = true -- a friend's cast: progress only
+		-- what they have targeted: bottom right, beside their debuffs (F.MemberTarget);
+		-- a click targets it too (assist), the mouse on it lights its plate
+		f.tgt = K.Font(f, 10, C.text, K.FONT, "")
+		f.tgt:SetPoint("RIGHT", f, "TOPRIGHT", -8, -58)
+		f.tgt:SetWidth(TGT_W)
+		f.tgt:SetJustifyH("RIGHT")
+		f.tgt:SetWordWrap(false)
+		f.tgtBtn = CreateFrame("Button", nil, f, "SecureUnitButtonTemplate")
+		f.tgtBtn:SetPoint("RIGHT", f, "TOPRIGHT", -4, -58)
+		f.tgtBtn:SetSize(TGT_W + 8, 16)
+		f.tgtBtn:SetAttribute("unit", unit .. "target")
+		f.tgtBtn:SetAttribute("type1", "target")
+		f.tgtBtn:RegisterForClicks("AnyUp")
+		-- (only there while they have a target: elsewhere a click is the member's own)
+		if RegisterUnitWatch then RegisterUnitWatch(f.tgtBtn) end
+		f.tgtBtn:HookScript("OnEnter", function() if ns.Plates then ns.Plates.Highlight(unit .. "target") end end)
+		f.tgtBtn:HookScript("OnLeave", function() if ns.Plates then ns.Plates.Highlight(nil) end end)
 		addHighlights(f)
 
 		f.hpTicks.Layout(W - 16)
@@ -297,6 +315,7 @@ local function updateMember(f)
 		if f:IsShown() then -- placeholder while you place the frames
 			f.name:SetText("PARTY " .. f.index); f.name:SetTextColor(unpack(C.faint))
 			f.dist:SetText(""); f.tags:SetText(""); f.hpText:SetText(""); f.pctText:SetText("")
+			if f.tgt then f.tgt:SetText("") end
 			f.edge:SetVertexColor(unpack(C.faint))
 			f:SetAlpha(1)
 		end
@@ -347,11 +366,38 @@ local function updateMember(f)
 		end
 	end
 	f.tags:SetText(table.concat(tags, "  "))
+	F.MemberTarget(f)
 
 	-- out of your heal range or offline: faded (alpha is allowed in combat)
 	f:SetAlpha((not online and 0.45) or (a and a.inHeal == false and 0.55) or 1)
 end
 F.UpdateMember = updateMember
+
+-- A member's target: "› name" in its reaction's colour (red hostile, yellow neutral,
+-- green friendly), mint when it is your target too, "› you" when it is you; empty
+-- without one. (Names may be secret in combat: the client writes them itself.)
+local TGT_FOE, TGT_NEUTRAL, TGT_FRIEND, TGT_SAME = { 1, 0.42, 0.32 }, { 1, 0.85, 0.3 }, { 0.45, 0.95, 0.5 }, { 0.44, 0.94, 0.65 }
+function F.MemberTarget(f)
+	local fs, t = f.tgt, f.unit .. "target"
+	if not fs then return end
+	if not (ns.P.frames.partyTarget ~= false and read(UnitExists, f.unit) and read(UnitExists, t) == true) then fs:SetText("") return end
+	local c
+	if read(UnitIsUnit, t, "player") == true then
+		fs:SetText("› you")
+		c = TGT_FRIEND
+	else
+		local mine, g = read(UnitGUID, "target"), read(UnitGUID, t)
+		if (mine and g and mine == g) or read(UnitIsUnit, t, "target") == true then c = TGT_SAME
+		else
+			local r = read(UnitReaction, t, "player")
+			c = not r and C.text or r <= 3 and TGT_FOE or r == 4 and TGT_NEUTRAL or TGT_FRIEND
+		end
+		local name = read(GetUnitName, t, false)
+		if name then fs:SetText("› " .. name)
+		elseif not pcall(function() fs:SetFormattedText("› %s", GetUnitName(t, false)) end) then fs:SetText("") end
+	end
+	fs:SetTextColor(c[1], c[2], c[3])
+end
 
 local function updateParty()
 	if not party then return end

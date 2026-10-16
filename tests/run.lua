@@ -1465,6 +1465,32 @@ ns.P.frames.dispelGlow = false
 W.Fire("UNIT_AURA", "party1")
 check("dispel highlight switch off", not pm1.disp:IsShown() and not pm1.orbs:IsShown())
 ns.P.frames.dispelGlow = true
+;(function()
+	-- each member's target, bottom right in their frame
+	check("member's target: none, an empty line", pm1.tgt:GetText() == "" and pm1.tgtBtn:GetAttribute("unit") == "party1target"
+		and pm1.tgtBtn:GetAttribute("type1") == "target" and W.unitWatch[pm1.tgtBtn] == true)
+	S.units.nameplate97 = { name = "Kobold", guid = "Creature-0-1-97", level = 10, isPlayer = false, hostile = true, reaction = 2, wx = 20, wy = 0 }
+	S.units.party1.targetOf = S.units.nameplate97
+	W.Fire("UNIT_TARGET", "party1")
+	check("...a hostile mob: its name, red", pm1.tgt:GetText() == "› Kobold" and pm1.tgt._tc[1] == 1 and pm1.tgt._tc[2] < 0.5, tostring(pm1.tgt:GetText()))
+	S.units.target = S.units.nameplate97
+	W.Fire("PLAYER_TARGET_CHANGED")
+	check("...your target too: mint", pm1.tgt._tc[1] < 0.5 and pm1.tgt._tc[2] > 0.9)
+	S.units.target = nil
+	W.Fire("PLAYER_TARGET_CHANGED")
+	S.units.party1.targetOf = nil; S.units.party1.targetingMe = true
+	W.Fire("UNIT_TARGET", "party1")
+	check("...you", pm1.tgt:GetText() == "› you")
+	S.units.party1.targetingMe = nil
+	S.units.party1.targetOf = S.units.nameplate97
+	ns.P.frames.partyTarget = false; W.Fire("UNIT_TARGET", "party1")
+	check("...a setting", pm1.tgt:GetText() == "")
+	ns.P.frames.partyTarget = true
+	S.units.party1.targetOf = nil
+	W.Fire("UNIT_TARGET", "party1")
+	check("...the target gone: the line empty", pm1.tgt:GetText() == "")
+	S.units.nameplate97 = nil
+end)()
 S.units.party1, S.group.n, S.auras.party1 = nil, 0, nil
 S.units.player.class = "MAGE"
 W.Fire("GROUP_ROSTER_UPDATE")
@@ -3613,34 +3639,6 @@ do
 		friend.hb:Hide(); N.Refresh(friend)
 		check("...no ring on a name-only plate", not friend.mateRing:IsShown())
 		friend.hb:Show()
-		-- their target under the plate
-		local fu, n0 = S.units.nameplate81, S.group.n
-		S.group.n, S.units.party1 = 1, fu
-		N.Refresh(friend)
-		check("their target: none, no line", friend.mateUnit == "party1" and not friend.mateT:IsShown())
-		fu.targetOf = S.units.nameplate80
-		W.Fire("UNIT_TARGET", "party1")
-		local mobName = GetUnitName("nameplate80", false)
-		check("...a hostile mob: its name under the bar, red", friend.mateT:IsShown() and friend.mateT:GetText() == "› " .. mobName
-			and friend.mateT._tc[1] == 1 and friend.mateT._tc[2] < 0.5, tostring(friend.mateT:GetText()))
-		check("...the cast bar moves down under it", ({ friend.cast:GetPoint(1) })[5] < -(8 + 4))
-		S.units.target = S.units.nameplate80
-		W.Fire("PLAYER_TARGET_CHANGED")
-		check("...your target too: mint", friend.mateT._tc[1] == N.MINT[1] and friend.mateT._tc[2] == N.MINT[2])
-		S.units.target = nil
-		W.Fire("PLAYER_TARGET_CHANGED")
-		fu.targetOf = nil; fu.targetingMe = true
-		W.Fire("UNIT_TARGET", "party1")
-		check("...you: \"› you\"", friend.mateT:GetText() == "› you")
-		fu.targetingMe = nil
-		fu.targetOf = S.units.nameplate80
-		ns.P.plates.mateTarget = false; N.Refresh(friend)
-		check("...a setting", not friend.mateT:IsShown() and ({ friend.cast:GetPoint(1) })[5] == -8)
-		ns.P.plates.mateTarget = true
-		fu.targetOf = nil
-		W.Fire("UNIT_TARGET", "party1")
-		check("...the target gone: the line gone", not friend.mateT:IsShown())
-		S.group.n, S.units.party1 = n0, nil
 		UnitInParty = realInParty
 		W.Fire("GROUP_ROSTER_UPDATE")
 		check("leaves the group: ring gone, faint again", not friend.mate and not friend.mateRing:IsShown() and friend.name._tc[1] ~= M[1]

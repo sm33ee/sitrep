@@ -281,14 +281,14 @@ function ns.Defaults()
 		-- (5 % = dead from full in 20 s, 10 % = in 10 s)
 		pressure = { short = 3, long = 10, spikePct = 35, ttlWarn = 4, warnPct = 5, dangerPct = 10 },
 		frames = {
-			player = true, target = true, pet = true, targetPet = true, party = true, hitGlow = true, dispelGlow = true, costPreview = true, totHealth = true, healersOnMe = true, targetCounts = true, mobsOnMe = true, popNumbers = true, hideBlizzard = true, width = 264,
+			player = true, target = true, pet = true, targetPet = true, party = true, partyTarget = true, hitGlow = true, dispelGlow = true, costPreview = true, totHealth = true, healersOnMe = true, targetCounts = true, mobsOnMe = true, popNumbers = true, hideBlizzard = true, width = 264,
 			execute = true, strip = true, intel = true, flash = true,
 			myDebuffs = true, targetAuras = true, burst = true, burstMax = 15, druidMana = true,
 			emergency = true, emergencyPct = 35,
 		},
 		plates = {
 			enabled = true, enemy = true, friendly = true, level = true, tags = true, cast = true, rangeFade = true, borders = true, dot = true, friendOpacity = 0.7, shiftX = 12, shiftY = -4,
-			hoverInfo = true, hoverWhere = "frame", hoverLegend = true, incoming = true, scale = 1, heals = true, questMobs = true, friendCombatScale = 0.6, mobPvpScale = 0.75, friendZen = false, npcIcons = true, groupFocus = true, foeRing = true, mateRing = true, mateTarget = true, combo = true, auras = true, auraScale = 1, killWindow = true, killPct = 20, aggroRadar = true, enemyMana = true,
+			hoverInfo = true, hoverWhere = "frame", hoverLegend = true, incoming = true, scale = 1, heals = true, questMobs = true, friendCombatScale = 0.6, mobPvpScale = 0.75, friendZen = false, npcIcons = true, groupFocus = true, foeRing = true, mateRing = true, combo = true, auras = true, auraScale = 1, killWindow = true, killPct = 20, aggroRadar = true, enemyMana = true,
 		},
 		-- the game's own interface in SITREP's style (UI/Minimap, XP, Bags, Chat)
 		ui = {
