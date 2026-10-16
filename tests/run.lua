@@ -2886,7 +2886,11 @@ do
 		check("hovering the member's frame: its plate gets the target brackets", friend.sel:IsShown() and not mage.sel:IsShown())
 		local MATE = ns.Plates.MATE
 		check("...in party blue, a party-blue frame pulsing round them", friend.beacon:IsShown() and not mage.beacon:IsShown()
-			and W.vc(friend.sel.parts[1])[1] == MATE[1] and W.vc(friend.sel.parts[1])[3] == MATE[3] and friend.beacon._ignoreParentAlpha == true)
+			and W.vc(friend.sel.parts[1])[1] == MATE[1] and W.vc(friend.sel.parts[1])[3] == MATE[3])
+		friend:SetAlpha(0.3); friend.plate_ = friend:GetParent(); friend.plate_:SetAlpha(0.4) -- (out of line of sight: the client fades the plate)
+		check("...on UIParent, at full alpha however the plate is faded, over the other plates", friend.beacon:GetParent() == UIParent
+			and friend.beacon:GetAlpha() == 1 and friend.beacon:GetFrameStrata() == "LOW" and ({ friend.beacon:GetPoint(1) })[2] == friend)
+		friend:SetAlpha(1); friend.plate_:SetAlpha(1)
 		ns.Plates.Refresh(friend) -- (the plates' regular update)
 		check("...and keeps them while the mouse stays", friend.sel:IsShown() and friend.beacon:IsShown() and W.vc(friend.sel.parts[1])[1] == MATE[1])
 		m._scripts.OnLeave(m)

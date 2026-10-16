@@ -35,7 +35,8 @@
 --               bar and the name in the same blue; never see-through (other friends
 --               are, plates.friendOpacity)
 --   beacon      the member whose party frame the mouse is on: drawn as your target,
---               the brackets party blue and a party-blue frame pulsing round them
+--               the brackets party blue, a solid party-blue frame round them with a
+--               halo pulsing outside; on UIParent, so never faded with the plate
 --   dispel orbs friendly plates: a small orb left of the bar for each kind of debuff
 --               you can dispel on it, in that kind's colour (frames round a plate
 --               mean target and enemy; a dispel is something to do, not a kind of unit)
@@ -558,18 +559,24 @@ local function build(plate, hb)
 		s.kill.pulse = ag
 	end
 	s.kill:Hide()
-	-- the member whose frame the mouse is on: a party-blue frame pulsing round its
-	-- brackets (N.Beacon); solid through the client's fading of plates
-	s.beacon = CreateFrame("Frame", nil, s)
-	s.beacon:SetPoint("TOPLEFT", -SEL_GAP - 4, SEL_GAP + 4)
-	s.beacon:SetPoint("BOTTOMRIGHT", SEL_GAP + 4, -SEL_GAP - 4)
+	-- the member whose frame the mouse is on: a solid party-blue frame round its
+	-- brackets and a halo pulsing outside it (N.Beacon). Not in the plate: on
+	-- UIParent, anchored to it, so no fading of the plate reaches it (out of line of
+	-- sight, out of range, not selected) and it draws over the other plates
+	s.beacon = CreateFrame("Frame", nil, UIParent)
+	s.beacon:SetFrameStrata("LOW")
+	s.beacon:SetPoint("TOPLEFT", s, "TOPLEFT", -SEL_GAP - 4, SEL_GAP + 4)
+	s.beacon:SetPoint("BOTTOMRIGHT", s, "BOTTOMRIGHT", SEL_GAP + 4, -SEL_GAP - 4)
 	K.Border(s.beacon, { MATE[1], MATE[2], MATE[3], 1 }, 2, 4)
-	if s.beacon.SetIgnoreParentAlpha then pcall(s.beacon.SetIgnoreParentAlpha, s.beacon, true) end
-	local bg = s.beacon.CreateAnimationGroup and s.beacon:CreateAnimationGroup()
+	s.beacon.halo = CreateFrame("Frame", nil, s.beacon)
+	s.beacon.halo:SetPoint("TOPLEFT", -3, 3)
+	s.beacon.halo:SetPoint("BOTTOMRIGHT", 3, -3)
+	K.Border(s.beacon.halo, { MATE[1], MATE[2], MATE[3], 0.7 }, 2, 6)
+	local bg = s.beacon.halo.CreateAnimationGroup and s.beacon.halo:CreateAnimationGroup()
 	if bg then
 		local a = bg:CreateAnimation("Alpha")
-		if a.SetFromAlpha then a:SetFromAlpha(1); a:SetToAlpha(0.2) end
-		if a.SetDuration then a:SetDuration(0.45) end
+		if a.SetFromAlpha then a:SetFromAlpha(1); a:SetToAlpha(0) end
+		if a.SetDuration then a:SetDuration(0.5) end
 		if bg.SetLooping then bg:SetLooping("BOUNCE") end
 		s.beacon.pulse = bg
 	end
@@ -1495,7 +1502,7 @@ end
 N.Hovered = hovered
 
 -- The plate of the member whose frame the mouse is on: on top of the target's look,
--- its brackets in party blue and a party-blue frame pulsing round them (s.beacon).
+-- its brackets in party blue and the beacon round them (s.beacon, full alpha).
 function N.Beacon(s)
 	local on = hovered(s.unit, s) and true or false
 	local c = on and MATE or s.selColor
