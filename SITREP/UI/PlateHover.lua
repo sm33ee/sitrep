@@ -96,19 +96,30 @@ end
 
 -- "Group: Mira 3 · Bob": what your group's members (those with SITREP: QuestShare)
 -- still need of the objective a unit is for; a name in green is done. nil: no one shares it.
--- The group members' lines from the tooltip itself ("Mira 2" = still needs 2): for
--- members without SITREP too.
+-- One member's line: what they still need of what ("Dagehtmir – 2 more Große
+-- Geiferzahnschnauze"; a kill objective names the mob: "3 more Kobold"), or done.
+local function thing(text)
+	local t = ns.Bestiary and ns.Bestiary.ObjectiveMob(text)
+		or (ns.Questbook and ns.Questbook.BareText(text)) or text
+	return type(t) == "string" and t:gsub("^%s*%-%s*", "") or "?"
+end
+function PH.NeedLine(name, have, need, text)
+	name = (name or "?"):match("^(%S+)") or name
+	if have and need and have >= need then return format("  |cff5cff8d%s – done|r", name) end
+	if have and need then return format("  %s – |cffe0e8e5%d more|r %s", name, need - have, thing(text)) end
+	return "  " .. name
+end
+local GROUP = "|cff8a9492Group|r"
+
+-- The group members' lines from the tooltip itself: for members without SITREP too.
 function PH.TipGroup(party)
 	if type(party) ~= "table" or #party == 0 then return nil end
-	local parts = {}
+	local lines = { GROUP }
 	for _, p in ipairs(party) do
 		local have, need = ns.Quests.Counts(p.text)
-		local name = (p.name or "?"):match("^(%S+)") or p.name
-		if have and need and have >= need then parts[#parts + 1] = "|cff5cff8d" .. name .. "|r"
-		elseif have and need then parts[#parts + 1] = format("%s |cffe0e8e5%d|r", name, need - have)
-		else parts[#parts + 1] = name end
+		lines[#lines + 1] = PH.NeedLine(p.name, have, need, p.text)
 	end
-	return "|cff8a9492Group|r  " .. table.concat(parts, " · ")
+	return table.concat(lines, "\n")
 end
 
 function PH.Group(objective, title)
@@ -117,8 +128,14 @@ function PH.Group(objective, title)
 	if not (q and n and type(q.id) == "number") then return nil end
 	local members = ns.QuestShare.ForQuest(q.id)
 	if #members == 0 then return nil end
-	local text = ns.QuestTracker.PartyText(members, n)
-	return text ~= "" and ("|cff8a9492Group|r  " .. text) or nil
+	local text = q.objectives[n] and q.objectives[n].text or objective
+	local lines = { GROUP }
+	for _, m in ipairs(members) do
+		local c = m.counts[n]
+		if m.complete then lines[#lines + 1] = PH.NeedLine(m.name, 1, 1, text)
+		elseif c then lines[#lines + 1] = PH.NeedLine(m.name, c[1], c[2], text) end
+	end
+	return #lines > 1 and table.concat(lines, "\n") or nil
 end
 
 -- An NPC's title ("Schmied", "Gemischtwaren"): the line under its name in the

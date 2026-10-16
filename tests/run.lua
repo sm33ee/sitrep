@@ -3479,8 +3479,8 @@ do
 		S.units.mouseover = S.units[mob.unit]
 		ns.PlateHover.Fill("mouseover")
 		local hf = ns.PlateHover.frame
-		check("hover: your count, and the group line from the tooltip (Mira still needs 2)", hf.quest:GetText():find("4/8", 1, true)
-			and (hf.group:GetText() or ""):find("Mira |cffe0e8e52|r", 1, true), hf.quest:GetText() .. " | " .. tostring(hf.group:GetText()))
+		check("hover: your count, and the group's from the tooltip (Mira: 2 more Kobold Vermin)", hf.quest:GetText():find("4/8", 1, true)
+			and (hf.group:GetText() or ""):find("Mira – |cffe0e8e52 more|r Kobold Vermin", 1, true), hf.quest:GetText() .. " | " .. tostring(hf.group:GetText()))
 		-- only Mira still needs it: not yours (no "!"), the hover says it is the group's
 		tip = { { type = 17, leftText = "Kobold Camp Cleanup" }, { type = 18, leftText = "Mira" }, { type = 8, leftText = " - Kobold Vermin slain: 6/8" } }
 		W.Fire("QUEST_LOG_UPDATE")
@@ -5195,8 +5195,8 @@ end)()
 	ns.QuestShare.party = { Mira = { [311] = { counts = { { 3, 8 } } } }, Bob = { [311] = { counts = { { 8, 8 } } } } }
 	W.Fire("UPDATE_MOUSEOVER_UNIT")
 	local gt = hf.group:GetText() or ""
-	check("group line: Mira still needs 5, Bob is done (green)", hf.group:IsShown() and gt:find("Mira |cffe0e8e55|r", 1, true)
-		and gt:find("|cff5cff8dBob|r", 1, true), gt)
+	check("group lines: Mira – 5 more Kobold Vermin, Bob done (green)", hf.group:IsShown() and gt:find("Mira – |cffe0e8e55 more|r Kobold Vermin", 1, true)
+		and gt:find("|cff5cff8dBob – done|r", 1, true), gt)
 	check("the quest matched by its objective, counts aside", select(2, ns.Quests.Match("Kobold Vermin slain: 5/8", "Neu A")) == 1)
 	ns.QuestShare.party = { Mira = { [999] = { counts = { { 1, 4 } } } } }
 	W.Fire("UPDATE_MOUSEOVER_UNIT")
