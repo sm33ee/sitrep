@@ -275,6 +275,16 @@ local function buildParty()
 		f.tgt = K.Font(f, 10, C.text, K.FONT, "")
 		f.tgt:SetPoint("RIGHT", f, "TOPRIGHT", -8, -58)
 		f.tgt:SetWidth(TGT_W)
+		-- how many of your group (you too) are on it: a pill at the line's end, like
+		-- the plates' group focus (filled: the one most of you are on)
+		f.tgtN = CreateFrame("Frame", nil, f)
+		f.tgtN:SetSize(16, 12)
+		f.tgtN:SetPoint("RIGHT", f, "TOPRIGHT", -8, -58)
+		f.tgtN.pill = K.Backdrop(f.tgtN, { 0.06, 0.08, 0.08, 0.85 }, 4, { shadow = false })
+		f.tgtN.count = f.tgtN:CreateFontString(nil, "OVERLAY")
+		K.ApplyFont(f.tgtN.count, K.FONT, 9, "")
+		f.tgtN.count:SetPoint("CENTER")
+		f.tgtN:Hide()
 		f.tgt:SetJustifyH("RIGHT")
 		f.tgt:SetWordWrap(false)
 		f.tgtBtn = CreateFrame("Button", nil, f, "SecureUnitButtonTemplate")
@@ -377,10 +387,37 @@ F.UpdateMember = updateMember
 -- green friendly), mint when it is your target too, "› you" when it is you; empty
 -- without one. (Names may be secret in combat: the client writes them itself.)
 local TGT_FOE, TGT_NEUTRAL, TGT_FRIEND, TGT_SAME = { 1, 0.42, 0.32 }, { 1, 0.85, 0.3 }, { 0.45, 0.95, 0.5 }, { 0.44, 0.94, 0.65 }
+-- The pill: how many of your group (you included) have it targeted, from 2 on.
+local function memberCount(f, g)
+	local TG, b = ns.Targeting, f.tgtN
+	local n = g and TG.focus and TG.focus[g] or 0
+	local show = n >= 2
+	if show then
+		b.count:SetText(tostring(n))
+		if TG.focusTop == g then
+			b.pill:SetVertexColor(TGT_SAME[1], TGT_SAME[2], TGT_SAME[3], 1)
+			b.count:SetTextColor(0.06, 0.12, 0.09)
+		else
+			b.pill:SetVertexColor(0.06, 0.08, 0.08, 0.85)
+			b.count:SetTextColor(TGT_SAME[1], TGT_SAME[2], TGT_SAME[3])
+		end
+	end
+	if show ~= (b:IsShown() and true or false) then
+		b:SetShown(show)
+		f.tgt:ClearAllPoints()
+		if show then f.tgt:SetPoint("RIGHT", b, "LEFT", -4, 0) else f.tgt:SetPoint("RIGHT", f, "TOPRIGHT", -8, -58) end
+		f.tgt:SetWidth(show and TGT_W - 20 or TGT_W)
+	end
+end
 function F.MemberTarget(f)
 	local fs, t = f.tgt, f.unit .. "target"
 	if not fs then return end
-	if not (ns.P.frames.partyTarget ~= false and read(UnitExists, f.unit) and read(UnitExists, t) == true) then fs:SetText("") return end
+	if not (ns.P.frames.partyTarget ~= false and read(UnitExists, f.unit) and read(UnitExists, t) == true) then
+		fs:SetText("")
+		memberCount(f, nil)
+		return
+	end
+	memberCount(f, read(UnitGUID, t))
 	local c
 	if read(UnitIsUnit, t, "player") == true then
 		fs:SetText("› you")

@@ -233,12 +233,16 @@ end)
 ns.On("PLAYER_TARGET_CHANGED", function()
 	if F.target then F.UpdateTarget() end
 	if F.tpet then F.UpdateTargetPet() end
+	if ns.Targeting then ns.Targeting.UpdateFocus() end -- (how many are on it, you too)
 	for _, m in ipairs(F.partyMembers or {}) do F.MemberTarget(m) end -- (mint: your target too)
 end)
 -- a member of your group targets something else: the line in their frame
 ns.On("UNIT_TARGET", function(_, unit)
 	local m = F.PartyMember and F.PartyMember(unit)
-	if m then F.MemberTarget(m) end
+	if not m then return end
+	-- (the counts change for every member's line)
+	if ns.Targeting then ns.Targeting.UpdateFocus() end
+	for _, o in ipairs(F.partyMembers) do F.MemberTarget(o) end
 end)
 
 local function onUnitHealth(_, unit)

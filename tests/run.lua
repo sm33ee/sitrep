@@ -1473,14 +1473,18 @@ ns.P.frames.dispelGlow = true
 	S.units.party1.targetOf = S.units.nameplate97
 	W.Fire("UNIT_TARGET", "party1")
 	check("...a hostile mob: its name, red", pm1.tgt:GetText() == "› Kobold" and pm1.tgt._tc[1] == 1 and pm1.tgt._tc[2] < 0.5, tostring(pm1.tgt:GetText()))
+	check("...only them on it: no count", not pm1.tgtN:IsShown())
 	S.units.target = S.units.nameplate97
 	W.Fire("PLAYER_TARGET_CHANGED")
 	check("...your target too: mint", pm1.tgt._tc[1] < 0.5 and pm1.tgt._tc[2] > 0.9)
+	check("...and a pill with how many of you are on it, the line left of it", pm1.tgtN:IsShown() and pm1.tgtN.count:GetText() == "2"
+		and ({ pm1.tgt:GetPoint(1) })[2] == pm1.tgtN)
+	check("...filled: the one most of you are on", W.vc(pm1.tgtN.pill)[1] < 0.5 and W.vc(pm1.tgtN.pill)[2] > 0.9)
 	S.units.target = nil
 	W.Fire("PLAYER_TARGET_CHANGED")
 	S.units.party1.targetOf = nil; S.units.party1.targetingMe = true
 	W.Fire("UNIT_TARGET", "party1")
-	check("...you", pm1.tgt:GetText() == "› you")
+	check("...you", pm1.tgt:GetText() == "› you" and not pm1.tgtN:IsShown())
 	S.units.party1.targetingMe = nil
 	S.units.party1.targetOf = S.units.nameplate97
 	ns.P.frames.partyTarget = false; W.Fire("UNIT_TARGET", "party1")
