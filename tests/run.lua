@@ -2884,16 +2884,12 @@ do
 		check("before: the member's plate not marked", not friend.sel:IsShown())
 		m._scripts.OnEnter(m)
 		check("hovering the member's frame: its plate gets the target brackets", friend.sel:IsShown() and not mage.sel:IsShown())
-		check("...and a green frame pulsing round them", friend.beacon:IsShown() and not mage.beacon:IsShown()
-			and W.vc(friend.beacon.border[1])[2] == 1 and W.vc(friend.beacon.border[1])[3] < 0.5 and W.vc(friend.beacon.border[1])[4] == 1)
-		friend:SetAlpha(0.3); friend.plate_ = friend:GetParent(); friend.plate_:SetAlpha(0.4) -- (out of line of sight: the client fades the plate)
-		check("...on UIParent, at full alpha however the plate is faded, over the other plates", friend.beacon:GetParent() == UIParent
-			and friend.beacon:GetAlpha() == 1 and friend.beacon:GetFrameStrata() == "LOW" and ({ friend.beacon:GetPoint(1) })[2] == friend)
-		friend:SetAlpha(1); friend.plate_:SetAlpha(1)
+		check("...one frame, no other: the brackets, at full alpha however the client fades the plate", friend.sel._ignoreParentAlpha == true
+			and not mage.sel._ignoreParentAlpha and friend.beacon == nil)
 		ns.Plates.Refresh(friend) -- (the plates' regular update)
-		check("...and keeps them while the mouse stays", friend.sel:IsShown() and friend.beacon:IsShown())
+		check("...and keeps them while the mouse stays", friend.sel:IsShown() and friend.sel._ignoreParentAlpha == true)
 		m._scripts.OnLeave(m)
-		check("mouse off its frame: as before", not friend.sel:IsShown() and not friend.beacon:IsShown())
+		check("mouse off its frame: as before", not friend.sel:IsShown() and not friend.sel._ignoreParentAlpha)
 		S.units.party1 = nil
 	end)()
 	-- A PLATE FRAME REUSED FOR ANOTHER PLAYER (3.41.1): the game hands the frame of a

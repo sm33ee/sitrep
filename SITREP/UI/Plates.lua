@@ -34,9 +34,8 @@
 --   mate ring   (plates.mateRing) your group's members: a party-blue ring round the
 --               bar and the name in the same blue; never see-through (other friends
 --               are, plates.friendOpacity)
---   beacon      the member whose party frame the mouse is on: drawn as your target,
---               and a green frame pulsing round the brackets; on UIParent, so never
---               faded with the plate
+--   hover       the member whose party frame the mouse is on: drawn as your target,
+--               its brackets at full alpha (not faded with the plate out of sight)
 --   dispel orbs friendly plates: a small orb left of the bar for each kind of debuff
 --               you can dispel on it, in that kind's colour (frames round a plate
 --               mean target and enemy; a dispel is something to do, not a kind of unit)
@@ -559,27 +558,6 @@ local function build(plate, hb)
 		s.kill.pulse = ag
 	end
 	s.kill:Hide()
-	-- the member whose frame the mouse is on: a green frame pulsing round its
-	-- brackets, always at full colour (N.Beacon). Not in the plate: on UIParent, anchored to it, so no
-	-- fading of the plate reaches it (out of line of sight, out of range) and it
-	-- draws over the other plates
-	s.beacon = CreateFrame("Frame", nil, UIParent)
-	s.beacon:SetFrameStrata("LOW")
-	s.beacon:SetPoint("TOPLEFT", s, "TOPLEFT", -SEL_GAP - 4, SEL_GAP + 4)
-	s.beacon:SetPoint("BOTTOMRIGHT", s, "BOTTOMRIGHT", SEL_GAP + 4, -SEL_GAP - 4)
-	K.Border(s.beacon, { REACT_FRIEND[1], REACT_FRIEND[2], REACT_FRIEND[3], 1 }, 2, 4)
-	local bg = s.beacon.CreateAnimationGroup and s.beacon:CreateAnimationGroup()
-	if bg then
-		-- (it pulses in size, never in alpha: full colour all the time)
-		local a = bg:CreateAnimation("Scale")
-		if a.SetScaleFrom then a:SetScaleFrom(1, 1); a:SetScaleTo(1.12, 1.25)
-		elseif a.SetScale then a:SetScale(1.12, 1.25) end
-		if a.SetOrigin then a:SetOrigin("CENTER", 0, 0) end
-		if a.SetDuration then a:SetDuration(0.45) end
-		if bg.SetLooping then bg:SetLooping("BOUNCE") end
-		s.beacon.pulse = bg
-	end
-	s.beacon:Hide()
 	-- text above the bar, one line centred over it: level, full name, tags; drawn
 	-- over the brackets and side lines (placed by N.PlaceText)
 	s.text = CreateFrame("Frame", nil, s)
@@ -1179,7 +1157,7 @@ function N.Refresh(s)
 	N.Size(s)
 	N.Health(s)
 	s.sel:SetShown(isTarget)
-	N.Beacon(s)
+	N.HoverMark(s)
 	N.PlaceText(s, isTarget)
 	N.PaintDot(s, isTarget)
 	if ns.PlateNPC then pcall(ns.PlateNPC.Paint, s) end
@@ -1249,8 +1227,7 @@ local function detach(s)
 	s.mana:Hide()
 	s.mateRing:Hide()
 	s.mate = nil
-	s.beacon:Hide()
-	if s.beacon.pulse then s.beacon.pulse:Stop() end
+	if s.selSolid then pcall(s.sel.SetIgnoreParentAlpha, s.sel, false); s.selSolid = false end
 	s.isBig, s.sizeKey = false, nil
 	ns.Heals.FeedTo(s.healN, nil)
 	ns.Heals.FeedTo(s.healB, nil)
@@ -1500,13 +1477,18 @@ local function marked(unit, s)
 end
 N.Hovered = hovered
 
--- The plate of the member whose frame the mouse is on: on top of the target's look,
--- the beacon pulsing round it (s.beacon).
-function N.Beacon(s)
+-- The plate of the member whose frame the mouse is on: drawn as your target's, its
+-- brackets at full alpha however the client fades the plate (out of line of sight,
+-- not selected). Not on a plate showing only its name: SITREP's part is hidden there.
+function N.HoverMark(s)
 	local on = hovered(s.unit, s) and true or false
-	if on ~= (s.beacon:IsShown() and true or false) then
-		s.beacon:SetShown(on)
-		if s.beacon.pulse then if on then s.beacon.pulse:Play() else s.beacon.pulse:Stop() end end
+	if on then
+		local okB, barShown = pcall(s.hb.IsShown, s.hb)
+		on = not okB or barShown ~= false
+	end
+	if on ~= (s.selSolid or false) and s.sel.SetIgnoreParentAlpha then
+		pcall(s.sel.SetIgnoreParentAlpha, s.sel, on)
+		s.selSolid = on
 	end
 end
 
@@ -1518,7 +1500,7 @@ local function paintTargets()
 		s.isTarget = isTarget
 		N.Size(s)
 		s.sel:SetShown(isTarget)
-		N.Beacon(s)
+		N.HoverMark(s)
 		N.PlaceText(s, isTarget)
 		N.PaintDot(s, isTarget)
 		if ns.PlateAuras then pcall(ns.PlateAuras.Place, s) end -- (your target's a little larger)
