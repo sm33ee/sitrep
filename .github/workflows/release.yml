@@ -24,14 +24,14 @@ jobs:
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
+          NOTES: |
+            Download **SITREP.zip** below, unpack it into `World of Warcraft/_classic_beta_/Interface/AddOns/` (you should get a folder `AddOns/SITREP`), restart the game, type `/sitrep`.
+
+            Deutsch: SITREP.zip herunterladen, nach Interface/AddOns entpacken, Spiel neu starten, /sitrep tippen.
         run: |
           version="${GITHUB_REF_NAME#v}"
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release upload "$GITHUB_REF_NAME" SITREP.zip "SITREP-$version.zip" --clobber
           else
-            gh release create "$GITHUB_REF_NAME" SITREP.zip "SITREP-$version.zip" \
-              --title "SITREP $version" \
-              --notes "Download **SITREP.zip** below, unpack it into \`World of Warcraft/_classic_beta_/Interface/AddOns/\` (you should get a folder \`AddOns/SITREP\`), restart the game, type \`/sitrep\`.
-
-Deutsch: SITREP.zip herunterladen, nach Interface/AddOns entpacken, Spiel neu starten, /sitrep tippen."
+            gh release create "$GITHUB_REF_NAME" SITREP.zip "SITREP-$version.zip" --title "SITREP $version" --notes "$NOTES"
           fi
