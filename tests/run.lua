@@ -2885,7 +2885,7 @@ do
 		m._scripts.OnEnter(m)
 		check("hovering the member's frame: its plate gets the target brackets", friend.sel:IsShown() and not mage.sel:IsShown())
 		check("...and a green frame pulsing round them", friend.beacon:IsShown() and not mage.beacon:IsShown()
-			and W.vc(friend.beacon.border[1])[2] == 1 and W.vc(friend.beacon.border[1])[3] < 0.5)
+			and W.vc(friend.beacon.border[1])[2] == 1 and W.vc(friend.beacon.border[1])[3] < 0.5 and W.vc(friend.beacon.border[1])[4] == 1)
 		friend:SetAlpha(0.3); friend.plate_ = friend:GetParent(); friend.plate_:SetAlpha(0.4) -- (out of line of sight: the client fades the plate)
 		check("...on UIParent, at full alpha however the plate is faded, over the other plates", friend.beacon:GetParent() == UIParent
 			and friend.beacon:GetAlpha() == 1 and friend.beacon:GetFrameStrata() == "LOW" and ({ friend.beacon:GetPoint(1) })[2] == friend)

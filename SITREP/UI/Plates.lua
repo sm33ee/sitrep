@@ -560,7 +560,7 @@ local function build(plate, hb)
 	end
 	s.kill:Hide()
 	-- the member whose frame the mouse is on: a green frame pulsing round its
-	-- brackets (N.Beacon). Not in the plate: on UIParent, anchored to it, so no
+	-- brackets, always at full colour (N.Beacon). Not in the plate: on UIParent, anchored to it, so no
 	-- fading of the plate reaches it (out of line of sight, out of range) and it
 	-- draws over the other plates
 	s.beacon = CreateFrame("Frame", nil, UIParent)
@@ -570,8 +570,11 @@ local function build(plate, hb)
 	K.Border(s.beacon, { REACT_FRIEND[1], REACT_FRIEND[2], REACT_FRIEND[3], 1 }, 2, 4)
 	local bg = s.beacon.CreateAnimationGroup and s.beacon:CreateAnimationGroup()
 	if bg then
-		local a = bg:CreateAnimation("Alpha")
-		if a.SetFromAlpha then a:SetFromAlpha(1); a:SetToAlpha(0.3) end
+		-- (it pulses in size, never in alpha: full colour all the time)
+		local a = bg:CreateAnimation("Scale")
+		if a.SetScaleFrom then a:SetScaleFrom(1, 1); a:SetScaleTo(1.12, 1.25)
+		elseif a.SetScale then a:SetScale(1.12, 1.25) end
+		if a.SetOrigin then a:SetOrigin("CENTER", 0, 0) end
 		if a.SetDuration then a:SetDuration(0.45) end
 		if bg.SetLooping then bg:SetLooping("BOUNCE") end
 		s.beacon.pulse = bg
