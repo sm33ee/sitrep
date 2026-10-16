@@ -8,6 +8,8 @@ are, how you get there fastest, where mobs spawn, how often they drop what you n
 Built for Forever's *secret-value* client: no combat log, many values hidden in combat.
 SITREP works with what the client still gives and says so where it cannot.
 
+**Download: [SITREP.zip](https://github.com/sm33ee/sitrep/releases/latest/download/SITREP.zip)** (the newest version)
+
 > **Deutsch:** SITREP ist ein ruhiges Glas-HUD für WoW: Forever, mit eigenen Rahmen,
 > Namensplaketten, Chat und einer Quest-Navigation, die beim Spielen lernt: wo Quests
 > liegen, ob Fliegen schneller ist, wo Mobs spawnen und wie oft sie Quest-Gegenstände
@@ -48,7 +50,8 @@ Everything learned is kept for your whole account (all characters).
 
 ## Installation
 
-1. Download `SITREP-<version>.zip` from the [Releases](../../releases).
+1. Download **[SITREP.zip](https://github.com/sm33ee/sitrep/releases/latest/download/SITREP.zip)**
+   (always the newest version; older ones are in the [Releases](https://github.com/sm33ee/sitrep/releases)).
 2. Unpack it into `World of Warcraft/_classic_beta_/Interface/AddOns/` so that there is a
    folder `AddOns/SITREP` with `SITREP.toc` in it.
 3. Start the game (a full restart after the first install or after an update that adds

@@ -1,0 +1,37 @@
+# A version tag pushed (v4.11.4, ...): the addon folder packed as SITREP.zip and
+# published as that version's release, so the newest is always at
+#   https://github.com/sm33ee/sitrep/releases/latest/download/SITREP.zip
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pack the addon folder
+        run: |
+          zip -qr SITREP.zip SITREP -x "*.DS_Store"
+          cp SITREP.zip "SITREP-${GITHUB_REF_NAME#v}.zip"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" SITREP.zip "SITREP-$version.zip" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" SITREP.zip "SITREP-$version.zip" \
+              --title "SITREP $version" \
+              --notes "Download **SITREP.zip** below, unpack it into \`World of Warcraft/_classic_beta_/Interface/AddOns/\` (you should get a folder \`AddOns/SITREP\`), restart the game, type \`/sitrep\`.
+
+Deutsch: SITREP.zip herunterladen, nach Interface/AddOns entpacken, Spiel neu starten, /sitrep tippen."
+          fi
