@@ -40,16 +40,38 @@ local function conceal(on)
 	if not o then return end
 	if on and not parts then collect(o) end
 	if not parts then return end
+	holding = true
 	for f, a in pairs(parts) do
 		pcall(f.SetAlpha, f, on and 0 or a)
 		if f.EnableMouse then pcall(f.EnableMouse, f, not on) end
 	end
-	holding = true
 	pcall(o.SetAlpha, o, on and 0 or rootAlpha or 1)
 	holding = false
 	pcall(o.EnableMouse, o, not on)
 	R.concealed = on
 	if not on then parts = nil end
+	-- each part: Blizzard setting its alpha, its own alpha or its mouse again (after a
+	-- report: every frame, 4.12.0 mouseprobe) undone at once while hidden
+	if on and hooksecurefunc then
+		for f in pairs(parts) do
+			if not f.srReporterHook then
+				f.srReporterHook = true
+				pcall(hooksecurefunc, f, "SetAlpha", function(self, a)
+					if R.concealed and not holding and parts and parts[self] and a ~= 0 then holding = true; pcall(self.SetAlpha, self, 0); holding = false end
+				end)
+				if f.SetIgnoreParentAlpha then
+					pcall(hooksecurefunc, f, "SetIgnoreParentAlpha", function(self, v)
+						if R.concealed and not holding and parts and parts[self] and v then holding = true; pcall(self.SetIgnoreParentAlpha, self, false); holding = false end
+					end)
+				end
+				if f.EnableMouse then
+					pcall(hooksecurefunc, f, "EnableMouse", function(self, v)
+						if R.concealed and not holding and parts and parts[self] and v ~= false then holding = true; pcall(self.EnableMouse, self, false); holding = false end
+					end)
+				end
+			end
+		end
+	end
 	if on and not o.srReporterHook then
 		o.srReporterHook = true
 		-- (Blizzard shows it again or sets its alpha: see-through again)
@@ -136,11 +158,13 @@ end
 function R.Keep()
 	local o = original()
 	if not (R.concealed and o and parts) then return end
+	holding = true
 	for f in pairs(parts) do
 		if (read(f.GetAlpha, f) or 0) > 0 then pcall(f.SetAlpha, f, 0) end
 		if f.IsIgnoringParentAlpha and read(f.IsIgnoringParentAlpha, f) == true then pcall(f.SetIgnoreParentAlpha, f, false) end
 		if f.IsMouseEnabled and read(f.IsMouseEnabled, f) == true then pcall(f.EnableMouse, f, false) end
 	end
+	holding = false
 	if (read(o.GetAlpha, o) or 0) > 0 then holding = true; pcall(o.SetAlpha, o, 0); holding = false end
 	if o.IsMouseEnabled and read(o.IsMouseEnabled, o) == true then pcall(o.EnableMouse, o, false) end
 end

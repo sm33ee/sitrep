@@ -5597,6 +5597,9 @@ end)()
 		W.Update(1)
 		check("...a report done, Blizzard's box back: hidden again", o.Border:GetAlpha() == 0 and o.Border._ignoreParentAlpha == false
 			and o._mouse == false and o.InfoButton._mouse == false)
+		-- Blizzard every frame after a report: its Bug button bright, on its own alpha, taking the mouse
+		bug:SetAlpha(1); bug:SetIgnoreParentAlpha(true); bug:EnableMouse(true)
+		check("...undone at once (not only twice a second)", bug:GetAlpha() == 0 and bug._ignoreParentAlpha == false and bug._mouse == false)
 		check("...movable like the HUD (Layout)", ns.P.hud.frameScale.reporter == 1 and RB.srGrip ~= nil)
 		ns.P.ui.reporter = false; ns.Changed("ui.reporter")
 		check("...off: Blizzard's box back as it was, the button gone", not RB:IsShown() and o:GetAlpha() == 1 and title:GetAlpha() == 1 and bug:GetAlpha() == 1 and o._mouse == true)
