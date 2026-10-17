@@ -33,7 +33,8 @@ SITREP works with what the client still gives and says so where it cannot.
 - A hover window next to the mouse instead of the tooltip: race/class, guild, NPC title,
   dispellable debuffs, quest objectives, what your group still needs, where a mob was seen
 - Chat, minimap, action bars (empty slots hidden), XP lines (also for hunter pets), a
-  folded MENU button, alert banner, emergency items; every element movable and scalable
+  folded MENU button, alert banner, emergency items, a small button for the test
+  client's issue reporter; every element movable and scalable
 
 **Quests**
 - Quest tracker with every objective, a worth-it rating (XP per minute against grinding,

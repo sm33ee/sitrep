@@ -8,7 +8,7 @@
 
 local ADDON, ns = ...
 _G.SITREP = ns
-ns.VERSION = "4.12.0"
+ns.VERSION = "4.12.1"
 
 local pcall, type, pairs, ipairs, select, tostring = pcall, type, pairs, ipairs, select, tostring
 local format = string.format
@@ -332,6 +332,7 @@ end
 ns.PRESET = {
 	bars = {
 		bottomleft = {
+			cols = 6,
 			gap = 8,
 			scale = 0.5,
 		},
@@ -339,13 +340,21 @@ ns.PRESET = {
 			scale = 0.8,
 		},
 		main = {
-			gap = 12,
-			scale = 0.6,
+			cols = 4,
+			gap = 4,
+			scale = 0.5,
+		},
+		pet = {
+			cols = 12,
+			gap = 4,
 		},
 		right = {
 			cols = 3,
 			gap = 0,
 			scale = 0.6,
+		},
+		stance = {
+			scale = 0.5,
 		},
 	},
 	frames = {
@@ -382,14 +391,15 @@ ns.PRESET = {
 			bags = { "BOTTOMRIGHT", "BOTTOMRIGHT", -2.8, 5.2 },
 			banner = { "TOP", "TOP", -24.7, -52.4 },
 			bar_bar7 = { "RIGHT", "RIGHT", -105.9, -62.8 },
-			bar_bottomleft = { "BOTTOMLEFT", "BOTTOMLEFT", 3, 27.7 },
+			bar_bottomleft = { "BOTTOM", "BOTTOM", 45.1, 56.7 },
 			bar_bottomright = { "BOTTOM", "BOTTOM", 13.3, 3.8 },
-			bar_main = { "BOTTOMLEFT", "BOTTOMLEFT", 3.4, 3.8 },
+			bar_main = { "BOTTOM", "BOTTOM", -84, 57.2 },
+			bar_pet = { "BOTTOM", "BOTTOM", 10.6, 133.8 },
 			bar_right = { "TOPRIGHT", "TOPRIGHT", 0, -141.2 },
-			bar_stance = { "BOTTOMLEFT", "BOTTOMLEFT", 3, 51.5 },
+			bar_stance = { "BOTTOMLEFT", "BOTTOMLEFT", 0, 0 },
 			board = { "LEFT", "LEFT", 0, -100.3 },
 			castAlert = { "CENTER", "CENTER", -9.4, -11.5 },
-			chat = { "BOTTOMLEFT", "BOTTOMLEFT", 9, 122 },
+			chat = { "BOTTOMLEFT", "BOTTOMLEFT", 9, 51.2 },
 			emergency = { "CENTER", "CENTER", -69.4, -104.9 },
 			engage = { "TOP", "TOP", -183.7, -8.3 },
 			envelope = { "CENTER", "CENTER", -234, -100.7 },
@@ -404,9 +414,9 @@ ns.PRESET = {
 			quests = { "BOTTOMRIGHT", "BOTTOMRIGHT", -2.1, 49.4 },
 			raid = { "LEFT", "LEFT", 30.5, 197.2 },
 			recap = { "CENTER", "CENTER", -11.9, 71.6 },
+			reporter = { "TOPLEFT", "TOPLEFT", 40, -40 },
 			scope = { "BOTTOMRIGHT", "BOTTOMRIGHT", -55.9, 114 },
 			target = { "CENTER", "CENTER", 241.3, -96 },
-			targetpet = { "RIGHT", "RIGHT", -321.7, -150.3 },
 		},
 		pressure = false,
 		scale = 0.9,
@@ -424,6 +434,7 @@ ns.PRESET = {
 		rate = 10,
 	},
 	ui = {
+		chatCollapsed = true,
 		chatGlass = true,
 		chatSize = 14,
 	},

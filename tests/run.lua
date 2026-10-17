@@ -34,7 +34,7 @@ check("all TOC files loaded", #toc == 64, #toc)
 	local PR = ns.PRESET
 	check("new profile: the preset layout", np.plates.friendZen == PR.plates.friendZen and np.plates.scale == PR.plates.scale
 		and np.plates.hoverWhere == PR.plates.hoverWhere and np.hud.pos.chat[1] == PR.hud.pos.chat[1]
-		and np.bars.main.scale == PR.bars.main.scale and np.bars.main.cols == 12 and np.hud.frameScale.player == PR.hud.frameScale.player
+		and np.bars.main.scale == PR.bars.main.scale and np.bars.main.cols == PR.bars.main.cols and np.hud.frameScale.player == PR.hud.frameScale.player
 		and np.hud.frameScale.target == PR.hud.frameScale.target and np.hud.frameScale.allies == 1 and np.ui.chatGlass == PR.ui.chatGlass)
 	check("the preset: a layout, nothing of the player's own (trackers, learned values, editor states)", PR.trackers == nil and PR.engage == nil
 		and PR.comms == nil and not (PR.ui and (PR.ui.barEdit or PR.ui.layoutEdit)) and not (PR.quests and (PR.quests.mapTrails or PR.quests.mapBrush)))
