@@ -20,58 +20,70 @@ local function bugButton() return rawget(_G, "Bug") end
 
 -- The reporter's parts SITREP hides: the box as a whole (its alpha, held at 0 when
 -- Blizzard's own updates set it again: 4.12.0 showed the box still there with only
--- its parts see-through), its own textures and texts, and its frames known at that
--- moment (border, body, info button, the bug button), all click-through.
+-- its parts see-through), its own textures and texts, and whatever sits in its
+-- known places (border, body, info button, the bug button), all click-through.
+-- Blizzard makes those anew after a report (4.12.0 mouseprobe: a new "Bug", bright
+-- and taking the mouse): what is in those places now is taken in each time.
 local parts -- { [region or frame] = its alpha before }
 local rootAlpha
-local function collect(o)
-	parts = {}
-	rootAlpha = read(o.GetAlpha, o) or 1
-	local okR, regions = pcall(function() return { o:GetRegions() } end)
-	for _, r in ipairs(okR and regions or {}) do parts[r] = read(r.GetAlpha, r) or 1 end
-	for _, k in ipairs({ o.Border, o.Body, o.InfoButton, bugButton() }) do
-		if type(k) == "table" then parts[k] = read(k.GetAlpha, k) or 1 end
+local holding -- (inside our own setters: the hooks leave them alone)
+local function slots(o) return { o.Border, o.Body, o.InfoButton, bugButton() } end
+
+-- One part: see-through, click-through, and kept so (Blizzard setting its alpha,
+-- its own alpha or its mouse again: undone at once while hidden).
+local function adopt(f)
+	if type(f) ~= "table" or parts[f] then return end
+	parts[f] = read(f.GetAlpha, f) or 1
+	holding = true
+	pcall(f.SetAlpha, f, 0)
+	if f.IsIgnoringParentAlpha and read(f.IsIgnoringParentAlpha, f) == true then pcall(f.SetIgnoreParentAlpha, f, false) end
+	if f.EnableMouse then pcall(f.EnableMouse, f, false) end
+	holding = false
+	if f.srReporterHook or not hooksecurefunc then return end
+	f.srReporterHook = true
+	pcall(hooksecurefunc, f, "SetAlpha", function(self, a)
+		if R.concealed and not holding and parts and parts[self] and a ~= 0 then holding = true; pcall(self.SetAlpha, self, 0); holding = false end
+	end)
+	if f.SetIgnoreParentAlpha then
+		pcall(hooksecurefunc, f, "SetIgnoreParentAlpha", function(self, v)
+			if R.concealed and not holding and parts and parts[self] and v then holding = true; pcall(self.SetIgnoreParentAlpha, self, false); holding = false end
+		end)
+	end
+	if f.EnableMouse then
+		pcall(hooksecurefunc, f, "EnableMouse", function(self, v)
+			if R.concealed and not holding and parts and parts[self] and v ~= false then holding = true; pcall(self.EnableMouse, self, false); holding = false end
+		end)
 	end
 end
 
-local holding -- (inside our own SetAlpha: the hook leaves it alone)
+-- Take in what is in the box now: its own textures and texts, its known places.
+local function takeIn(o)
+	local okR, regions = pcall(function() return { o:GetRegions() } end)
+	for _, r in ipairs(okR and regions or {}) do adopt(r) end
+	for _, k in ipairs(slots(o)) do adopt(k) end
+end
+
 local function conceal(on)
 	local o = original()
 	if not o then return end
-	if on and not parts then collect(o) end
+	if on then
+		if not parts then parts = {}; rootAlpha = read(o.GetAlpha, o) or 1 end
+		takeIn(o)
+	elseif parts then
+		holding = true
+		for f, a in pairs(parts) do
+			pcall(f.SetAlpha, f, a)
+			if f.EnableMouse then pcall(f.EnableMouse, f, true) end
+		end
+		holding = false
+	end
 	if not parts then return end
 	holding = true
-	for f, a in pairs(parts) do
-		pcall(f.SetAlpha, f, on and 0 or a)
-		if f.EnableMouse then pcall(f.EnableMouse, f, not on) end
-	end
 	pcall(o.SetAlpha, o, on and 0 or rootAlpha or 1)
 	holding = false
 	pcall(o.EnableMouse, o, not on)
 	R.concealed = on
 	if not on then parts = nil end
-	-- each part: Blizzard setting its alpha, its own alpha or its mouse again (after a
-	-- report: every frame, 4.12.0 mouseprobe) undone at once while hidden
-	if on and hooksecurefunc then
-		for f in pairs(parts) do
-			if not f.srReporterHook then
-				f.srReporterHook = true
-				pcall(hooksecurefunc, f, "SetAlpha", function(self, a)
-					if R.concealed and not holding and parts and parts[self] and a ~= 0 then holding = true; pcall(self.SetAlpha, self, 0); holding = false end
-				end)
-				if f.SetIgnoreParentAlpha then
-					pcall(hooksecurefunc, f, "SetIgnoreParentAlpha", function(self, v)
-						if R.concealed and not holding and parts and parts[self] and v then holding = true; pcall(self.SetIgnoreParentAlpha, self, false); holding = false end
-					end)
-				end
-				if f.EnableMouse then
-					pcall(hooksecurefunc, f, "EnableMouse", function(self, v)
-						if R.concealed and not holding and parts and parts[self] and v ~= false then holding = true; pcall(self.EnableMouse, self, false); holding = false end
-					end)
-				end
-			end
-		end
-	end
 	if on and not o.srReporterHook then
 		o.srReporterHook = true
 		-- (Blizzard shows it again or sets its alpha: see-through again)
@@ -84,11 +96,12 @@ local function conceal(on)
 	end
 end
 
--- A window the reporter opens inside its box (made after SITREP hid the box): seen
--- all the same, whatever the box's alpha.
+-- A window the reporter opens inside its box (made after SITREP hid the box, and
+-- not in one of its known places): seen all the same, whatever the box's alpha.
 local function freeNew()
 	local o = original()
 	if not (o and parts) then return end
+	takeIn(o) -- (what Blizzard made anew in its places first: hidden)
 	local okK, kids = pcall(function() return { o:GetChildren() } end)
 	for _, k in ipairs(okK and kids or {}) do
 		if not parts[k] and k.SetIgnoreParentAlpha then pcall(k.SetIgnoreParentAlpha, k, true) end
@@ -158,6 +171,7 @@ end
 function R.Keep()
 	local o = original()
 	if not (R.concealed and o and parts) then return end
+	takeIn(o) -- (made anew after a report: hidden too)
 	holding = true
 	for f in pairs(parts) do
 		if (read(f.GetAlpha, f) or 0) > 0 then pcall(f.SetAlpha, f, 0) end
