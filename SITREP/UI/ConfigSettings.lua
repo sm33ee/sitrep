@@ -184,7 +184,7 @@ local HUD_ELEMENTS = { { "envelope", "Envelope" }, { "board", "Threat board" }, 
 	{ "pressure", "Pressure gauge" }, { "allies", "Allies" } }
 local FRAME_ELEMENTS = { { "player", "Player frame" }, { "target", "Target frame" }, { "pet", "Pet frame" },
 	{ "targetpet", "Target's pet" }, { "focus", "Focus frame" }, { "party", "Party frames" }, { "raid", "Raid frames" } }
-local UI_ELEMENTS = { { "minimap", "Minimap", "map" }, { "chat", "Chat", "chat" }, { "bags", "Bag button" },
+local UI_ELEMENTS = { { "minimap", "Minimap", "map" }, { "chat", "Chat", "chat" }, { "bags", "Bag button" }, { "reporter", "Report button" },
 	{ "menu", "MENU button" }, { "quests", "Quest tracker" }, { "questArrow", "Quest arrow", "scale", true },
 	{ "castAlert", "Cast alert" }, { "banner", "Alert banner" }, { "hoverInfo", "Hover info" }, { "emergency", "Emergency items" }, { "recap", "Death recap" } }
 
@@ -486,6 +486,7 @@ local function buildInterface()
 	tog(1, "Coordinates on the minimap", "mapCoords", "Your position on the zone map, bottom right.")
 	tog(1, "Experience on your player frame", "xp", "A thin line along its bottom edge, rested ahead of it. Hover it for numbers.")
 	tog(1, "Hide Blizzard's experience bar", "hideBlizzXP", "With it goes the reputation bar that shares its strip.")
+	tog(1, "Report button", "reporter", "Blizzard's issue reporter of this test client as a small glass button (its box goes). Move it in Layout.")
 	p:Place(K.Dropdown(p, "Chat folds", { { "auto", "Towards where it is (top half: up)" }, { "up", "Up (lines at its top)" },
 		{ "down", "Down (lines at its bottom)" } }, get("ui", "chatFoldTo"), set("ui", "chatFoldTo")), 1)
 	tog(2, "Bag button", "bags", "Free slots at a glance; click opens your bags. Move it like the HUD (unlock in Layout).")

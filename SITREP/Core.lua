@@ -248,14 +248,14 @@ function ns.Defaults()
 			envelopeLanes = 6, envelopeRange = 40,
 			-- per-module size, multiplied with the global scale
 			frameScale = { envelope = 1, board = 1, engage = 1, pressure = 1, player = 1, target = 1, allies = 1, pet = 1, targetpet = 1, focus = 1, party = 1, raid = 1,
-				bags = 1, menu = 1, quests = 1, questArrow = 1, castAlert = 1, hoverInfo = 1, chat = 1, emergency = 1, recap = 1, banner = 1 },
+				bags = 1, reporter = 1, menu = 1, quests = 1, questArrow = 1, castAlert = 1, hoverInfo = 1, chat = 1, emergency = 1, recap = 1, banner = 1 },
 			-- each element's own opacity (Layout page); HUD modules multiply it with alpha
 			frameAlpha = { envelope = 1, board = 1, engage = 1, pressure = 1, player = 1, target = 1, allies = 1, pet = 1,
-				targetpet = 1, focus = 1, party = 1, raid = 1, bags = 1, menu = 1, quests = 1, questArrow = 1, minimap = 1, chat = 1, castAlert = 1, hoverInfo = 1, emergency = 1, recap = 1, banner = 1 },
+				targetpet = 1, focus = 1, party = 1, raid = 1, bags = 1, reporter = 1, menu = 1, quests = 1, questArrow = 1, minimap = 1, chat = 1, castAlert = 1, hoverInfo = 1, emergency = 1, recap = 1, banner = 1 },
 			-- each element's background opacity (Layout page): today's look by default; the
 			-- chat a light glass pane
 			bgAlpha = { envelope = 0.92, board = 0.92, engage = 0.92, pressure = 0.92, allies = 0.92, player = 0.92,
-				target = 0.92, pet = 0.92, targetpet = 0.92, focus = 0.92, party = 0.92, raid = 0.92, bags = 0.92, menu = 0.92, quests = 0.72,
+				target = 0.92, pet = 0.92, targetpet = 0.92, focus = 0.92, party = 0.92, raid = 0.92, bags = 0.92, reporter = 0.92, menu = 0.92, quests = 0.72,
 				minimap = 0.85, chat = 0.45, castAlert = 0.55, hoverInfo = 0.92, emergency = 0.92, recap = 0.92, banner = 0.55 },
 			-- fade a module out while no enemy player is in the picture
 			autoHide = { envelope = false, board = false, engage = false, pressure = false, player = false, allies = false },
@@ -293,7 +293,7 @@ function ns.Defaults()
 		-- the game's own interface in SITREP's style (UI/Minimap, XP, Bags, Chat)
 		ui = {
 			minimap = true, mapSize = 180, mapCoords = true, xp = true, hideBlizzXP = true,
-			bags = true, hideBagBar = true, chat = true, chatSize = 11, chatFade = 20,
+			bags = true, reporter = true, hideBagBar = true, chat = true, chatSize = 11, chatFade = 20,
 			bars = true, barArt = true, barMacroNames = false, barRange = true, barHideEmpty = true, menu = true, hideMicro = true,
 			barLayout = true, barEdit = "main", layoutEdit = "player", chatCollapsed = false, chatFoldTo = "auto", chatPreview = true,
 			chatGlass = false, -- (4.1: the chat's glass pane given once to profiles from before)

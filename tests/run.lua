@@ -27,7 +27,7 @@ for _, file in ipairs(toc) do
 	local chunk = assert(loadfile("SITREP/" .. file))
 	chunk("SITREP", ns)
 end
-check("all TOC files loaded", #toc == 63, #toc)
+check("all TOC files loaded", #toc == 64, #toc)
 ;(function()
 	-- a first start: the preset layout over the doctrine defaults (which stay bare)
 	local np, d = ns.NewProfile(), ns.Defaults()
@@ -5567,6 +5567,38 @@ end)()
 	W.Fire("PLAYER_REGEN_ENABLED")
 	check("combat over: hidden for real (no invisible frame over the UI)", not prot:IsShown() and W.blockedCalls == blocked0)
 	ns.Kit.Conceal(plain, false); ns.Kit.Conceal(prot, false)
+
+	;(function()
+		-- Blizzard's issue reporter: its box see-through and click-through, a glass button in its place
+		local o = CreateFrame("Frame", nil, UIParent)
+		_G.PTR_IssueReporter = o
+		local title = o:CreateFontString()
+		o.Border = CreateFrame("Frame", nil, o)
+		o.Body = CreateFrame("Frame", nil, o)
+		o.InfoButton = CreateFrame("Button", nil, o)
+		local bug = CreateFrame("Button", nil, o.Body)
+		_G.Bug = bug
+		local clicked = 0
+		bug:SetScript("OnClick", function() clicked = clicked + 1 end)
+		o:EnableMouse(true)
+		W.Fire("ADDON_LOADED", "Blizzard_PTRFeedback")
+		local RB = ns.Reporter.button
+		check("issue reporter: a glass button, the box see-through and click-through", RB and RB:IsShown() and title:GetAlpha() == 0
+			and o.Border:GetAlpha() == 0 and o.Body:GetAlpha() == 0 and bug:GetAlpha() == 0 and o._mouse == false)
+		RB._scripts.OnClick(RB)
+		check("...a click on it: a click on its Bug button", clicked == 1)
+		check("...movable like the HUD (Layout)", ns.P.hud.frameScale.reporter == 1 and RB.srGrip ~= nil)
+		-- a window it opens later: left alone
+		local later = CreateFrame("Frame", nil, o)
+		ns.Reporter.Apply()
+		check("...a window it opens later: left alone", later:GetAlpha() == 1)
+		ns.P.ui.reporter = false; ns.Changed("ui.reporter")
+		check("...off: Blizzard's box back as it was, the button gone", not RB:IsShown() and title:GetAlpha() == 1 and bug:GetAlpha() == 1 and o._mouse == true)
+		ns.P.ui.reporter = true; ns.Changed("ui.reporter")
+		ns.P.ui.reporter = false; ns.Changed("ui.reporter")
+		ns.P.ui.reporter = true
+		_G.PTR_IssueReporter, _G.Bug = nil, nil
+	end)()
 
 	-- /sitrep mouse names what takes the mouse
 	S.mouseFocus = ns.Bags.button

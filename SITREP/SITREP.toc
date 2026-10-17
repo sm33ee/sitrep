@@ -50,6 +50,7 @@ UI\RecapPanel.lua
 UI\Minimap.lua
 UI\XP.lua
 UI\Bags.lua
+UI\Reporter.lua
 UI\Chat.lua
 UI\QuestTracker.lua
 UI\QuestMap.lua
