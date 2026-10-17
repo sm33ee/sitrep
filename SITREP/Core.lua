@@ -247,15 +247,15 @@ function ns.Defaults()
 			envelope = true, board = true, engage = true, pressure = true, allies = true, alliesRows = 5,
 			envelopeLanes = 6, envelopeRange = 40,
 			-- per-module size, multiplied with the global scale
-			frameScale = { envelope = 1, board = 1, engage = 1, pressure = 1, player = 1, target = 1, allies = 1, pet = 1, targetpet = 1, party = 1,
+			frameScale = { envelope = 1, board = 1, engage = 1, pressure = 1, player = 1, target = 1, allies = 1, pet = 1, targetpet = 1, party = 1, raid = 1,
 				bags = 1, menu = 1, quests = 1, questArrow = 1, castAlert = 1, hoverInfo = 1, chat = 1, emergency = 1, recap = 1, banner = 1 },
 			-- each element's own opacity (Layout page); HUD modules multiply it with alpha
 			frameAlpha = { envelope = 1, board = 1, engage = 1, pressure = 1, player = 1, target = 1, allies = 1, pet = 1,
-				targetpet = 1, party = 1, bags = 1, menu = 1, quests = 1, questArrow = 1, minimap = 1, chat = 1, castAlert = 1, hoverInfo = 1, emergency = 1, recap = 1, banner = 1 },
+				targetpet = 1, party = 1, raid = 1, bags = 1, menu = 1, quests = 1, questArrow = 1, minimap = 1, chat = 1, castAlert = 1, hoverInfo = 1, emergency = 1, recap = 1, banner = 1 },
 			-- each element's background opacity (Layout page): today's look by default; the
 			-- chat a light glass pane
 			bgAlpha = { envelope = 0.92, board = 0.92, engage = 0.92, pressure = 0.92, allies = 0.92, player = 0.92,
-				target = 0.92, pet = 0.92, targetpet = 0.92, party = 0.92, bags = 0.92, menu = 0.92, quests = 0.72,
+				target = 0.92, pet = 0.92, targetpet = 0.92, party = 0.92, raid = 0.92, bags = 0.92, menu = 0.92, quests = 0.72,
 				minimap = 0.85, chat = 0.45, castAlert = 0.55, hoverInfo = 0.92, emergency = 0.92, recap = 0.92, banner = 0.55 },
 			-- fade a module out while no enemy player is in the picture
 			autoHide = { envelope = false, board = false, engage = false, pressure = false, player = false, allies = false },
@@ -281,7 +281,7 @@ function ns.Defaults()
 		-- (5 % = dead from full in 20 s, 10 % = in 10 s)
 		pressure = { short = 3, long = 10, spikePct = 35, ttlWarn = 4, warnPct = 5, dangerPct = 10 },
 		frames = {
-			player = true, target = true, pet = true, targetPet = true, party = true, partyTarget = true, partyCompact = false, hitGlow = true, dispelGlow = true, costPreview = true, totHealth = true, healersOnMe = true, targetCounts = true, mobsOnMe = true, popNumbers = true, hideBlizzard = true, width = 264,
+			player = true, target = true, pet = true, targetPet = true, party = true, raid = true, partyTarget = true, partyCompact = false, hitGlow = true, dispelGlow = true, costPreview = true, totHealth = true, healersOnMe = true, targetCounts = true, mobsOnMe = true, popNumbers = true, hideBlizzard = true, width = 264,
 			execute = true, strip = true, intel = true, flash = true,
 			myDebuffs = true, targetAuras = true, burst = true, burstMax = 15, druidMana = true,
 			emergency = true, emergencyPct = 35,

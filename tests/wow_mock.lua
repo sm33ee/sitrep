@@ -43,7 +43,8 @@ for _, e in ipairs({ "ADDON_LOADED", "PLAYER_LOGIN", "PLAYER_ENTERING_WORLD", "N
 	"CHAT_MSG_RAID_WARNING", "CHAT_MSG_INSTANCE_CHAT", "CHAT_MSG_INSTANCE_CHAT_LEADER", "CHAT_MSG_GUILD", "CHAT_MSG_OFFICER", "CHAT_MSG_SAY",
 	"CHAT_MSG_YELL", "CHAT_MSG_CHANNEL", "UPDATE_MOUSEOVER_UNIT", "UNIT_TARGET",
 	"BAG_UPDATE_COOLDOWN", "FRIENDLIST_UPDATE", "BN_FRIEND_ACCOUNT_ONLINE", "BN_FRIEND_ACCOUNT_OFFLINE", "BN_CONNECTED", "BN_DISCONNECTED", "TAXIMAP_OPENED", "PLAYER_LOGOUT", "PLAYER_EQUIPMENT_CHANGED", "UPDATE_SHAPESHIFT_FORMS", "UNIT_FACTION",
-	"ACTIONBAR_SLOT_CHANGED", "ACTIONBAR_PAGE_CHANGED", "ACTIONBAR_SHOWGRID", "ACTIONBAR_HIDEGRID", "CURSOR_CHANGED", "PET_BAR_UPDATE" }) do
+	"ACTIONBAR_SLOT_CHANGED", "ACTIONBAR_PAGE_CHANGED", "ACTIONBAR_SHOWGRID", "ACTIONBAR_HIDEGRID", "CURSOR_CHANGED", "PET_BAR_UPDATE",
+	"UNIT_CONNECTION", "UNIT_THREAT_SITUATION_UPDATE", "RAID_TARGET_UPDATE" }) do
 	KNOWN_EVENTS[e] = true
 end
 M.eventFrames = {}
@@ -671,7 +672,14 @@ function CheckInteractDistance(unit, idx)
 	return D(u) <= (idx == 3 and 10 or idx == 4 and 28 or 11)
 end
 function IsInGroup(cat) if cat == 2 then return S.group.instance or false end return S.group.n and S.group.n > 0 or false end
-function IsInRaid() return false end
+function IsInRaid() return S.group.raid or false end
+-- name, rank, subgroup, level, class (localised), class file, zone, online, dead, role, master looter
+function GetRaidRosterInfo(i)
+	local u = S.units["raid" .. i]
+	if not u then return nil end
+	return u.name, u.rank or 0, u.subgroup or 1, u.level, u.class, u.class, nil, u.online ~= false, u.dead or false, u.role, false
+end
+function UnitThreatSituation(unit, mob) local u = U(unit) return u and u.threat or nil end
 function GetNumGroupMembers() return S.group.n or 0 end
 function GetNumSubgroupMembers() return S.group.n or 0 end
 

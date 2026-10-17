@@ -90,6 +90,7 @@ local function applyBlizzard()
 	local hideTarget = P.hideBlizzard and P.target and ns.P.enabled
 	local hidePet = P.hideBlizzard and P.pet and ns.P.enabled
 	local hideParty = P.hideBlizzard and P.party and ns.P.enabled
+	local hideRaid = P.hideBlizzard and P.raid and ns.P.enabled
 	if InCombatLockdown() then pendingBlizzard = true end
 	local function set(frame, hide)
 		if type(frame) ~= "table" then return end
@@ -114,7 +115,11 @@ local function applyBlizzard()
 		local pm = _G.PartyFrame and _G.PartyFrame["MemberFrame" .. i]
 		if type(pm) == "table" then set(pm, hideParty) end
 	end
-	F.blizzardHidden = { player = hidePlayer, target = hideTarget, pet = hidePet, party = hideParty }
+	-- Blizzard's raid frames (members made later: faded again on every roster
+	-- change, after combat if need be); not its side panel: the raid leader's tools
+	-- (ready check, marks) live there
+	set(_G.CompactRaidFrameContainer, hideRaid)
+	F.blizzardHidden = { player = hidePlayer, target = hideTarget, pet = hidePet, party = hideParty, raid = hideRaid }
 end
 F.ApplyBlizzard = applyBlizzard
 
@@ -181,7 +186,10 @@ function F.Apply()
 			party:Show()
 			for _, m in ipairs(F.partyMembers) do pcall(UnregisterUnitWatch, m); m:Show() end
 		else
-			if not pcall(RegisterStateDriver, party, "visibility", "[group] show; hide") then party:Show() end
+			-- (in a raid the raid frames take over: FrameRaid)
+			if not pcall(RegisterStateDriver, party, "visibility", "[group:raid] hide; [group] show; hide") then
+				party:SetShown(not (IsInRaid and IsInRaid()))
+			end
 			for _, m in ipairs(F.partyMembers) do pcall(RegisterUnitWatch, m) end
 		end
 	else
@@ -189,6 +197,7 @@ function F.Apply()
 		party:Hide()
 		for _, m in ipairs(F.partyMembers) do pcall(UnregisterUnitWatch, m); m:Hide() end
 	end
+	if F.ApplyRaid then F.ApplyRaid() end
 	applyBlizzard()
 end
 
@@ -198,6 +207,7 @@ function F.Build()
 	F.BuildTarget()
 	F.BuildPet()
 	F.BuildParty()
+	if F.BuildRaid then F.BuildRaid() end
 	F.Apply()
 	if _G.TargetFrame and hooksecurefunc then
 		-- Blizzard re-shows its target frame on every new target; keep it faded.
@@ -223,7 +233,11 @@ ns.On("SR_TICK", function()
 	end
 end)
 
-ns.On("GROUP_ROSTER_UPDATE", function() if F.party then F.UpdateParty() end end)
+ns.On("GROUP_ROSTER_UPDATE", function()
+	if F.party then F.UpdateParty() end
+	-- (Blizzard makes raid members as they join: faded too)
+	if F.blizzardHidden and F.blizzardHidden.raid then applyBlizzard() end
+end)
 
 -- a pet summoned, dismissed or swapped (yours, or your target's)
 ns.On("UNIT_PET", function(_, unit)

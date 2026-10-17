@@ -38,6 +38,7 @@ UI\Frames.lua
 UI\FramePlayer.lua
 UI\FrameTarget.lua
 UI\FrameGroup.lua
+UI\FrameRaid.lua
 UI\Auras.lua
 UI\Plates.lua
 UI\PlateAuras.lua

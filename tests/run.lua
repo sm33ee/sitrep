@@ -27,7 +27,7 @@ for _, file in ipairs(toc) do
 	local chunk = assert(loadfile("SITREP/" .. file))
 	chunk("SITREP", ns)
 end
-check("all TOC files loaded", #toc == 62, #toc)
+check("all TOC files loaded", #toc == 63, #toc)
 ;(function()
 	-- a first start: the preset layout over the doctrine defaults (which stay bare)
 	local np, d = ns.NewProfile(), ns.Defaults()
@@ -1311,7 +1311,7 @@ W.Update(0.25)
 -- PARTY FRAMES (3.5) ----------------------------------------------------------------
 local PH, PM = ns.Frames.party, ns.Frames.partyMembers
 check("party frames built: header and 4 members", PH ~= nil and #PM == 4)
-check("party header shown only in a group", W.stateDrivers[PH] and W.stateDrivers[PH].visibility == "[group] show; hide")
+check("party header shown only in a group, not in a raid", W.stateDrivers[PH] and W.stateDrivers[PH].visibility == "[group:raid] hide; [group] show; hide")
 check("each member shown only while it exists", W.unitWatch[PM[1]] and W.unitWatch[PM[4]] and PM[3]:GetAttribute("unit") == "party3")
 check("click a member to target it, right-click for its menu", PM[1]:GetAttribute("type1") == "target" and PM[1]:GetAttribute("type2") == "togglemenu")
 check("Blizzard party frames faded", CompactPartyFrame:GetAlpha() == 0 and CompactPartyFrameMember1:GetAlpha() == 0 and PartyFrame.MemberFrame1:GetAlpha() == 0)
@@ -1535,6 +1535,89 @@ end)()
 	ns.P.frames.partyCompact = false; ns.Changed("frames.partyCompact")
 end)()
 S.units.party1, S.group.n, S.auras.party1 = nil, 0, nil
+;(function()
+	-- RAID FRAMES: every member in a glass cell, one column per group
+	local F = ns.Frames
+	local R = F.raid
+	check("raid: a header and 40 secure cells", R and #F.raidCells == 40 and F.raidCells[40]:GetAttribute("unit") == "raid40"
+		and F.raidCells[1]:GetAttribute("type1") == "target" and F.raidCells[1]:GetAttribute("type2") == "togglemenu")
+	check("...shown only in a raid (state driver), each cell while its unit exists", W.stateDrivers[R] and W.stateDrivers[R].visibility == "[group:raid] show; hide"
+		and W.unitWatch[F.raidCells[1]] == true)
+	-- a raid: 7 members, groups 1 and 3
+	S.group.raid, S.group.n = true, 7
+	local cls = { "WARRIOR", "PRIEST", "MAGE", "ROGUE", "PALADIN", "DRUID", "HUNTER" }
+	for i = 1, 7 do
+		S.units["raid" .. i] = { name = "Raider" .. i .. "-Realm", guid = "Player-1-88" .. i, class = cls[i], level = 60, isPlayer = true,
+			hostile = false, faction = "Alliance", wx = i * 3, wy = 0, hp = 3000, hpMax = 4000, subgroup = i <= 4 and 1 or 3 }
+	end
+	W.Fire("GROUP_ROSTER_UPDATE")
+	R:Show()
+	for i = 1, 7 do F.raidCells[i]:Show() end -- (the client's unit watch)
+	F.UpdateRaid()
+	local c1, c5, c6 = F.raidCells[1], F.raidCells[5], F.raidCells[6]
+	local x1, y1 = ({ c1:GetPoint(1) })[4], ({ c1:GetPoint(1) })[5]
+	local x5, y5 = ({ c5:GetPoint(1) })[4], ({ c5:GetPoint(1) })[5]
+	local y6 = ({ c6:GetPoint(1) })[5]
+	check("...group 1 in the first column, group 3 in the third, top down", x1 == 0 and x5 == 2 * (70 + 3) and y5 == y1 and y6 < y5, x5 .. " " .. y5)
+	check("...the group numbers over the columns in use", R.groups[1]:IsShown() and R.groups[3]:IsShown() and not R.groups[2]:IsShown())
+	check("...the name without realm", c1.name:GetText() == "Raider1")
+	local cr = ns.Data.ClassColor("WARRIOR")
+	check("...health in the dimmed class colour", c1.hp:GetValue() == 3000 and math.abs(c1.hp._sbColor[1] - cr * 0.62) < 1e-6)
+	check("...the header counts who is in heal range", R.status:GetText():upper():find("/7 IN HEAL RANGE", 1, true) ~= nil, R.status:GetText())
+	-- dead, offline
+	S.units.raid2.dead = true
+	W.Fire("UNIT_HEALTH", "raid2")
+	check("dead: grey, DEAD", F.raidCells[2].state:GetText():upper() == "DEAD" and F.raidCells[2].hp._sbColor[1] < 0.35)
+	S.units.raid2.dead = nil
+	S.units.raid3.offline = true
+	W.Fire("UNIT_CONNECTION", "raid3")
+	check("offline: OFFLINE, faded", F.raidCells[3].state:GetText():upper() == "OFFLINE" and F.raidCells[3]:GetAlpha() < 0.5,
+		tostring(F.raidCells[3].state:GetText()))
+	S.units.raid3.offline = nil
+	W.Fire("UNIT_CONNECTION", "raid3")
+	-- aggro, your target, a raid mark, a dispel
+	S.units.raid1.threat = 3
+	W.Fire("UNIT_THREAT_SITUATION_UPDATE", "raid1")
+	check("aggro: a coral rim", c1.aggro:IsShown())
+	S.units.raid1.threat = nil
+	W.Fire("UNIT_THREAT_SITUATION_UPDATE", "raid1")
+	check("...gone with it", not c1.aggro:IsShown())
+	S.units.target = S.units.raid4
+	W.Fire("PLAYER_TARGET_CHANGED")
+	check("your target: a bright rim on its cell only", F.raidCells[4].sel:IsShown() and not c1.sel:IsShown())
+	S.units.target = nil
+	W.Fire("PLAYER_TARGET_CHANGED")
+	S.units.raid5.raidIcon = 8
+	W.Fire("RAID_TARGET_UPDATE")
+	check("a raid mark: shown", c5.mark:IsShown())
+	S.units.raid5.raidIcon = nil
+	S.units.player.class = "PRIEST"
+	S.auras.raid6 = { { id = 805, harmful = true, icon = "m.blp", dispel = "Magic", name = "Hammer of Justice" } }
+	W.Fire("UNIT_AURA", "raid6")
+	check("something to dispel: an orb in its colour", c6.orbs:IsShown() and c6.orbs.orbs[1]:IsShown())
+	S.auras.raid6 = nil
+	W.Fire("UNIT_AURA", "raid6")
+	check("...gone with it", not c6.orbs:IsShown())
+	-- the mouse on a cell lights the member's plate
+	c1._scripts.OnEnter(c1)
+	check("mouse on a cell: its member's plate highlighted", ns.Plates.highlight == "raid1")
+	c1._scripts.OnLeave(c1)
+	-- in combat: someone changes group, the place waits
+	S.me.combat = true
+	S.units.raid1.subgroup = 2
+	W.Fire("GROUP_ROSTER_UPDATE")
+	check("changes group in combat: the cell stays", ({ c1:GetPoint(1) })[4] == 0)
+	S.me.combat = false
+	W.Fire("PLAYER_REGEN_ENABLED")
+	check("...and moves once it is over", ({ c1:GetPoint(1) })[4] == 70 + 3)
+	-- the setting
+	ns.P.frames.raid = false; ns.Changed("frames.raid")
+	check("raid frames off: hidden", not R:IsShown() and not c1:IsShown() and W.unitWatch[c1] == nil)
+	ns.P.frames.raid = true; ns.Changed("frames.raid")
+	for i = 1, 7 do S.units["raid" .. i] = nil end
+	S.group.raid, S.group.n = nil, 0
+	W.Fire("GROUP_ROSTER_UPDATE")
+end)()
 S.units.player.class = "MAGE"
 W.Fire("GROUP_ROSTER_UPDATE")
 wipeContacts(C)
