@@ -1,10 +1,10 @@
 -- SITREP · Blizzard's issue reporter (test clients) as a small glass button
 -- The client's own reporter is a box of its own in the top left (PTR_IssueReporter,
 -- unnamed in UIParent, mouseprobe 4.12.0): a title, an info button and its "Bug"
--- button under it. SITREP makes its parts see-through and click-through and puts
--- a movable glass button in their place; a click is a click on "Bug". Nothing of it
--- is protected: all this in combat too. Windows the reporter opens later (made
--- after this) are left alone. ui.reporter; off: its parts given back as they were.
+-- button under it. SITREP makes the box see-through and click-through and puts a
+-- movable glass button in its place; a click is a click on "Bug". Nothing of it is
+-- protected: all this in combat too. Windows the reporter opens later are seen all
+-- the same (their own alpha). ui.reporter; off: the box given back as it was.
 
 local ADDON, ns = ...
 local K = ns.Kit
@@ -18,11 +18,15 @@ local function P() return ns.P and ns.P.ui end
 local function original() return rawget(_G, "PTR_IssueReporter") end
 local function bugButton() return rawget(_G, "Bug") end
 
--- The reporter's parts SITREP hides: its own textures and texts, and its frames
--- known at that moment (border, body, info button, the bug button).
+-- The reporter's parts SITREP hides: the box as a whole (its alpha, held at 0 when
+-- Blizzard's own updates set it again: 4.12.0 showed the box still there with only
+-- its parts see-through), its own textures and texts, and its frames known at that
+-- moment (border, body, info button, the bug button), all click-through.
 local parts -- { [region or frame] = its alpha before }
+local rootAlpha
 local function collect(o)
 	parts = {}
+	rootAlpha = read(o.GetAlpha, o) or 1
 	local okR, regions = pcall(function() return { o:GetRegions() } end)
 	for _, r in ipairs(okR and regions or {}) do parts[r] = read(r.GetAlpha, r) or 1 end
 	for _, k in ipairs({ o.Border, o.Body, o.InfoButton, bugButton() }) do
@@ -30,6 +34,7 @@ local function collect(o)
 	end
 end
 
+local holding -- (inside our own SetAlpha: the hook leaves it alone)
 local function conceal(on)
 	local o = original()
 	if not o then return end
@@ -39,15 +44,35 @@ local function conceal(on)
 		pcall(f.SetAlpha, f, on and 0 or a)
 		if f.EnableMouse then pcall(f.EnableMouse, f, not on) end
 	end
+	holding = true
+	pcall(o.SetAlpha, o, on and 0 or rootAlpha or 1)
+	holding = false
 	pcall(o.EnableMouse, o, not on)
 	R.concealed = on
 	if not on then parts = nil end
-	-- (Blizzard shows it again: see-through again)
-	if on and not o.srReporterHook and o.HookScript then
+	if on and not o.srReporterHook then
 		o.srReporterHook = true
-		pcall(o.HookScript, o, "OnShow", function() if R.concealed then conceal(true) end end)
+		-- (Blizzard shows it again or sets its alpha: see-through again)
+		if o.HookScript then pcall(o.HookScript, o, "OnShow", function() if R.concealed then conceal(true) end end) end
+		if hooksecurefunc then
+			pcall(hooksecurefunc, o, "SetAlpha", function(self)
+				if R.concealed and not holding then holding = true; pcall(self.SetAlpha, self, 0); holding = false end
+			end)
+		end
 	end
 end
+
+-- A window the reporter opens inside its box (made after SITREP hid the box): seen
+-- all the same, whatever the box's alpha.
+local function freeNew()
+	local o = original()
+	if not (o and parts) then return end
+	local okK, kids = pcall(function() return { o:GetChildren() } end)
+	for _, k in ipairs(okK and kids or {}) do
+		if not parts[k] and k.SetIgnoreParentAlpha then pcall(k.SetIgnoreParentAlpha, k, true) end
+	end
+end
+R.FreeNew = freeNew
 
 local function build()
 	if R.button then return R.button end
@@ -71,6 +96,8 @@ local function build()
 	b:SetScript("OnClick", function()
 		local bug = bugButton()
 		if bug and bug.Click then pcall(bug.Click, bug) end
+		freeNew()
+		if C_Timer and C_Timer.After then C_Timer.After(0.2, freeNew) end
 	end)
 	b:SetScript("OnEnter", function(self)
 		if not GameTooltip then return end

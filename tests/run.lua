@@ -5583,17 +5583,18 @@ end)()
 		o:EnableMouse(true)
 		W.Fire("ADDON_LOADED", "Blizzard_PTRFeedback")
 		local RB = ns.Reporter.button
-		check("issue reporter: a glass button, the box see-through and click-through", RB and RB:IsShown() and title:GetAlpha() == 0
+		check("issue reporter: a glass button, the box see-through and click-through", RB and RB:IsShown() and o:GetAlpha() == 0 and title:GetAlpha() == 0
 			and o.Border:GetAlpha() == 0 and o.Body:GetAlpha() == 0 and bug:GetAlpha() == 0 and o._mouse == false)
+		o:SetAlpha(1)
+		check("...Blizzard sets its alpha again: see-through again", o:GetAlpha() == 0)
+		-- a click: its Bug button; a window it opens in its box is seen all the same
+		bug:SetScript("OnClick", function() clicked = clicked + 1; o.window = CreateFrame("Frame", nil, o) end)
 		RB._scripts.OnClick(RB)
 		check("...a click on it: a click on its Bug button", clicked == 1)
+		check("...the window it opens: seen whatever the box's alpha", o.window._ignoreParentAlpha == true and not o.Border._ignoreParentAlpha)
 		check("...movable like the HUD (Layout)", ns.P.hud.frameScale.reporter == 1 and RB.srGrip ~= nil)
-		-- a window it opens later: left alone
-		local later = CreateFrame("Frame", nil, o)
-		ns.Reporter.Apply()
-		check("...a window it opens later: left alone", later:GetAlpha() == 1)
 		ns.P.ui.reporter = false; ns.Changed("ui.reporter")
-		check("...off: Blizzard's box back as it was, the button gone", not RB:IsShown() and title:GetAlpha() == 1 and bug:GetAlpha() == 1 and o._mouse == true)
+		check("...off: Blizzard's box back as it was, the button gone", not RB:IsShown() and o:GetAlpha() == 1 and title:GetAlpha() == 1 and bug:GetAlpha() == 1 and o._mouse == true)
 		ns.P.ui.reporter = true; ns.Changed("ui.reporter")
 		ns.P.ui.reporter = false; ns.Changed("ui.reporter")
 		ns.P.ui.reporter = true
