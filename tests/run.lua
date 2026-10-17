@@ -6685,6 +6685,9 @@ end)()
 	local LG = QM.legend
 	local body = LG and LG.text or ""
 	check("legend: only its icon on the map, the box closed", LG.icon:IsShown() and not LG:IsShown())
+	check("...bottom left, over the Walked ways pill (the top left is the map's own button), the box opening upwards",
+		({ LG.icon:GetPoint(1) })[1] == "BOTTOMLEFT" and ({ LG.icon:GetPoint(1) })[5] == 10 + 22 + 6 and ({ LG:GetPoint(1) })[1] == "BOTTOMLEFT"
+		and ({ QM.button:GetPoint(1) })[5] == 10)
 	LG.icon._scripts.OnEnter(LG.icon)
 	check("...the mouse on the icon: the box", LG:IsShown())
 	check("legend: the quest, its mob, how fast it comes back, how many kills an item takes", LG.title:GetText() == "Rote Kopftücher"

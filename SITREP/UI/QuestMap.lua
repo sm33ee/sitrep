@@ -253,8 +253,9 @@ local function mark(canvas, i)
 	return f
 end
 
--- The legend: a small icon in the map's top left; the box with the quest, its
--- objectives and what the marks mean opens while the mouse is on the icon. The box
+-- The legend: a small icon in the map's bottom left, over the "Walked ways" pill
+-- (the top left holds the map's own round button); the box with the quest, its
+-- objectives and what the marks mean opens upwards while the mouse is on the icon. The box
 -- is made of rows (each its own font string, its mark as a texture of its own):
 -- inline textures in a wrapping text sat a line too low on Forever, and wrapped
 -- lines lost their indent.
@@ -265,7 +266,7 @@ local function legend(wm)
 	local ic = CreateFrame("Frame", nil, host)
 	lift(ic, LEVEL.panel)
 	ic:SetSize(LEGEND_ICON, LEGEND_ICON)
-	ic:SetPoint("TOPLEFT", host, "TOPLEFT", 10, -10)
+	ic:SetPoint("BOTTOMLEFT", host, "BOTTOMLEFT", 10, 10 + 22 + 6) -- (over the 22 px pills)
 	ic.bg = K.Backdrop(ic, C.bg, LEGEND_ICON / 2)
 	ic.bg:SetAllPoints()
 	ic.glyph = ic:CreateTexture(nil, "OVERLAY")
@@ -276,7 +277,7 @@ local function legend(wm)
 	ic:Hide()
 	local f = CreateFrame("Frame", nil, host)
 	lift(f, LEVEL.panel + 2)
-	f:SetPoint("TOPLEFT", ic, "BOTTOMLEFT", 0, -4)
+	f:SetPoint("BOTTOMLEFT", ic, "TOPLEFT", 0, 4)
 	f:SetWidth(LEGEND_W)
 	f.bg = K.Backdrop(f, C.bg, 10)
 	f.bg:SetAllPoints()
