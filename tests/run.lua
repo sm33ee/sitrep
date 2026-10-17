@@ -6682,22 +6682,37 @@ end)()
 		and placeF:GetFrameStrata() == spotF:GetFrameStrata(), placeF and placeF:GetFrameLevel())
 	Q.Store()[601] = nil
 	QM.Draw()
-	local body = QM.legend and QM.legend.body:GetText() or ""
-	check("legend: the quest, its mob, how fast it comes back, how many kills an item takes", QM.legend:IsShown() and QM.legend.title:GetText() == "Rote Kopftücher"
+	local LG = QM.legend
+	local body = LG and LG.text or ""
+	check("legend: only its icon on the map, the box closed", LG.icon:IsShown() and not LG:IsShown())
+	LG.icon._scripts.OnEnter(LG.icon)
+	check("...the mouse on the icon: the box", LG:IsShown())
+	check("legend: the quest, its mob, how fast it comes back, how many kills an item takes", LG.title:GetText() == "Rote Kopftücher"
 		and body:find("Defias-Schmugglerin (back ~1:00)", 1, true) and body:find("1 in 2.", 1, true), body)
 	check("legend: what the marks mean (only those shown: here the gold ones)", body:find("where the mobs that drop its items spawn", 1, true)
 		and not body:find("where the mobs to kill spawn", 1, true) and body:find("Hover a mark for more", 1, true), body)
+	local glyphRow, mobRow
+	for _, r in ipairs(LG.rows) do
+		if r.text:IsShown() and (r.text:GetText() or ""):find("drop its items spawn", 1, true) then glyphRow = r end
+		if r.text:IsShown() and (r.text:GetText() or ""):find("Defias-Schmugglerin", 1, true) then mobRow = r end
+	end
+	check("...each mark's ring a texture of its own on its row, not in the text", glyphRow and glyphRow.glyph:IsShown()
+		and ({ glyphRow.glyph:GetPoint(1) })[3] == ({ glyphRow.text:GetPoint(1) })[3] - 1 and not glyphRow.text:GetText():find("|T", 1, true))
+	check("...the mobs indented as a block (wrapped lines too)", mobRow and ({ mobRow.text:GetPoint(1) })[2] == 10 + 14
+		and mobRow.text:GetWidth() == 330 - 10 - 24)
+	LG.icon._scripts.OnLeave(LG.icon)
+	check("...mouse off: closed again", not LG:IsShown())
 	check("chosen in the tracker: the game tracks it too (its map marks it)", W.superTracked == 601, tostring(W.superTracked))
 	-- zoomed in: the marks zoom with the map, their text keeps its size
 	cscale = 2; wm:OnMapChanged()
 	check("zoomed: the label stays one size", math.abs(QM.pool[1].label:GetScale() - 0.5) < 1e-6)
 	-- another map open: nothing of it there
 	mapID = 1436; wm:OnMapChanged()
-	check("another map: no spots, the legend says so", QM.used == 0 and (QM.legend.body:GetText() or ""):find("No spawn spots", 1, true))
+	check("another map: no spots, the legend says so", QM.used == 0 and (QM.legend.text or ""):find("No spawn spots", 1, true))
 	-- no quest chosen: nothing on the map
 	mapID = 1429
 	Q.Select(nil)
-	check("no quest chosen: nothing on the map", QM.used == 0 and not QM.legend:IsShown())
+	check("no quest chosen: nothing on the map", QM.used == 0 and not QM.legend:IsShown() and not QM.legend.icon:IsShown())
 	check("...and the game tracks none", W.superTracked == 0)
 	-- switched off
 	Q.Select(601)
@@ -6706,7 +6721,7 @@ end)()
 	ns.P.quests.questMap = true; ns.Changed("quests.questMap")
 	-- the map closes: its marks go
 	wm:Hide(); wm._scripts.OnHide(wm)
-	check("map closed: marks gone", not QM.pool[1]:IsShown() and not QM.legend:IsShown())
+	check("map closed: marks gone", not QM.pool[1]:IsShown() and not QM.legend:IsShown() and not QM.legend.icon:IsShown())
 	Q.Select(nil)
 	S.quests = nil
 	SITREP_DB.spawnSpots, SITREP_DB.spawns, SITREP_DB.questMobs, SITREP_DB.drops = nil, nil, nil, nil

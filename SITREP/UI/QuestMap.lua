@@ -253,12 +253,30 @@ local function mark(canvas, i)
 	return f
 end
 
+-- The legend: a small icon in the map's top left; the box with the quest, its
+-- objectives and what the marks mean opens while the mouse is on the icon. The box
+-- is made of rows (each its own font string, its mark as a texture of its own):
+-- inline textures in a wrapping text sat a line too low on Forever, and wrapped
+-- lines lost their indent.
+local LEGEND_ICON = 24
 local function legend(wm)
 	if QM.legend then return QM.legend end
 	local host = wm.ScrollContainer or wm
+	local ic = CreateFrame("Frame", nil, host)
+	lift(ic, LEVEL.panel)
+	ic:SetSize(LEGEND_ICON, LEGEND_ICON)
+	ic:SetPoint("TOPLEFT", host, "TOPLEFT", 10, -10)
+	ic.bg = K.Backdrop(ic, C.bg, LEGEND_ICON / 2)
+	ic.bg:SetAllPoints()
+	ic.glyph = ic:CreateTexture(nil, "OVERLAY")
+	ic.glyph:SetTexture(K.MEDIA .. "glyph_menu")
+	ic.glyph:SetSize(14, 14)
+	ic.glyph:SetPoint("CENTER")
+	ic.glyph:SetVertexColor(C.text[1], C.text[2], C.text[3], 1)
+	ic:Hide()
 	local f = CreateFrame("Frame", nil, host)
-	lift(f, LEVEL.panel)
-	f:SetPoint("TOPLEFT", host, "TOPLEFT", 10, -10)
+	lift(f, LEVEL.panel + 2)
+	f:SetPoint("TOPLEFT", ic, "BOTTOMLEFT", 0, -4)
 	f:SetWidth(LEGEND_W)
 	f.bg = K.Backdrop(f, C.bg, 10)
 	f.bg:SetAllPoints()
@@ -266,14 +284,59 @@ local function legend(wm)
 	f.title:SetPoint("TOPLEFT", 10, -8)
 	f.title:SetWidth(LEGEND_W - 20)
 	f.title:SetJustifyH("LEFT")
-	f.body = K.Font(f, 10.5, C.text, K.FONT, "")
-	f.body:SetPoint("TOPLEFT", f.title, "BOTTOMLEFT", 0, -5)
-	f.body:SetWidth(LEGEND_W - 20)
-	f.body:SetJustifyH("LEFT")
-	f.body:SetWordWrap(true)
+	f.rows = {}
+	f:Hide()
+	if ic.SetMouseMotionEnabled then ic:SetMouseMotionEnabled(true) else ic:EnableMouse(true) end
+	if ic.SetMouseClickEnabled then ic:SetMouseClickEnabled(false) end -- (clicks: the map's)
+	ic:SetScript("OnEnter", function() if f.filled then f:Show() end end)
+	ic:SetScript("OnLeave", function() f:Hide() end)
+	f.icon = ic
 	QM.legend = f
 	return f
 end
+
+-- Fill the box: rows { text, indent = px, glyph = colour (a ring before it) }.
+local ROW_GAP, GLYPH = 3, 11
+local function fillLegend(f, title, rows)
+	f.title:SetText(title or "")
+	local y = -8 - 16 - 5
+	local all = {}
+	for i, r in ipairs(rows) do
+		local row = f.rows[i]
+		if not row then
+			row = {}
+			row.text = K.Font(f, 10.5, C.text, K.FONT, "")
+			row.text:SetJustifyH("LEFT")
+			row.text:SetWordWrap(true)
+			row.glyph = f:CreateTexture(nil, "OVERLAY")
+			row.glyph:SetTexture(K.MEDIA .. "glyph_ring")
+			row.glyph:SetSize(GLYPH, GLYPH)
+			f.rows[i] = row
+		end
+		local x = 10 + (r.indent or 0)
+		if r.glyph then
+			row.glyph:ClearAllPoints()
+			row.glyph:SetPoint("TOPLEFT", x, y - 1)
+			row.glyph:SetVertexColor(r.glyph[1], r.glyph[2], r.glyph[3], 1)
+			row.glyph:Show()
+			x = x + GLYPH + 5
+		else
+			row.glyph:Hide()
+		end
+		row.text:ClearAllPoints()
+		row.text:SetPoint("TOPLEFT", x, y)
+		row.text:SetWidth(LEGEND_W - 10 - x)
+		row.text:SetText(r.text or "")
+		row.text:Show()
+		y = y - (read(row.text.GetStringHeight, row.text) or 13) - (r.gapAfter or ROW_GAP)
+		all[#all + 1] = r.text or ""
+	end
+	for i = #rows + 1, #f.rows do f.rows[i].text:Hide(); f.rows[i].glyph:Hide() end
+	f:SetHeight(-y + 8)
+	f.text = table.concat(all, "\n") -- (what it says, in one string: tests, probes)
+	f.filled = true
+end
+QM.FillLegend = fillLegend
 
 local function hex(c) return format("%02x%02x%02x", math.floor(c[1] * 255), math.floor(c[2] * 255), math.floor(c[3] * 255)) end
 
@@ -295,7 +358,7 @@ QM.Context = mapContext
 ---------------------------------------------------------------------------
 local function hideQuest()
 	for _, f in ipairs(QM.pool) do f:Hide() end
-	if QM.legend then QM.legend:Hide() end
+	if QM.legend then QM.legend:Hide(); QM.legend.icon:Hide(); QM.legend.filled = false end
 	QM.used = 0
 end
 
@@ -334,38 +397,33 @@ function QM.DrawQuest(cx)
 	end
 	for j = i + 1, #QM.pool do QM.pool[j]:Hide() end
 	QM.used = i
-	-- the legend
+	-- the legend: the icon on the map, the box while the mouse is on it
 	local lg = legend(cx.wm)
-	lg.title:SetText(q.title or "")
-	local out = {}
+	local rows = {}
+	local dim = format("|cff%s%%s|r", hex(C.dim))
 	for _, l in ipairs(d.lines) do
 		local col = l.item and ITEM_COL or KILL_COL
-		local line = format("|cff%s%d|r  %s", hex(col), l.n, l.text or "")
-		if l.mobs ~= "" then line = line .. "\n     " .. l.mobs end
-		if l.drop then line = line .. format("\n     |cff%s%s|r", hex(ITEM_COL), l.drop) end
-		out[#out + 1] = line
+		rows[#rows + 1] = { text = format("|cff%s%d|r  %s", hex(col), l.n, l.text or ""), gapAfter = 1 }
+		if l.mobs ~= "" then rows[#rows + 1] = { text = l.mobs, indent = 14, gapAfter = 1 } end
+		if l.drop then rows[#rows + 1] = { text = format("|cff%s%s|r", hex(ITEM_COL), l.drop), indent = 14, gapAfter = 1 } end
+		rows[#rows].gapAfter = 6
 	end
-	if q.complete then out[#out + 1] = "Ready to hand in." end
+	if q.complete then rows[#rows + 1] = { text = "Ready to hand in.", gapAfter = 6 } end
 	if #d.spots == 0 and not q.complete then
-		out[#out + 1] = format("|cff%sNo spawn spots of its mobs known on this map yet: kill them here (and look at them: their tooltip says what they are for).|r", hex(C.dim))
+		rows[#rows + 1] = { text = format(dim, "No spawn spots of its mobs known on this map yet: kill them here (and look at them: their tooltip says what they are for)."), gapAfter = 6 }
 	end
 	-- what the marks mean (hover one for more)
 	if #d.spots > 0 or #d.places > 0 then
-		local key = { "" }
-		local function glyph(col) return K.Glyph("ring", col[1], col[2], col[3], 11) end
 		local has = {}
 		for _, sp in ipairs(d.spots) do has[sp.seenOnly and "seen" or sp.item and "item" or "kill"] = true end
-		if has.kill then key[#key + 1] = glyph(KILL_COL) .. format(" |cff%swhere the mobs to kill spawn (~ back after)|r", hex(C.dim)) end
-		if has.item then key[#key + 1] = glyph(ITEM_COL) .. format(" |cff%swhere the mobs that drop its items spawn|r", hex(C.dim)) end
-		if has.seen then key[#key + 1] = format("|cff%sfaint, \"seen\": where its mobs were seen in passing|r", hex(C.dim)) end
-		if #d.places > 0 then key[#key + 1] = glyph(PLACE_COL) .. format(" |cff%s1, 2...: where your counter for that objective went up|r", hex(C.dim)) end
-		key[#key + 1] = format("|cff%sHover a mark for more.|r", hex(C.dim))
-		out[#out + 1] = table.concat(key, "\n")
+		if has.kill then rows[#rows + 1] = { glyph = KILL_COL, text = format(dim, "where the mobs to kill spawn (~ back after)") } end
+		if has.item then rows[#rows + 1] = { glyph = ITEM_COL, text = format(dim, "where the mobs that drop its items spawn") } end
+		if has.seen then rows[#rows + 1] = { indent = GLYPH + 5, text = format(dim, "faint, \"seen\": where its mobs were seen in passing") } end
+		if #d.places > 0 then rows[#rows + 1] = { glyph = PLACE_COL, text = format(dim, "1, 2...: where your counter for that objective went up") } end
+		rows[#rows + 1] = { text = format(dim, "Hover a mark for more.") }
 	end
-	lg.body:SetText(table.concat(out, "\n"))
-	local hb = read(lg.body.GetStringHeight, lg.body) or (#out * 14)
-	lg:SetHeight(8 + 16 + 5 + hb + 10)
-	lg:Show()
+	fillLegend(lg, q.title, rows)
+	lg.icon:Show()
 end
 
 ---------------------------------------------------------------------------
