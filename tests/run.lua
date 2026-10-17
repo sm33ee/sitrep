@@ -1560,6 +1560,11 @@ S.units.party1, S.group.n, S.auras.party1 = nil, 0, nil
 	local y6 = ({ c6:GetPoint(1) })[5]
 	check("...group 1 in the first column, group 3 (no group 2) right beside it, top down", x1 == 0 and x5 == 70 + 3 and y5 == y1 and y6 < y5, x5 .. " " .. y5)
 	check("...as wide as its two columns", R:GetWidth() == 2 * 70 + 3, R:GetWidth())
+	local n0 = #W.prints
+	SlashCmdList.SITREP("raidprobe")
+	local dump = table.concat(W.prints, "\n", n0 + 1)
+	check("raidprobe: each member's group, the columns, the width", dump:find("raid5 Raider5-Realm: group 3", 1, true)
+		and dump:find("columns 2, width 143", 1, true), dump)
 	check("...the group numbers over the columns in use", R.groups[1]:IsShown() and R.groups[3]:IsShown() and not R.groups[2]:IsShown()
 		and ({ R.groups[3]:GetPoint(1) })[4] == 70 + 3 + 35)
 	check("...the name without realm", c1.name:GetText() == "Raider1")
@@ -1613,6 +1618,12 @@ S.units.party1, S.group.n, S.auras.party1 = nil, 0, nil
 	W.Fire("PLAYER_REGEN_ENABLED")
 	check("...and moves once it is over (group 2 between 1 and 3 now, the frame wider)", ({ c1:GetPoint(1) })[4] == 70 + 3
 		and ({ c5:GetPoint(1) })[4] == 2 * (70 + 3) and R:GetWidth() == 3 * 70 + 2 * 3)
+	-- a small raid, everyone in group 1: one column, the frame as narrow, the short count
+	S.units.raid6, S.units.raid7, S.group.n = nil, nil, 5
+	for i = 1, 5 do S.units["raid" .. i].subgroup = 1 end
+	W.Fire("GROUP_ROSTER_UPDATE")
+	F.UpdateRaid()
+	check("one group: one column wide, the count without words", R:GetWidth() == 70 and R.status:GetText():upper() == "5/5", R:GetWidth() .. " " .. R.status:GetText())
 	-- the setting
 	ns.P.frames.raid = false; ns.Changed("frames.raid")
 	check("raid frames off: hidden", not R:IsShown() and not c1:IsShown() and W.unitWatch[c1] == nil)

@@ -165,13 +165,35 @@ function F.PlaceRaid()
 		f:ClearAllPoints()
 		f:SetPoint("TOPLEFT", raid, "BOTTOMLEFT", colX(col), -(rowAt[i] - 1) * (CELL_H + GAP) - 14)
 	end
-	-- the header as wide as the columns (room for its title and count: two at least)
-	raid:SetWidth(colX(math.max(2, #cols) + 1) - GAP)
+	-- the header exactly as wide as the columns (one column: the short count)
+	raid:SetWidth(colX(#cols + 1) - GAP)
 	for g, t in ipairs(raid.groups) do
 		t:ClearAllPoints()
 		t:SetPoint("BOTTOM", raid, "BOTTOMLEFT", colX(colOf[g] or 1) + CELL_W / 2, -12)
 	end
 	F.raidGroups, F.raidColumns = used, #cols
+end
+
+-- What the raid frames see (/sitrep raidprobe): each member's group as the client
+-- gives it, the columns and the width, where each cell sits.
+function F.RaidProbe()
+	ns.Capture("raidprobe", function()
+		ns.print("in raid %s, members %s, frames on %s, combat %s", tostring(IsInRaid and IsInRaid()), tostring(read(GetNumGroupMembers)),
+			tostring(ns.P.frames.raid), tostring(InCombatLockdown()))
+		if not raid then ns.print("no raid frame built") return end
+		for i = 1, MAX do
+			local ok, name, rank, sub = pcall(GetRaidRosterInfo, i)
+			if ok and name ~= nil then
+				local f = F.raidCells[i]
+				local _, _, _, x, y = f:GetPoint(1)
+				ns.print("  raid%d %s: group %s%s, cell shown %s at %s/%s", i, ns.isSecret(name) and "(secret name)" or tostring(name),
+					ns.isSecret(sub) and "secret" or tostring(sub), groupOf(i) and "" or " (not readable: placed by order)",
+					tostring(f:IsShown()), tostring(x), tostring(y))
+			end
+		end
+		ns.print("columns %s, width %s (a column: %d), groups in use: %s", tostring(F.raidColumns), tostring(read(raid.GetWidth, raid)), CELL_W + GAP,
+			(function() local t = {} for g = 1, GROUPS do if F.raidGroups and F.raidGroups[g] then t[#t + 1] = g end end return table.concat(t, ", ") end)())
+	end)
 end
 
 -- One cell: health, name, state, marks, rims, range.
@@ -242,7 +264,9 @@ function F.UpdateRaid()
 			if ok then near = near + 1 end
 		end
 	end
-	raid.status:SetText(n > 0 and format("%d/%d IN HEAL RANGE", near, n) or "")
+	-- (one column: only the numbers, the words would not fit beside the title)
+	local narrow = (F.raidColumns or 2) < 2
+	raid.status:SetText(n > 0 and format(narrow and "%d/%d" or "%d/%d IN HEAL RANGE", near, n) or "")
 	for g, t in ipairs(raid.groups) do t:SetShown(F.raidGroups and F.raidGroups[g] and n > 0 or false) end
 end
 
