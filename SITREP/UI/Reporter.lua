@@ -130,6 +130,29 @@ function R.Apply()
 	if on then conceal(true) elseif R.concealed then conceal(false) end
 end
 
+-- Blizzard puts its box back when a report is done (4.12.0, mouseprobe: the box
+-- taking the mouse again, its rim seen): kept hidden, looked at twice a second.
+-- (The report window is none of these parts: it stays as Blizzard shows it.)
+function R.Keep()
+	local o = original()
+	if not (R.concealed and o and parts) then return end
+	for f in pairs(parts) do
+		if (read(f.GetAlpha, f) or 0) > 0 then pcall(f.SetAlpha, f, 0) end
+		if f.IsIgnoringParentAlpha and read(f.IsIgnoringParentAlpha, f) == true then pcall(f.SetIgnoreParentAlpha, f, false) end
+		if f.IsMouseEnabled and read(f.IsMouseEnabled, f) == true then pcall(f.EnableMouse, f, false) end
+	end
+	if (read(o.GetAlpha, o) or 0) > 0 then holding = true; pcall(o.SetAlpha, o, 0); holding = false end
+	if o.IsMouseEnabled and read(o.IsMouseEnabled, o) == true then pcall(o.EnableMouse, o, false) end
+end
+local acc = 0
+ns.On("SR_TICK", function(_, dt)
+	if not R.concealed then return end
+	acc = acc + (dt or 0)
+	if acc < 0.5 then return end
+	acc = 0
+	R.Keep()
+end)
+
 ns.On("SR_LOGIN", function() R.Apply() end)
 -- (the reporter may load after SITREP)
 ns.On("ADDON_LOADED", function() if not R.concealed and original() then R.Apply() end end)
