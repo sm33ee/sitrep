@@ -1539,6 +1539,14 @@ S.units.party1, S.group.n, S.auras.party1 = nil, 0, nil
 	-- RAID FRAMES: every member in a glass cell, one column per group
 	local F = ns.Frames
 	local R = F.raid
+	-- Blizzard's raid frames: faded; a part ignoring its parent's alpha (the selection
+	-- highlight) made see-through on its own, also on members made later
+	_G.CompactRaidFrameContainer = CreateFrame("Frame", nil, UIParent)
+	local bm = CreateFrame("Button", "CompactRaidGroup1Member2", _G.CompactRaidFrameContainer)
+	_G.CompactRaidGroup1Member2 = bm
+	bm.selectionHighlight = bm:CreateTexture()
+	bm.selectionHighlight:SetIgnoreParentAlpha(true)
+	local plainTex = bm:CreateTexture()
 	check("raid: a header and 40 secure cells", R and #F.raidCells == 40 and F.raidCells[40]:GetAttribute("unit") == "raid40"
 		and F.raidCells[1]:GetAttribute("type1") == "target" and F.raidCells[1]:GetAttribute("type2") == "togglemenu")
 	check("...shown only in a raid (state driver), each cell while its unit exists", W.stateDrivers[R] and W.stateDrivers[R].visibility == "[group:raid] show; hide"
@@ -1551,6 +1559,11 @@ S.units.party1, S.group.n, S.auras.party1 = nil, 0, nil
 			hostile = false, faction = "Alliance", wx = i * 3, wy = 0, hp = 3000, hpMax = 4000, subgroup = i <= 4 and 1 or 3 }
 	end
 	W.Fire("GROUP_ROSTER_UPDATE")
+	check("Blizzard's raid frames faded, the loose selection highlight too", _G.CompactRaidFrameContainer:GetAlpha() == 0
+		and bm.selectionHighlight:GetAlpha() == 0 and plainTex:GetAlpha() == 1)
+	ns.P.frames.hideBlizzard = false; ns.Changed("frames.hideBlizzard")
+	check("...given back as it was", _G.CompactRaidFrameContainer:GetAlpha() == 1 and bm.selectionHighlight:GetAlpha() == 1)
+	ns.P.frames.hideBlizzard = true; ns.Changed("frames.hideBlizzard")
 	R:Show()
 	for i = 1, 7 do F.raidCells[i]:Show() end -- (the client's unit watch)
 	F.UpdateRaid()
@@ -1640,6 +1653,7 @@ S.units.party1, S.group.n, S.auras.party1 = nil, 0, nil
 	for i = 1, 7 do S.units["raid" .. i] = nil end
 	S.group.raid, S.group.n = nil, 0
 	W.Fire("GROUP_ROSTER_UPDATE")
+	_G.CompactRaidFrameContainer, _G.CompactRaidGroup1Member2 = nil, nil
 end)()
 S.units.player.class = "MAGE"
 W.Fire("GROUP_ROSTER_UPDATE")

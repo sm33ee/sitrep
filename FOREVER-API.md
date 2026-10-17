@@ -361,3 +361,6 @@ your counts from your quest log.
   but a subgroup all the same. A slot counts as a member only with a name (a raid of
   two showed all 8 groups "in use" before that).
 - The members' subgroups are plain out of combat.
+- Blizzard's raid members (`CompactRaidGroup<g>Member<m>`) have a selection highlight
+  that ignores its parent's alpha: fading the raid container leaves it on screen when
+  a member is targeted. It (and any such part) is made see-through on its own.

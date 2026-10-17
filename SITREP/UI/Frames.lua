@@ -84,6 +84,24 @@ F.Flash = flash
 -- Only alpha and mouse are touched; no secure attributes are written.
 ---------------------------------------------------------------------------
 local pendingBlizzard
+-- Parts of Blizzard's raid-style members that ignore their parent's alpha: fading
+-- the frame leaves them on screen (raidprobe 4.11.5: a targeted member's selection
+-- highlight floating where Blizzard's raid frame would be). Each made see-through
+-- on its own (texture alpha: allowed in combat too), and given back as it was.
+local function looseParts(frame, hide)
+	if type(frame) ~= "table" or not frame.GetRegions then return end
+	local ok, regions = pcall(function() return { frame:GetRegions() } end)
+	for _, r in ipairs(ok and regions or {}) do
+		if r.srLoose or ns.read(r.IsIgnoringParentAlpha, r) == true then
+			if not r.srLoose then r.srLoose = ns.read(r.GetAlpha, r) or 1 end
+			pcall(r.SetAlpha, r, hide and 0 or r.srLoose)
+		end
+	end
+end
+local function raidMembers(fn)
+	for g = 1, 8 do for m = 1, 5 do fn(_G["CompactRaidGroup" .. g .. "Member" .. m]) end end
+	for i = 1, 40 do fn(_G["CompactRaidFrame" .. i]) end
+end
 local function applyBlizzard()
 	local P = ns.P.frames
 	local hidePlayer = P.hideBlizzard and P.player and ns.P.enabled
@@ -112,6 +130,7 @@ local function applyBlizzard()
 	set(_G.CompactPartyFrame, hideParty)
 	for i = 1, 5 do
 		set(_G["CompactPartyFrameMember" .. i], hideParty)
+		looseParts(_G["CompactPartyFrameMember" .. i], hideParty)
 		local pm = _G.PartyFrame and _G.PartyFrame["MemberFrame" .. i]
 		if type(pm) == "table" then set(pm, hideParty) end
 	end
@@ -119,6 +138,7 @@ local function applyBlizzard()
 	-- change, after combat if need be); not its side panel: the raid leader's tools
 	-- (ready check, marks) live there
 	set(_G.CompactRaidFrameContainer, hideRaid)
+	raidMembers(function(f) looseParts(f, hideRaid) end)
 	F.blizzardHidden = { player = hidePlayer, target = hideTarget, pet = hidePet, party = hideParty, raid = hideRaid }
 end
 F.ApplyBlizzard = applyBlizzard
@@ -235,8 +255,8 @@ end)
 
 ns.On("GROUP_ROSTER_UPDATE", function()
 	if F.party then F.UpdateParty() end
-	-- (Blizzard makes raid members as they join: faded too)
-	if F.blizzardHidden and F.blizzardHidden.raid then applyBlizzard() end
+	-- (Blizzard makes group and raid members as they join: faded too)
+	if F.blizzardHidden and (F.blizzardHidden.raid or F.blizzardHidden.party) then applyBlizzard() end
 end)
 
 -- a pet summoned, dismissed or swapped (yours, or your target's)

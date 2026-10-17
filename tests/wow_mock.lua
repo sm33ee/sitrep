@@ -207,6 +207,7 @@ end
 function Methods.SetScale(s, v) s._scale = v end
 function Methods.SetRotation(s, r) s._rot = r end
 function Methods.SetIgnoreParentAlpha(s, v) s._ignoreParentAlpha = v end
+function Methods.IsIgnoringParentAlpha(s) return rawget(s, "_ignoreParentAlpha") or false end
 function Methods.SetFrameStrata(s, v) s._strata = v end
 function Methods.SetMouseMotionEnabled(s, v) s._motion = v end
 function Methods.SetID(s, v) s._id = v end
