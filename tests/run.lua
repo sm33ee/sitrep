@@ -1558,8 +1558,10 @@ S.units.party1, S.group.n, S.auras.party1 = nil, 0, nil
 	local x1, y1 = ({ c1:GetPoint(1) })[4], ({ c1:GetPoint(1) })[5]
 	local x5, y5 = ({ c5:GetPoint(1) })[4], ({ c5:GetPoint(1) })[5]
 	local y6 = ({ c6:GetPoint(1) })[5]
-	check("...group 1 in the first column, group 3 in the third, top down", x1 == 0 and x5 == 2 * (70 + 3) and y5 == y1 and y6 < y5, x5 .. " " .. y5)
-	check("...the group numbers over the columns in use", R.groups[1]:IsShown() and R.groups[3]:IsShown() and not R.groups[2]:IsShown())
+	check("...group 1 in the first column, group 3 (no group 2) right beside it, top down", x1 == 0 and x5 == 70 + 3 and y5 == y1 and y6 < y5, x5 .. " " .. y5)
+	check("...as wide as its two columns", R:GetWidth() == 2 * 70 + 3, R:GetWidth())
+	check("...the group numbers over the columns in use", R.groups[1]:IsShown() and R.groups[3]:IsShown() and not R.groups[2]:IsShown()
+		and ({ R.groups[3]:GetPoint(1) })[4] == 70 + 3 + 35)
 	check("...the name without realm", c1.name:GetText() == "Raider1")
 	local cr = ns.Data.ClassColor("WARRIOR")
 	check("...health in the dimmed class colour", c1.hp:GetValue() == 3000 and math.abs(c1.hp._sbColor[1] - cr * 0.62) < 1e-6)
@@ -1609,7 +1611,8 @@ S.units.party1, S.group.n, S.auras.party1 = nil, 0, nil
 	check("changes group in combat: the cell stays", ({ c1:GetPoint(1) })[4] == 0)
 	S.me.combat = false
 	W.Fire("PLAYER_REGEN_ENABLED")
-	check("...and moves once it is over", ({ c1:GetPoint(1) })[4] == 70 + 3)
+	check("...and moves once it is over (group 2 between 1 and 3 now, the frame wider)", ({ c1:GetPoint(1) })[4] == 70 + 3
+		and ({ c5:GetPoint(1) })[4] == 2 * (70 + 3) and R:GetWidth() == 3 * 70 + 2 * 3)
 	-- the setting
 	ns.P.frames.raid = false; ns.Changed("frames.raid")
 	check("raid frames off: hidden", not R:IsShown() and not c1:IsShown() and W.unitWatch[c1] == nil)

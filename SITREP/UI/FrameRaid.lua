@@ -1,6 +1,7 @@
 -- SITREP · Raid frames
--- Up to 40 members in glass cells, one column per raid group (1 to 8), five cells
--- each. A cell says only what a raid needs at a glance:
+-- Up to 40 members in glass cells, one column per raid group in use (side by side,
+-- the frame as wide as the raid), five cells each. A cell says only what a raid
+-- needs at a glance:
 --   health     the bar fills the cell in the member's class colour (dimmed), the
 --              missing part dark glass; heals on their way on it (Heals)
 --   name       short (no realm), white; DEAD, GHOST or OFFLINE in its place
@@ -131,13 +132,17 @@ local function groupOf(i)
 end
 
 -- Each cell in its group's column, members of a group top down in raid order.
--- Out of combat only (secure frames); in combat it waits for the end.
+-- Only groups with someone in them get a column, side by side: the frame is as
+-- wide as the raid needs (no raid, placing it: groups 1 and 2). Out of combat only
+-- (secure frames, and the header holding them); in combat it waits for the end.
 local pendingPlace
+local function colX(col) return (col - 1) * (CELL_W + GAP) end
 function F.PlaceRaid()
 	if not raid then return end
 	if InCombatLockdown() then pendingPlace = true return end
-	local rows, used = {}, {}
-	for i, f in ipairs(F.raidCells) do
+	-- who is in which group, and where in it
+	local groupAt, rowAt, rows, used = {}, {}, {}, {}
+	for i in ipairs(F.raidCells) do
 		-- (no one at raidN: where it would be in order; placing the frames shows it)
 		local sub = groupOf(i)
 		local g = sub or math.min(GROUPS, math.ceil(i / PER))
@@ -146,11 +151,27 @@ function F.PlaceRaid()
 			for h = 1, GROUPS do if (rows[h] or 0) < PER then g, r = h, (rows[h] or 0) + 1 break end end
 		end
 		rows[g] = r
+		groupAt[i], rowAt[i] = g, r
 		if sub then used[g] = true end
-		f:ClearAllPoints()
-		f:SetPoint("TOPLEFT", raid, "BOTTOMLEFT", (g - 1) * (CELL_W + GAP), -(r - 1) * (CELL_H + GAP) - 14)
 	end
-	F.raidGroups = used
+	-- the columns: the groups in use, in order
+	local cols, colOf = {}, {}
+	for g = 1, GROUPS do if used[g] then cols[#cols + 1] = g end end
+	if #cols == 0 then cols = { 1, 2 } end
+	for c, g in ipairs(cols) do colOf[g] = c end
+	for i, f in ipairs(F.raidCells) do
+		-- (a cell of an empty group: hidden; after the last column, should it fill in combat)
+		local col = colOf[groupAt[i]] or (#cols + 1)
+		f:ClearAllPoints()
+		f:SetPoint("TOPLEFT", raid, "BOTTOMLEFT", colX(col), -(rowAt[i] - 1) * (CELL_H + GAP) - 14)
+	end
+	-- the header as wide as the columns (room for its title and count: two at least)
+	raid:SetWidth(colX(math.max(2, #cols) + 1) - GAP)
+	for g, t in ipairs(raid.groups) do
+		t:ClearAllPoints()
+		t:SetPoint("BOTTOM", raid, "BOTTOMLEFT", colX(colOf[g] or 1) + CELL_W / 2, -12)
+	end
+	F.raidGroups, F.raidColumns = used, #cols
 end
 
 -- One cell: health, name, state, marks, rims, range.
