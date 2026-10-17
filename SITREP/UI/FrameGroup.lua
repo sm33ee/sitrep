@@ -21,8 +21,9 @@ local frameShell = F.Shell
 -- is attacking (click to target that). The target's pet also shows its
 -- distance, and an enemy pet's cast gets the KICK treatment.
 ---------------------------------------------------------------------------
-local pet, tpet -- the frames (also F.pet, F.tpet)
+local pet, tpet, focus -- the frames (also F.pet, F.tpet, F.focus)
 
+-- (also the focus frame: the same pane for your focus, "focus" / "focustarget")
 local function buildPetFrame(id, unit, title, default)
 	local P = ns.P.frames
 	local W = P.width
@@ -77,7 +78,7 @@ local function buildPetFrame(id, unit, title, default)
 		self.hl:Show()
 		if GameTooltip then
 			GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT")
-			GameTooltip:SetText("Click to target what this pet attacks", 1, 1, 1)
+			GameTooltip:SetText(unit == "focus" and "Click to target what your focus has targeted" or "Click to target what this pet attacks", 1, 1, 1)
 			GameTooltip:Show()
 		end
 	end)
@@ -95,6 +96,15 @@ local function buildPet()
 	F.pet, F.tpet = pet, tpet
 end
 F.BuildPet = buildPet
+
+-- FOCUS: your focus in the same pane: name in its colour, class or kind and level,
+-- health, power, its cast (an enemy's with KICK), distance, and what it has
+-- targeted (click to target that). Shown only while you have a focus.
+local function buildFocus()
+	focus = buildPetFrame("focus", "focus", "FOCUS", { "CENTER", "CENTER", 260, -392 })
+	F.focus = focus
+end
+F.BuildFocus = buildFocus
 
 -- Pet health colour: green, orange below 50 %, red below 25 % (plain only;
 -- secret health keeps the last colour).
@@ -126,7 +136,7 @@ local function updatePetFrame(f)
 		ns.Heals.Feed(f.hp, nil)
 		f.cast:Hide()
 		if not f:IsShown() then return end
-		f.name:SetText("NO PET"); f.name:SetTextColor(unpack(C.faint)) -- placeholder while you place it
+		f.name:SetText(unit == "focus" and "NO FOCUS" or "NO PET"); f.name:SetTextColor(unpack(C.faint)) -- placeholder while you place it
 		f.level:SetText(""); f.tags:SetText(""); f.ptt:SetText(""); f.dist:SetText(""); f.hpText:SetText(""); f.pctText:SetText("")
 		return
 	end
@@ -134,8 +144,10 @@ local function updatePetFrame(f)
 	local hostile = not own and ns.Sensors.IsEnemy(unit)
 	nameText(f.name, unit)
 	if own then f.name:SetTextColor(unpack(C.text)) else unitColor(f.name, unit) end
-	-- family ("Wolf", "Voidwalker") and level when it differs from yours
+	-- family ("Wolf", "Voidwalker") and level when it differs from yours (a player
+	-- as your focus: its class)
 	local fam = read(UnitCreatureFamily, unit) or read(UnitCreatureType, unit)
+	if read(UnitIsPlayer, unit) then fam = read(UnitClass, unit) end
 	local lvl, myLvl = read(UnitLevel, unit), ns.Sensors.self.level
 	local lv = lvl and myLvl and lvl ~= myLvl and tostring(lvl) or ""
 	f.level:SetText(fam and (lv ~= "" and (fam .. "  " .. lv) or fam) or lv)
@@ -182,7 +194,8 @@ local function updatePetFrame(f)
 end
 local function updatePet() updatePetFrame(pet) end
 local function updateTargetPet() updatePetFrame(tpet) end
-F.UpdatePet, F.UpdateTargetPet = updatePet, updateTargetPet
+local function updateFocus() updatePetFrame(focus) end
+F.UpdatePet, F.UpdateTargetPet, F.UpdateFocus = updatePet, updateTargetPet, updateFocus
 
 ---------------------------------------------------------------------------
 -- PARTY: one frame per party member, stacked under a PARTY header. Shown only

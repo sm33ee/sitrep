@@ -180,7 +180,7 @@ end
 local HUD_ELEMENTS = { { "envelope", "Envelope" }, { "board", "Threat board" }, { "engage", "Engagement bar" },
 	{ "pressure", "Pressure gauge" }, { "allies", "Allies" } }
 local FRAME_ELEMENTS = { { "player", "Player frame" }, { "target", "Target frame" }, { "pet", "Pet frame" },
-	{ "targetpet", "Target's pet" }, { "party", "Party frames" }, { "raid", "Raid frames" } }
+	{ "targetpet", "Target's pet" }, { "focus", "Focus frame" }, { "party", "Party frames" }, { "raid", "Raid frames" } }
 local UI_ELEMENTS = { { "minimap", "Minimap", "map" }, { "chat", "Chat", "chat" }, { "bags", "Bag button" },
 	{ "menu", "MENU button" }, { "quests", "Quest tracker" }, { "questArrow", "Quest arrow", "scale", true },
 	{ "castAlert", "Cast alert" }, { "banner", "Alert banner" }, { "hoverInfo", "Hover info" }, { "emergency", "Emergency items" }, { "recap", "Death recap" } }
@@ -363,6 +363,7 @@ local function buildFrames()
 	-- column 1: which frames, and what goes on them
 	pair("Player frame", "player", "Target frame", "target")
 	pair("Pet frame", "pet", "Target's pet", "targetPet")
+	tog(1, "Focus frame", "focus", "Your focus in a glass pane: health, power, its cast (KICK for enemies), distance and what it has targeted. Shown while you have a focus.")
 	pair("Party frames", "party", "Hide Blizzard's", "hideBlizzard")
 	tog(1, "Hit and heal flash", "flash")
 	tog(1, "Execute marker", "execute")
@@ -386,7 +387,7 @@ local function buildFrames()
 	tog(2, "Health bar for its target", "totHealth")
 	p:Place(K.Slider(p, "Highlight its buffs lasting at most", 5, 30, 1, get("frames", "burstMax"), set("frames", "burstMax"), function(v) return v .. "s" end), 2)
 	local rp = K.Button(p, "Reset frame positions", 160, 22, function()
-		for _, id in ipairs({ "player", "target", "pet", "targetpet", "party", "raid" }) do ns.P.hud.pos[id] = nil end
+		for _, id in ipairs({ "player", "target", "pet", "targetpet", "focus", "party", "raid" }) do ns.P.hud.pos[id] = nil end
 		ns.Changed("frames.pos")
 	end)
 	rp.fixedWidth = true

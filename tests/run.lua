@@ -1536,6 +1536,42 @@ end)()
 end)()
 S.units.party1, S.group.n, S.auras.party1 = nil, 0, nil
 ;(function()
+	-- FOCUS FRAME: your focus in the same glass pane as the pets
+	local F = ns.Frames
+	local FF = F.focus
+	check("focus frame: built, secure, shown while you have a focus", FF and FF:GetAttribute("unit") == "focus"
+		and FF:GetAttribute("type1") == "target" and W.unitWatch[FF] == true and FF.title:GetText():upper() == "FOCUS")
+	check("...its target clickable (assist)", FF.pttButton:GetAttribute("unit") == "focustarget")
+	S.units.focus = { name = "Gorvak", guid = "Player-2-9100", class = "SHAMAN", level = 60, isPlayer = true, hostile = true, reaction = 1,
+		faction = "Horde", hp = 2500, hpMax = 5000, dist = 20 }
+	S.units.focus.targetingMe = true
+	W.Fire("PLAYER_FOCUS_CHANGED")
+	FF:Show()
+	F.UpdateFocus()
+	check("...its name in its class colour, its class beside it", FF.name:GetText() == "Gorvak" and FF.level:GetText():upper():find("SHAMAN", 1, true) ~= nil,
+		tostring(FF.level:GetText()))
+	check("...health and what it has targeted (you)", FF.hp:GetValue() == 2500 and FF.ptt:GetText():upper() == ">> YOU", tostring(FF.ptt:GetText()))
+	local fu = S.units.focus
+	fu.casting, fu.castStart, fu.castEnd = true, W.now * 1000 - 1000, W.now * 1000 + 1000
+	W.Fire("UNIT_SPELLCAST_START", "focus"); W.Update(0.6)
+	check("...an enemy focus casting: the cast bar, KICK late in it", FF.cast:IsShown() and FF.castKick:IsShown())
+	fu.casting = nil
+	W.Fire("UNIT_SPELLCAST_STOP", "focus")
+	S.units.focus = nil
+	W.Fire("PLAYER_FOCUS_CHANGED")
+	F.UpdateFocus()
+	check("...no focus: the placeholder (the unit watch hides the frame)", FF.name:GetText():upper() == "NO FOCUS")
+	FF:Hide()
+	-- Blizzard's focus frame: faded while SITREP's is on
+	_G.FocusFrame = CreateFrame("Frame", nil, UIParent)
+	F.ApplyBlizzard()
+	check("Blizzard's focus frame faded", _G.FocusFrame:GetAlpha() == 0)
+	ns.P.frames.focus = false; ns.Changed("frames.focus")
+	check("...the focus frame off: Blizzard's back, ours hidden", _G.FocusFrame:GetAlpha() == 1 and not FF:IsShown() and W.unitWatch[FF] == nil)
+	ns.P.frames.focus = true; ns.Changed("frames.focus")
+	_G.FocusFrame = nil
+end)()
+;(function()
 	-- RAID FRAMES: every member in a glass cell, one column per group
 	local F = ns.Frames
 	local R = F.raid

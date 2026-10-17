@@ -107,6 +107,7 @@ local function applyBlizzard()
 	local hidePlayer = P.hideBlizzard and P.player and ns.P.enabled
 	local hideTarget = P.hideBlizzard and P.target and ns.P.enabled
 	local hidePet = P.hideBlizzard and P.pet and ns.P.enabled
+	local hideFocus = P.hideBlizzard and P.focus and ns.P.enabled
 	local hideParty = P.hideBlizzard and P.party and ns.P.enabled
 	local hideRaid = P.hideBlizzard and P.raid and ns.P.enabled
 	if InCombatLockdown() then pendingBlizzard = true end
@@ -118,6 +119,8 @@ local function applyBlizzard()
 	set(_G.PlayerFrame, hidePlayer)
 	set(_G.TargetFrame, hideTarget)
 	set(_G.TargetFrameToT, hideTarget)
+	set(_G.FocusFrame, hideFocus)
+	set(_G.FocusFrameToT, hideFocus)
 	-- Blizzard's pet frame hangs off its player frame: faded with it, so when
 	-- SITREP's pet frame is off it must ignore its parent's alpha to stay visible
 	local pf = _G.PetFrame
@@ -139,7 +142,7 @@ local function applyBlizzard()
 	-- (ready check, marks) live there
 	set(_G.CompactRaidFrameContainer, hideRaid)
 	raidMembers(function(f) looseParts(f, hideRaid) end)
-	F.blizzardHidden = { player = hidePlayer, target = hideTarget, pet = hidePet, party = hideParty, raid = hideRaid }
+	F.blizzardHidden = { player = hidePlayer, target = hideTarget, pet = hidePet, party = hideParty, raid = hideRaid, focus = hideFocus }
 end
 F.ApplyBlizzard = applyBlizzard
 
@@ -174,7 +177,7 @@ function F.Apply()
 		target:Hide()
 	end
 	-- pet frames: only while the pet exists (or while placing them)
-	for _, pf in ipairs({ { pet, P.pet }, { tpet, P.targetPet } }) do
+	for _, pf in ipairs({ { pet, P.pet }, { tpet, P.targetPet }, { F.focus, P.focus } }) do
 		local f, on = pf[1], pf[2]
 		if on and ns.P.enabled and not ns.hudHidden then
 			if not H.locked and ns.Config and ns.Config.IsOpen() then
@@ -226,6 +229,7 @@ function F.Build()
 	F.HookTooltip()
 	F.BuildTarget()
 	F.BuildPet()
+	F.BuildFocus()
 	F.BuildParty()
 	if F.BuildRaid then F.BuildRaid() end
 	F.Apply()
@@ -235,13 +239,19 @@ function F.Build()
 			if F.blizzardHidden and F.blizzardHidden.target then pcall(self.SetAlpha, self, 0) end
 		end)
 	end
+	if _G.FocusFrame and hooksecurefunc then
+		-- (the same for its focus frame, shown on every new focus)
+		pcall(hooksecurefunc, _G.FocusFrame, "Show", function(self)
+			if F.blizzardHidden and F.blizzardHidden.focus then pcall(self.SetAlpha, self, 0) end
+		end)
+	end
 end
 
 ns.On("SR_LOGIN", function() F.Build() end)
 
 -- The target frame is refreshed whether or not it is visible yet: the client's
 -- unit watch may show it a moment after the target changes.
-local TICK = { "UpdatePlayer", "UpdateCost", "UpdateTarget", "UpdatePet", "UpdateTargetPet", "UpdateParty" }
+local TICK = { "UpdatePlayer", "UpdateCost", "UpdateTarget", "UpdatePet", "UpdateTargetPet", "UpdateFocus", "UpdateParty" }
 local timed = {} -- (each its own line in /sitrep perf)
 for _, name in ipairs(TICK) do timed[name] = ns.Timed("frames: " .. name, function() return F[name]() end) end
 ns.On("SR_TICK", function()
@@ -264,6 +274,9 @@ ns.On("UNIT_PET", function(_, unit)
 	if unit == "player" and F.pet then F.UpdatePet() end
 	if unit == "target" and F.tpet then F.UpdateTargetPet() end
 end)
+
+-- a new focus (or none): its frame at once (the unit watch shows or hides it)
+ns.On("PLAYER_FOCUS_CHANGED", function() if F.focus then F.UpdateFocus() end end)
 
 ns.On("PLAYER_TARGET_CHANGED", function()
 	if F.target then F.UpdateTarget() end
@@ -295,6 +308,8 @@ local function onUnitHealth(_, unit)
 		ns.Heals.Feed(target.hp, "target")
 	elseif unit == "targetpet" and tpet then
 		F.UpdateTargetPet()
+	elseif unit == "focus" and F.focus then
+		F.UpdateFocus()
 	elseif partyMember(unit) then
 		F.UpdateMember(partyMember(unit))
 	elseif unit == "pet" and pet then
@@ -328,6 +343,7 @@ for _, e in ipairs({ "UNIT_SPELLCAST_START", "UNIT_SPELLCAST_STOP", "UNIT_SPELLC
 			if F.FitPane then F.FitPane(target) end -- (glass: the pane grows with the cast bar)
 		elseif unit == "pet" and pet then updateCast(pet, "pet")
 		elseif unit == "targetpet" and tpet then updateCast(tpet, "targetpet")
+		elseif unit == "focus" and F.focus then updateCast(F.focus, "focus")
 		elseif partyMember(unit) then updateCast(partyMember(unit), unit) end
 	end)
 end
@@ -335,7 +351,7 @@ end
 ns.On("UNIT_COMBAT", function(_, unit, action, flag, amount)
 	local player, pet, tpet, partyMember = F.player, F.pet, F.tpet, F.PartyMember
 	if not player then return end
-	local f = (unit == "player" and player) or (unit == "pet" and pet) or (unit == "targetpet" and tpet) or partyMember(unit)
+	local f = (unit == "player" and player) or (unit == "pet" and pet) or (unit == "targetpet" and tpet) or (unit == "focus" and F.focus) or partyMember(unit)
 	if not f then return end
 	if f == player and (action == "WOUND" or action == "HEAL") then
 		local crit = not ns.isSecret(flag) and type(flag) == "string" and flag:find("CRITICAL", 1, true) ~= nil
