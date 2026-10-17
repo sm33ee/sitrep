@@ -27,6 +27,9 @@ K.C = {
 	faint  = { 0.40, 0.45, 0.44, 1 },
 	red    = { 1.00, 0.48, 0.42, 1 },
 }
+-- your focus, wherever it shows (its plate's ring, its frame, its cast alerts):
+-- magenta, a colour no other mark uses
+K.FOCUS = { 1, 0.42, 0.86 }
 K.MEDIA = "Interface\\AddOns\\SITREP\\Media\\"
 K.FONT = K.MEDIA .. "Fonts\\DMSans-Medium.ttf"
 K.FONT_UI = K.MEDIA .. "Fonts\\DMSans-Regular.ttf"

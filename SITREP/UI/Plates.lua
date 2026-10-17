@@ -34,6 +34,9 @@
 --   mate ring   (plates.mateRing) your group's members: a party-blue ring round the
 --               bar and the name in the same blue; never see-through (other friends
 --               are, plates.friendOpacity)
+--   focus ring  (plates.focusRing) your focus: a magenta ring hugging the bar, in
+--               place of the coral or party-blue one (K.FOCUS, also its frame and
+--               its cast alerts)
 --   hover       the member whose party frame the mouse is on: drawn as your target,
 --               its brackets at full alpha (not faded with the plate out of sight)
 --   dispel orbs friendly plates: a small orb left of the bar for each kind of debuff
@@ -305,6 +308,13 @@ function N.Zen(s)
 	return true
 end
 
+-- Your focus: this plate's unit.
+function N.IsFocus(s)
+	if read(UnitIsUnit, s.unit, "focus") == true then return true end
+	local g = read(UnitGUID, "focus") -- (the comparison may be secret in combat: the GUID)
+	return g ~= nil and s.guid == g
+end
+
 -- A member of your group (party or raid): the plate stands out among friends.
 function N.Mate(s)
 	if not (s.friend and s.isPlayer) then return false end
@@ -513,6 +523,13 @@ local function build(plate, hb)
 	K.Border(s.mateRing, { MATE[1], MATE[2], MATE[3], 1 }, 2, 4)
 	if s.mateRing.SetIgnoreParentAlpha then pcall(s.mateRing.SetIgnoreParentAlpha, s.mateRing, true) end
 	s.mateRing:Hide()
+	-- your focus: the same ring in magenta (N.IsFocus), over the other two
+	s.focusRing = CreateFrame("Frame", nil, s)
+	s.focusRing:SetPoint("TOPLEFT", -FOE_GAP, FOE_GAP)
+	s.focusRing:SetPoint("BOTTOMRIGHT", FOE_GAP, -FOE_GAP)
+	K.Border(s.focusRing, { K.FOCUS[1], K.FOCUS[2], K.FOCUS[3], 1 }, 2, 4)
+	if s.focusRing.SetIgnoreParentAlpha then pcall(s.focusRing.SetIgnoreParentAlpha, s.focusRing, true) end
+	s.focusRing:Hide()
 	-- friendly plates: what you can dispel, as orbs left of the bar (s.disp: shown
 	-- while there is any, .plain: known for certain; N.PaintDispel)
 	s.disp = ns.Units.Orbs(s, ORBS, ORB, function(o, i) o:SetPoint("RIGHT", s, "LEFT", -5 - (i - 1) * (ORB + 4), 0) end)
@@ -752,7 +769,11 @@ local function hideBlizzard(s)
 	local a = faintAlpha(s)
 	s:SetAlpha(bar and 1 or 0)
 	-- one of your group: the party-blue ring (it ignores the plate's alpha: none on a name-only plate)
-	s.mateRing:SetShown(bar and P().mateRing ~= false and s.mate and not s.zenOn or false)
+	-- your focus: the magenta ring, in place of the others
+	local focus = bar and P().focusRing ~= false and s.isFocus and not s.zenOn or false
+	s.focusRing:SetShown(focus)
+	if focus then s.foe:Hide() end
+	s.mateRing:SetShown(bar and not focus and P().mateRing ~= false and s.mate and not s.zenOn or false)
 	if s.uf then pcall(s.uf.SetAlpha, s.uf, a) end
 	s.cast:SetAlpha(a)
 	applyFade(s)
@@ -1052,6 +1073,7 @@ function N.Refresh(s)
 	local isTarget = N.Marked(unit, s) -- (your target, or the member whose frame the mouse is on)
 	s.isTarget = isTarget
 	s.mate = N.Mate(s)
+	s.isFocus = N.IsFocus(s)
 	-- friendly plates: what you can dispel
 	if friend and p.borders then N.PaintDispel(s, unit) else s.disp:Hide() end
 	s.zenOn = N.Zen(s)
@@ -1196,7 +1218,8 @@ local function detach(s)
 	if s.kill.pulse then s.kill.pulse:Stop() end
 	s.mana:Hide()
 	s.mateRing:Hide()
-	s.mate = nil
+	s.mate, s.isFocus = nil, nil
+	s.focusRing:Hide()
 	if s.selSolid then pcall(s.sel.SetIgnoreParentAlpha, s.sel, false); s.selSolid = false end
 	s.isBig, s.sizeKey = false, nil
 	ns.Heals.FeedTo(s.healN, nil)
@@ -1481,6 +1504,12 @@ local function paintTargets()
 	end
 end
 ns.On("PLAYER_TARGET_CHANGED", paintTargets)
+-- a new focus: the old one's ring goes, the new one's comes
+ns.On("PLAYER_FOCUS_CHANGED", function()
+	for _, s in pairs(current()) do
+		if N.IsFocus(s) ~= (s.isFocus or false) then N.Refresh(s) end
+	end
+end)
 -- someone joins or leaves your group: their ring (and zen bar) comes or goes
 ns.On("GROUP_ROSTER_UPDATE", function()
 	for _, s in pairs(current()) do

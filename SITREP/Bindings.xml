@@ -17,4 +17,5 @@
 	<Binding name="SITREP_CHAT" category="ADDONS">
 		SITREP_ToggleChat()
 	</Binding>
+	<Binding name="CLICK SITREP_FocusButton:LeftButton" category="ADDONS"/>
 </Bindings>

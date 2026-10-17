@@ -1557,6 +1557,31 @@ S.units.party1, S.group.n, S.auras.party1 = nil, 0, nil
 	check("...an enemy focus casting: the cast bar, KICK late in it", FF.cast:IsShown() and FF.castKick:IsShown())
 	fu.casting = nil
 	W.Fire("UNIT_SPELLCAST_STOP", "focus")
+	-- the focus casts at someone else, not your target: the flash line in magenta, kick!
+	fu.targetingMe = nil
+	fu.casting, fu.castName = true, "Kettenheilung"
+	ns.IncomingUI.lastBanner.focus = nil
+	W.Fire("UNIT_SPELLCAST_START", "focus")
+	local al = ns.IncomingUI.alert
+	local FC = ns.Kit.FOCUS
+	local fhex = string.format("|cff%02x%02x%02x", math.floor(FC[1] * 255), math.floor(FC[2] * 255), math.floor(FC[3] * 255))
+	check("your focus casting: the flash, its name in magenta, kick!", al and al:IsShown() and al.who:GetText():find(fhex .. "Gorvak|r casts", 1, true)
+		and al.spell:GetText() == "Kettenheilung" and al.tail:GetText() == "kick!", al and al.who:GetText())
+	fu.casting = nil
+	al:Hide()
+	S.units.target = fu
+	ns.IncomingUI.lastBanner.focus = nil
+	fu.casting = true
+	W.Fire("UNIT_SPELLCAST_START", "focus")
+	check("...not when it is your target too (the target frame shows it)", not al:IsShown())
+	fu.casting, fu.castName, S.units.target = nil, nil, nil
+	-- shift-click: focus; on the focus frame: no focus; the focus key: under the mouse, else the target
+	check("shift-click a unit frame: your focus (party, raid, target too)", F.target:GetAttribute("shift-type1") == "focus"
+		and F.partyMembers[1]:GetAttribute("shift-type1") == "focus" and F.raidCells[1]:GetAttribute("shift-type1") == "focus"
+		and FF:GetAttribute("shift-type1") == "clearfocus")
+	check("the focus key: a secure macro, the unit under the mouse or the target", F.focusButton:GetAttribute("type") == "macro"
+		and F.focusButton:GetAttribute("macrotext") == "/focus [@mouseover,exists][]" and _G["BINDING_NAME_CLICK SITREP_FocusButton:LeftButton"] ~= nil)
+	check("the focus frame in magenta", FF.title._tc and FF.title._tc[1] == FC[1] and FF.title._tc[2] == FC[2])
 	S.units.focus = nil
 	W.Fire("PLAYER_FOCUS_CHANGED")
 	F.UpdateFocus()
@@ -3820,6 +3845,20 @@ do
 	ns.P.plates.foeRing = false; N.Refresh(mage)
 	check("...a setting", not mage.foe:IsShown())
 	ns.P.plates.foeRing = true; N.Refresh(mage)
+	;(function()
+		-- your focus: a magenta ring, in place of the coral one
+		S.units.focus = S.units.nameplate82
+		W.Fire("PLAYER_FOCUS_CHANGED")
+		check("your focus: a magenta ring round its bar, the coral one gives way", mage.isFocus and mage.focusRing:IsShown() and not mage.foe:IsShown()
+			and mage.focusRing._ignoreParentAlpha == true and not mob.focusRing:IsShown())
+		check("...the legend says so", (ns.PlateHover.Legend("nameplate82") or ""):find("your focus", 1, true) ~= nil)
+		ns.P.plates.focusRing = false; N.Refresh(mage)
+		check("...a setting (the coral ring back)", not mage.focusRing:IsShown() and mage.foe:IsShown())
+		ns.P.plates.focusRing = true
+		S.units.focus = nil
+		W.Fire("PLAYER_FOCUS_CHANGED")
+		check("...no focus: gone, the coral ring back", not mage.focusRing:IsShown() and mage.foe:IsShown())
+	end)()
 	;(function()
 		-- one of your group: a party-blue ring, the name blue, never see-through
 		local realInParty = UnitInParty

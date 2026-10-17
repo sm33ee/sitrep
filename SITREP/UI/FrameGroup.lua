@@ -103,6 +103,11 @@ F.BuildPet = buildPet
 local function buildFocus()
 	focus = buildPetFrame("focus", "focus", "FOCUS", { "CENTER", "CENTER", 260, -392 })
 	F.focus = focus
+	-- in your focus's colour: the title and a faint rim (after the accent painter)
+	K.Paint(function() focus.title:SetTextColor(K.FOCUS[1], K.FOCUS[2], K.FOCUS[3]) end)
+	if focus.border and focus.border.SetColor then focus.border:SetColor(K.FOCUS[1], K.FOCUS[2], K.FOCUS[3], 0.35) end
+	-- shift-click: no focus any more (on every other unit frame: this one as focus)
+	focus:SetAttribute("shift-type1", "clearfocus")
 end
 F.BuildFocus = buildFocus
 
@@ -257,6 +262,7 @@ local function buildParty()
 		K.Brackets(f, 7, 2)
 		f:SetAttribute("unit", unit)
 		f:SetAttribute("type1", "target")
+		f:SetAttribute("shift-type1", "focus") -- (shift-click: your focus)
 		f:SetAttribute("type2", "togglemenu")
 		f:RegisterForClicks("AnyUp")
 		f.unit, f.index = unit, i

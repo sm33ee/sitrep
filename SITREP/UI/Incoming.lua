@@ -11,6 +11,10 @@
 --                         target (mobs too), at most every 1.5 s per caster; 2 s,
 --                         then it fades. A sound for enemy players. Movable, and on
 --                         the Layout page (castAlert). alerts.incoming.
+--   your focus casting:   the same line for an enemy focus (not your target) that
+--                         starts a cast, the name in magenta (K.FOCUS) and "kick!"
+--                         when it can be interrupted. alerts.focusCast. A cast of
+--                         your focus on you: the line above, its name in magenta.
 -- Nothing here is anchored outside the plate: plates are restricted regions on
 -- Forever (an outside frame anchored to one errors).
 
@@ -140,12 +144,16 @@ local function centre(f)
 end
 UI.CentreAlert = centre
 
--- Show it for one cast.
+-- Show it for one cast (c.focus: your focus's; c.tail: the words after the spell).
 function UI.Alert(c)
 	local f = buildAlert()
 	local r, g, b = RED[1], RED[2], RED[3]
 	if c.player then r, g, b = ns.Data.ClassColor(c.class) end
+	if c.focus then r, g, b = K.FOCUS[1], K.FOCUS[2], K.FOCUS[3] end
 	f.who:SetText("|cff" .. hex(r, g, b) .. (c.caster or "Someone") .. "|r casts")
+	local tc = c.focus and c.tail and K.FOCUS or RED
+	f.tail:SetTextColor(tc[1], tc[2], tc[3], 1)
+	f.tail:SetText(c.tail or "on you!")
 	f.spell:SetText(c.name) -- (as the client gave it)
 	centre(f)
 	f.shown = GetTime()
@@ -177,6 +185,8 @@ end
 
 ns.On("SR_INCOMING", function(_, c)
 	if not (ns.P.alerts.incoming and ns.P.enabled) or c.isTarget then return end
+	-- (your focus: its name in magenta)
+	if c.unit and ns.read(UnitIsUnit, c.unit, "focus") == true then c.focus = true end
 	local key = c.caster or c.unit
 	local now = GetTime()
 	if lastBanner[key] and now - lastBanner[key] < ALERT_EVERY then return end
@@ -184,6 +194,32 @@ ns.On("SR_INCOMING", function(_, c)
 	UI.Alert(c)
 	if c.player then ns.HUD.Sound("RAID_WARNING") end
 end)
+
+-- Your focus starts a cast: the line, when it is an enemy and not your target (that
+-- one's cast is on the target frame). At you: the line above says it already.
+function UI.FocusCast(unit)
+	if unit ~= "focus" or not (ns.P.alerts.focusCast and ns.P.enabled) then return end
+	local read = ns.read
+	if read(UnitExists, "focus") ~= true or read(UnitIsUnit, "focus", "target") == true then return end
+	if not ns.Sensors.IsEnemy("focus") or read(UnitIsUnit, "focustarget", "player") == true then return end
+	local now = GetTime()
+	if lastBanner.focus and now - lastBanner.focus < ALERT_EVERY then return end
+	lastBanner.focus = now
+	local channel = not ns.present(UnitCastingInfo, "focus")
+	local info = channel and UnitChannelInfo or UnitCastingInfo
+	local ok, spell, _, _, _, _, _, r7, r8 = pcall(info, "focus")
+	if not ok or spell == nil then return end
+	local notInt
+	if channel then notInt = r7 else notInt = r8 end
+	local _, cls = read(UnitClass, "focus")
+	UI.Alert({ focus = true, player = read(UnitIsPlayer, "focus") == true, class = cls,
+		caster = read(GetUnitName, "focus", false) or "Your focus", name = spell,
+		-- (interruptible for certain: kick!; not, or secret: nothing after the spell)
+		tail = (not ns.isSecret(notInt) and notInt == false) and "kick!" or "" })
+	if read(UnitIsPlayer, "focus") == true then ns.HUD.Sound("RAID_WARNING") end
+end
+ns.On("UNIT_SPELLCAST_START", function(_, unit) UI.FocusCast(unit) end)
+ns.On("UNIT_SPELLCAST_CHANNEL_START", function(_, unit) UI.FocusCast(unit) end)
 
 ns.On("SR_LOGIN", function() UI.Plates(); UI.ApplyAlert() end)
 ns.On("SR_INCOMING_CHANGED", function() UI.Plates() end)

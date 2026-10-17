@@ -288,7 +288,7 @@ function ns.Defaults()
 		},
 		plates = {
 			enabled = true, enemy = true, friendly = true, level = true, tags = true, cast = true, rangeFade = true, borders = true, dot = true, friendOpacity = 0.7, shiftX = 12, shiftY = -4,
-			hoverInfo = true, hoverWhere = "frame", hoverLegend = true, incoming = true, scale = 1, heals = true, questMobs = true, friendCombatScale = 0.6, mobPvpScale = 0.75, friendZen = false, npcIcons = true, groupFocus = true, foeRing = true, mateRing = true, combo = true, auras = true, auraScale = 1, killWindow = true, killPct = 20, aggroRadar = true, enemyMana = true,
+			hoverInfo = true, hoverWhere = "frame", hoverLegend = true, incoming = true, scale = 1, heals = true, questMobs = true, friendCombatScale = 0.6, mobPvpScale = 0.75, friendZen = false, npcIcons = true, groupFocus = true, foeRing = true, mateRing = true, focusRing = true, combo = true, auras = true, auraScale = 1, killWindow = true, killPct = 20, aggroRadar = true, enemyMana = true,
 		},
 		-- the game's own interface in SITREP's style (UI/Minimap, XP, Bags, Chat)
 		ui = {
@@ -315,7 +315,7 @@ function ns.Defaults()
 		},
 		alerts = {
 			sound = true, flash = true, banner = true,
-			newContact = true, hvt = true, targeted = true, spike = true, ttl = true, closing = true, incoming = true, rare = true, layer = true, healer = true, stealth = true,
+			newContact = true, hvt = true, targeted = true, spike = true, ttl = true, closing = true, incoming = true, focusCast = true, rare = true, layer = true, healer = true, stealth = true,
 		},
 		log = { keep = 60, aarPopup = true, recapPopup = true },
 		-- your own spell icons: cooldowns, missing on target, missing on you
@@ -546,6 +546,7 @@ _G.BINDING_NAME_SITREP_CONFIG = "Open SITREP console"
 _G.BINDING_NAME_SITREP_QUESTNAV = "Navigate to the nearest quest / stop"
 _G.BINDING_NAME_SITREP_QUESTLIST = "Quest tracker: only the chosen quest / all"
 _G.BINDING_NAME_SITREP_CHAT = "Fold the chat away / show it"
+_G["BINDING_NAME_CLICK SITREP_FocusButton:LeftButton"] = "Focus: the unit under the mouse (a nameplate too), else your target"
 
 -- Navigate to the nearest quest with a known place, or stop navigating.
 function SITREP_QuestNav()

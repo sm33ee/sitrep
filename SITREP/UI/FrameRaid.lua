@@ -10,7 +10,7 @@
 --   target     your target: a bright rim round its cell
 --   range      beyond your heals: the cell fades
 --   raid mark  the skull, cross... top right
--- Clicks: left targets, right opens the unit menu; the mouse on a cell lights the
+-- Clicks: left targets, shift-left makes it your focus, right opens the unit menu; the mouse on a cell lights the
 -- member's nameplate (Plates.Highlight). Each cell is a secure unit button for
 -- raidN, shown by the client while that unit exists (unit watch); where a cell
 -- sits (its group's column) changes only out of combat. In combat a member who
@@ -48,6 +48,7 @@ local function buildCell(i)
 	f.bg:SetAllPoints()
 	f:SetAttribute("unit", unit)
 	f:SetAttribute("type1", "target")
+	f:SetAttribute("shift-type1", "focus") -- (shift-click: your focus)
 	f:SetAttribute("type2", "togglemenu")
 	f:RegisterForClicks("AnyUp")
 	f.unit, f.index = unit, i

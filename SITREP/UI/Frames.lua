@@ -38,6 +38,7 @@ local function frameShell(id, unit, title, default)
 	K.Brackets(f, 9, 2)
 	f:SetAttribute("unit", unit)
 	f:SetAttribute("type1", "target")
+	f:SetAttribute("shift-type1", "focus") -- (shift-click: your focus)
 	f:SetAttribute("type2", "togglemenu")
 	f:RegisterForClicks("AnyUp")
 	f.unit = unit
@@ -248,6 +249,18 @@ function F.Build()
 end
 
 ns.On("SR_LOGIN", function() F.Build() end)
+
+-- The focus key (Key Bindings > AddOns): the unit under the mouse, a nameplate too,
+-- becomes your focus; with nothing under it, your target. A secure macro button the
+-- binding clicks (made at load, out of combat; works in combat).
+do
+	local b = CreateFrame("Button", "SITREP_FocusButton", UIParent, "SecureActionButtonTemplate")
+	b:SetAttribute("type", "macro")
+	b:SetAttribute("macrotext", "/focus [@mouseover,exists][]")
+	b:RegisterForClicks("AnyUp", "AnyDown") -- (either way the client sends a key's click)
+	b:Hide()
+	F.focusButton = b
+end
 
 -- The target frame is refreshed whether or not it is visible yet: the client's
 -- unit watch may show it a moment after the target changes.

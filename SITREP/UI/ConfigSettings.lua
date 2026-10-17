@@ -114,6 +114,9 @@ local function buildAlerts()
 		{ "incoming", "Cast on you (not your target)", function()
 			ns.Fire("SR_INCOMING", { player = true, class = "MAGE", caster = "Aldwin", name = "Frostbolt", unit = "test" .. GetTime() })
 		end },
+		{ "focusCast", "Your focus casts (not your target)", function()
+			ns.IncomingUI.Alert({ focus = true, player = true, class = "PRIEST", caster = "Aldwin", name = "Greater Heal", tail = "kick!" })
+		end },
 		{ "spike", "Damage spike", function() ns.Fire("SR_SPIKE", 42) end },
 		{ "closing", "Closing: in reach within 3 s", function() ns.Fire("SR_CLOSING", { class = "WARRIOR", ttr = 1.8 }) end },
 		{ "ttl", "DEFEND (time-to-live)", function() ns.HUD.Banner("DEFEND  ·  TIME TO LIVE 3.1s", 1, 0.2, 0.55) end },
@@ -456,6 +459,7 @@ local function buildPlates()
 	p:Place(K.Slider(p, "Aura size", 0.5, 2, 0.05, get("plates", "auraScale"), set("plates", "auraScale"), fp), 2)
 	tog(2, "Combo points on your target", "combo", "Rogues and druids: your combo points as pips under your target's plate.")
 	tog(2, "Enemy players: coral ring", "foeRing", "A solid coral ring round every enemy player's bar: the one red frame on the plates.")
+	tog(2, "Your focus: magenta ring", "focusRing", "Your focus's plate: a magenta ring round the bar (the colour of your focus everywhere: its frame, its cast alerts).")
 	tog(2, "Your group: blue ring", "mateRing", "Your party and raid members: a ring in party-chat blue round the bar and their name in the same blue, so they stand out among other friends.")
 	tog(2, "Group focus", "groupFocus", "An enemy your group is on: a mint ring round its plate, wider the more of you, and how many beside it (filled: the one most of you are on).")
 	tog(2, "Friendly zen", "friendZen", "Only enemies, your group and your target keep their bar. Every other friendly plate: the name over a thin health line.")
