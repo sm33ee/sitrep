@@ -144,7 +144,7 @@ function F.PlaceRaid()
 	if not raid then return end
 	if InCombatLockdown() then pendingPlace = true return end
 	-- who is in which group, and where in it
-	local groupAt, rowAt, rows, used = {}, {}, {}, {}
+	local groupAt, rowAt, rows, used, members = {}, {}, {}, {}, {}
 	for i in ipairs(F.raidCells) do
 		-- (no one at raidN: where it would be in order; placing the frames shows it)
 		local sub = groupOf(i)
@@ -155,7 +155,7 @@ function F.PlaceRaid()
 		end
 		rows[g] = r
 		groupAt[i], rowAt[i] = g, r
-		if sub then used[g] = true end
+		if sub then used[g] = true; members[g] = (members[g] or 0) + 1 end
 	end
 	-- the columns: the groups in use, in order
 	local cols, colOf = {}, {}
@@ -170,6 +170,15 @@ function F.PlaceRaid()
 	end
 	-- the header exactly as wide as the columns (one column: the short count)
 	raid:SetWidth(colX(#cols + 1) - GAP)
+	-- unlocked: the grip over the header and every cell, so the whole frame drags
+	-- (as deep as the fullest group; no raid, placing it: the full five rows)
+	local deepest = next(members) and 1 or PER
+	for _, n in pairs(members) do deepest = math.max(deepest, math.min(PER, n)) end
+	if raid.srGrip then
+		raid.srGrip:ClearAllPoints()
+		raid.srGrip:SetPoint("TOPLEFT", raid, "TOPLEFT")
+		raid.srGrip:SetPoint("BOTTOMRIGHT", raid, "BOTTOMRIGHT", 0, -14 - deepest * (CELL_H + GAP))
+	end
 	for g, t in ipairs(raid.groups) do
 		t:ClearAllPoints()
 		t:SetPoint("BOTTOM", raid, "BOTTOMLEFT", colX(colOf[g] or 1) + CELL_W / 2, -12)
@@ -196,6 +205,33 @@ function F.RaidProbe()
 		end
 		ns.print("columns %s, width %s (a column: %d), groups in use: %s", tostring(F.raidColumns), tostring(read(raid.GetWidth, raid)), CELL_W + GAP,
 			(function() local t = {} for g = 1, GROUPS do if F.raidGroups and F.raidGroups[g] then t[#t + 1] = g end end return table.concat(t, ", ") end)())
+		-- Blizzard's frames for groups, raids and targets that can be seen now (one of
+		-- them floating about while a member is targeted: which, and why visible)
+		local seen = {}
+		for name, f in pairs(_G) do
+			if type(name) == "string" and type(f) == "table" and not name:find("^SITREP")
+				and (name:find("Raid") or name:find("Party") or name:find("Compact") or name:find("Pullout") or name:find("Target") or name:find("Focus"))
+				and type(f.IsVisible) == "function" and type(f.GetObjectType) == "function" then
+				local okV, vis = pcall(f.IsVisible, f)
+				local a = read(f.GetEffectiveAlpha, f)
+				if okV and vis == true and (a == nil or a > 0.01) then seen[#seen + 1] = { name, f, a } end
+			end
+		end
+		table.sort(seen, function(x, y) return x[1] < y[1] end)
+		ns.print("Blizzard's group/raid/target frames visible now: %d", #seen)
+		for i, e in ipairs(seen) do
+			if i > 40 then ns.print("  ... %d more", #seen - 40) break end
+			local f = e[2]
+			local okP, parent = pcall(f.GetParent, f)
+			local pname = okP and parent and ns.Debug and select(2, pcall(ns.Debug.NameOf, parent)) or tostring(parent)
+			local okA, p, rel, rp, x, y = pcall(f.GetPoint, f, 1)
+			ns.print("  %s  %s  alpha %s  %sx%s  parent %s  at %s %s %s,%s  ignores parent alpha %s", e[1], tostring(read(f.GetObjectType, f)),
+				e[3] and format("%.2f", e[3]) or "secret", tostring(math.floor((read(f.GetWidth, f) or 0) + 0.5)),
+				tostring(math.floor((read(f.GetHeight, f) or 0) + 0.5)), tostring(pname),
+				okA and tostring(p) or "?", okA and rel and ns.Debug and select(2, pcall(ns.Debug.NameOf, rel)) or "-",
+				okA and x and math.floor(x + 0.5) or "?", okA and y and math.floor(y + 0.5) or "?",
+				tostring(f.IsIgnoringParentAlpha and read(f.IsIgnoringParentAlpha, f)))
+		end
 	end)
 end
 

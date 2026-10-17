@@ -353,6 +353,13 @@ function F.PartyLayout(compact)
 		end
 	end
 	F.compact = compact
+	-- unlocked: the grip over the header and the members, so the whole frame drags
+	local h, gap = compact and COMPACT_H or MEMBER_H, compact and COMPACT_GAP or MEMBER_GAP
+	if party and party.srGrip then
+		party.srGrip:ClearAllPoints()
+		party.srGrip:SetPoint("TOPLEFT", party, "TOPLEFT")
+		party.srGrip:SetPoint("BOTTOMRIGHT", party, "BOTTOMRIGHT", 0, -3 - #F.partyMembers * (h + gap))
+	end
 end
 
 -- The header's arrow: compact on or off (secure frames: in combat, once it is over).

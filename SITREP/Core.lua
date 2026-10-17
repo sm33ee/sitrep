@@ -589,7 +589,7 @@ local HELP = {
 	"/sitrep drops — how many kills each quest item took (learned, all characters)",
 	"/sitrep spots — grinding spots on this map: where mobs come back fastest (all: every map)",
 	"/sitrep npcprobe — the tooltip lines of your target and of the unit under the mouse, as the client gives them (NPC titles)",
-	"/sitrep raidprobe — the raid frames: each member's group as the client gives it, the columns, the width",
+	"/sitrep raidprobe — the raid frames: each member's group as the client gives it, the columns, the width; and Blizzard's group/raid/target frames that can be seen now",
 	"/sitrep tough — how well geared players are (health against class and level): what was counted, what is known",
 	"/sitrep route — what to do on this map in what order: quests your characters handed in before, and the ones in your log (go: the arrow to the first)",
 	"/sitrep questprobe — what this client tells about quests and where they are",

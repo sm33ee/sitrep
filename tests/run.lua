@@ -1560,11 +1560,20 @@ S.units.party1, S.group.n, S.auras.party1 = nil, 0, nil
 	local y6 = ({ c6:GetPoint(1) })[5]
 	check("...group 1 in the first column, group 3 (no group 2) right beside it, top down", x1 == 0 and x5 == 70 + 3 and y5 == y1 and y6 < y5, x5 .. " " .. y5)
 	check("...as wide as its two columns", R:GetWidth() == 2 * 70 + 3, R:GetWidth())
+	local gp = { R.srGrip:GetPoint(2) }
+	check("unlocked: the grip over header and cells (the whole frame drags)", gp[1] == "BOTTOMRIGHT" and gp[5] == -14 - 4 * (32 + 3), tostring(gp[5]))
+	ns.P.hud.locked = false; ns.Changed("hud.locked")
+	R.srGrip._scripts.OnDragStart(R.srGrip)
+	R.srGrip._scripts.OnDragStop(R.srGrip)
+	check("...a drag saves where it is", ns.P.hud.pos.raid ~= nil)
+	ns.P.hud.locked = true; ns.Changed("hud.locked")
+	ns.P.hud.pos.raid = nil
 	local n0 = #W.prints
 	SlashCmdList.SITREP("raidprobe")
 	local dump = table.concat(W.prints, "\n", n0 + 1)
 	check("raidprobe: each member's group, the columns, the width", dump:find("raid5 Raider5-Realm: group 3", 1, true)
 		and dump:find("columns 2, width 143", 1, true), dump)
+	check("...and Blizzard's raid and group frames that can be seen", dump:find("Blizzard's group/raid/target frames visible now:", 1, true) ~= nil)
 	check("...the group numbers over the columns in use", R.groups[1]:IsShown() and R.groups[3]:IsShown() and not R.groups[2]:IsShown()
 		and ({ R.groups[3]:GetPoint(1) })[4] == 70 + 3 + 35)
 	check("...the name without realm", c1.name:GetText() == "Raider1")
