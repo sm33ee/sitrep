@@ -125,9 +125,12 @@ function F.BuildRaid()
 end
 
 -- Who is in which group: raidN's subgroup (GetRaidRosterInfo), nil when no one.
+-- (Forever answers a group for empty raid slots too, without a name: raidprobe
+-- 4.11.5, two members, all 8 groups "in use". Only a slot with someone counts.)
 local function groupOf(i)
-	local ok, _, _, sub = pcall(GetRaidRosterInfo, i)
-	sub = ok and ns.plain(sub) or nil
+	local ok, name, _, sub = pcall(GetRaidRosterInfo, i)
+	if not ok or name == nil then return nil end
+	sub = ns.plain(sub)
 	return type(sub) == "number" and sub or nil
 end
 

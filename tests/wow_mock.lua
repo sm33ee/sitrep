@@ -676,7 +676,8 @@ function IsInRaid() return S.group.raid or false end
 -- name, rank, subgroup, level, class (localised), class file, zone, online, dead, role, master looter
 function GetRaidRosterInfo(i)
 	local u = S.units["raid" .. i]
-	if not u then return nil end
+	-- (an empty slot: no name, but a group all the same, as Forever answers)
+	if not u then if S.group.raid and i <= 40 then return nil, 0, math.ceil(i / 5) end return nil end
 	return u.name, u.rank or 0, u.subgroup or 1, u.level, u.class, u.class, nil, u.online ~= false, u.dead or false, u.role, false
 end
 function UnitThreatSituation(unit, mob) local u = U(unit) return u and u.threat or nil end
