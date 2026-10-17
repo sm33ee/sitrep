@@ -693,11 +693,33 @@ function Q.Match(objective, title)
 	return fallback, nil
 end
 
--- Navigate to a quest (nil: stop). The arrow and the tracker follow.
+-- Navigate to a quest (nil: stop). The arrow and the tracker follow. Kept for the
+-- character across a reload (ns.db.chosenQuest[guid]; Q.RestoreChoice).
 function Q.Select(id)
 	Q.selectedId = id
+	local g = ns.db and read(UnitGUID, "player")
+	if g then
+		ns.db.chosenQuest = ns.db.chosenQuest or {}
+		ns.db.chosenQuest[g] = id
+	end
 	Q.ShowOnMap(id)
 	ns.Fire("SR_QUESTS")
+end
+
+-- After a login or reload: the quest chosen before, once the log has it (the log
+-- fills a moment after login). Gone from the log meanwhile: nothing chosen.
+function Q.RestoreChoice()
+	if Q.restored or Q.selectedId then Q.restored = true return end
+	local g = ns.db and read(UnitGUID, "player")
+	local id = g and ns.db.chosenQuest and ns.db.chosenQuest[g]
+	if not id then Q.restored = true return end
+	local list = Q.List()
+	if #list == 0 then return end -- (not filled yet: the next update)
+	Q.restored = true
+	for _, q in ipairs(list) do
+		if q.id == id then Q.Select(id) return end
+	end
+	ns.db.chosenQuest[g] = nil
 end
 
 -- The game's own choice follows the tracker's: the quest it tracks (its map marks
@@ -995,7 +1017,8 @@ for _, e in ipairs({ "QUEST_LOG_UPDATE", "QUEST_ACCEPTED", "QUEST_TURNED_IN", "Q
 		if e ~= "UNIT_QUEST_LOG_CHANGED" or unit == "player" then soon() end
 	end)
 end
-ns.On("SR_LOGIN", function() Q.Learn() end)
+ns.On("SR_LOGIN", function() Q.Learn(); Q.RestoreChoice() end)
+ns.On("QUEST_LOG_UPDATE", function() if not Q.restored then Q.RestoreChoice() end end)
 
 -- /sitrep questprobe: what this client tells about quests and where they are.
 function Q.Probe()

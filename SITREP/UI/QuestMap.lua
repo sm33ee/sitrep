@@ -253,22 +253,21 @@ local function mark(canvas, i)
 	return f
 end
 
--- The legend: a small icon in the map's top left, right of the map's own round
--- button there (4.11.5: on it at 10 px; the bottom left was out of sight on a
--- smaller map); the box with the quest, its objectives and what the marks mean
--- opens under it while the mouse is on the icon. The box
+-- The legend: a small icon in the map's bottom left, over the "Walked ways" pill
+-- (the top left holds the map's own round button); the box with the quest, its
+-- objectives and what the marks mean opens upwards while the mouse is on the icon.
+-- Shown whenever the map is (no quest chosen: the box says how to choose one). The box
 -- is made of rows (each its own font string, its mark as a texture of its own):
 -- inline textures in a wrapping text sat a line too low on Forever, and wrapped
 -- lines lost their indent.
 local LEGEND_ICON = 24
-local LEGEND_X = 56 -- (the map's round button: about 10 to 46 px from the left)
 local function legend(wm)
 	if QM.legend then return QM.legend end
 	local host = wm.ScrollContainer or wm
 	local ic = CreateFrame("Frame", nil, host)
 	lift(ic, LEVEL.panel)
 	ic:SetSize(LEGEND_ICON, LEGEND_ICON)
-	ic:SetPoint("TOPLEFT", host, "TOPLEFT", LEGEND_X, -10)
+	ic:SetPoint("BOTTOMLEFT", host, "BOTTOMLEFT", 10, 10 + 22 + 6) -- (over the 22 px pills)
 	ic.bg = K.Backdrop(ic, C.bg, LEGEND_ICON / 2)
 	ic.bg:SetAllPoints()
 	ic.glyph = ic:CreateTexture(nil, "OVERLAY")
@@ -279,7 +278,7 @@ local function legend(wm)
 	ic:Hide()
 	local f = CreateFrame("Frame", nil, host)
 	lift(f, LEVEL.panel + 2)
-	f:SetPoint("TOPLEFT", ic, "BOTTOMLEFT", 0, -4)
+	f:SetPoint("BOTTOMLEFT", ic, "TOPLEFT", 0, 4)
 	f:SetWidth(LEGEND_W)
 	f.bg = K.Backdrop(f, C.bg, 10)
 	f.bg:SetAllPoints()
@@ -367,7 +366,21 @@ end
 
 function QM.DrawQuest(cx)
 	local q = cx and on() and chosen()
-	if not q then hideQuest() return end
+	if not q then
+		hideQuest()
+		-- no quest chosen: the icon all the same, its box says how to get one
+		if cx and on() then
+			local lg = legend(cx.wm)
+			local dim = format("|cff%s%%s|r", hex(C.dim))
+			local rows = { { text = "Choose a quest in the quest tracker (click it): where its mobs spawn, how often they drop what it needs, where its counters went up.", gapAfter = 6 } }
+			if P().mapFlights ~= false then
+				rows[#rows + 1] = { text = format(dim, "Flight points: bright where you can fly, dim where this character has not been yet. Hover one: its name and how far.") }
+			end
+			fillLegend(lg, "World map", rows)
+			lg.icon:Show()
+		end
+		return
+	end
 	local canvas, cw, ch = cx.canvas, cx.cw, cx.ch
 	local d = QM.Data(q, cx.map)
 	local i = 0

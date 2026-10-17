@@ -6685,8 +6685,9 @@ end)()
 	local LG = QM.legend
 	local body = LG and LG.text or ""
 	check("legend: only its icon on the map, the box closed", LG.icon:IsShown() and not LG:IsShown())
-	check("...top left, right of the map's own round button there, the box under it",
-		({ LG.icon:GetPoint(1) })[1] == "TOPLEFT" and ({ LG.icon:GetPoint(1) })[4] == 56 and ({ LG:GetPoint(1) })[1] == "TOPLEFT")
+	check("...bottom left, over the Walked ways pill (the top left is the map's own button), the box opening upwards",
+		({ LG.icon:GetPoint(1) })[1] == "BOTTOMLEFT" and ({ LG.icon:GetPoint(1) })[5] == 10 + 22 + 6 and ({ LG:GetPoint(1) })[1] == "BOTTOMLEFT"
+		and ({ QM.button:GetPoint(1) })[5] == 10)
 	LG.icon._scripts.OnEnter(LG.icon)
 	check("...the mouse on the icon: the box", LG:IsShown())
 	check("legend: the quest, its mob, how fast it comes back, how many kills an item takes", LG.title:GetText() == "Rote Kopftücher"
@@ -6705,6 +6706,11 @@ end)()
 	LG.icon._scripts.OnLeave(LG.icon)
 	check("...mouse off: closed again", not LG:IsShown())
 	check("chosen in the tracker: the game tracks it too (its map marks it)", W.superTracked == 601, tostring(W.superTracked))
+	check("the choice kept for this character", ns.db.chosenQuest and ns.db.chosenQuest[UnitGUID("player")] == 601)
+	-- a reload: nothing chosen until the log is there, then the quest of before
+	Q.selectedId, Q.restored = nil, nil
+	Q.RestoreChoice()
+	check("after a reload: the quest chosen before, again", Q.selectedId == 601)
 	-- zoomed in: the marks zoom with the map, their text keeps its size
 	cscale = 2; wm:OnMapChanged()
 	check("zoomed: the label stays one size", math.abs(QM.pool[1].label:GetScale() - 0.5) < 1e-6)
@@ -6714,12 +6720,14 @@ end)()
 	-- no quest chosen: nothing on the map
 	mapID = 1429
 	Q.Select(nil)
-	check("no quest chosen: nothing on the map", QM.used == 0 and not QM.legend:IsShown() and not QM.legend.icon:IsShown())
+	check("no quest chosen: nothing on the map", QM.used == 0 and not QM.legend:IsShown())
+	check("...but the legend's icon, its box saying how to choose one", QM.legend.icon:IsShown() and QM.legend.title:GetText() == "World map"
+		and (QM.legend.text or ""):find("Choose a quest in the quest tracker", 1, true))
 	check("...and the game tracks none", W.superTracked == 0)
 	-- switched off
 	Q.Select(601)
 	ns.P.quests.questMap = false; ns.Changed("quests.questMap")
-	check("switched off: nothing on the map", QM.used == 0)
+	check("switched off: nothing on the map", QM.used == 0 and not QM.legend.icon:IsShown())
 	ns.P.quests.questMap = true; ns.Changed("quests.questMap")
 	-- the map closes: its marks go
 	wm:Hide(); wm._scripts.OnHide(wm)
