@@ -354,3 +354,10 @@ Quest-Gegenstände erkennt SITREP darum am Namen in den Zielen des Questlogs (4.
 player's own part too, under their own name, and in no fixed order. The first objective line is
 therefore not necessarily yours: SITREP reads the lines per owner (`Quests.TipQuestLines`) and takes
 your counts from your quest log.
+
+## Raid roster (measured 2026-10-17, `/sitrep raidprobe`, 4.11.5)
+
+- `GetRaidRosterInfo(i)` answers for all 40 raid slots, also the empty ones: no name,
+  but a subgroup all the same. A slot counts as a member only with a name (a raid of
+  two showed all 8 groups "in use" before that).
+- The members' subgroups are plain out of combat.
