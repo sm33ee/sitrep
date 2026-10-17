@@ -5573,6 +5573,8 @@ end)()
 	SlashCmdList.SITREP("mouse")
 	local dump = table.concat(SITREP_DB.reports.mouse.lines, "\n")
 	check("/sitrep mouse: the frame under the mouse, its layer and alpha", dump:find("SITREP_BagButton", 1, true) and dump:find("alpha", 1, true), dump)
+	check("...and what finds it again: size, place, scripts, textures", dump:find("size 112x22", 1, true) and dump:find("scripts: ", 1, true)
+		and dump:find("texture: ", 1, true), dump)
 	S.mouseFocus = nil
 
 	-- druid: an idol lowers the shift cost; the client lists both costs

@@ -586,12 +586,51 @@ function Dbg.MouseProbe()
 			if ok and f then list = { f } end
 		end
 		if #list == 0 then ns.print("nothing under the mouse takes clicks (the world)") end
+		local read = ns.read
+		-- what a frame shows and does: to find an unnamed one again (its size, place,
+		-- texts, scripts, a global that holds it)
+		local function details(f, indent)
+			local w, h = read(f.GetWidth, f), read(f.GetHeight, f)
+			local okP, p, rel, rp, x, y = pcall(f.GetPoint, f, 1)
+			local relName = okP and rel and select(2, pcall(nameOf, rel)) or "-"
+			ns.print("%ssize %sx%s  at %s %s %s %s,%s", indent, tostring(w and math.floor(w + 0.5)), tostring(h and math.floor(h + 0.5)),
+				okP and tostring(p) or "?", tostring(relName), okP and tostring(rp) or "?", okP and x and math.floor(x + 0.5) or "?", okP and y and math.floor(y + 0.5) or "?")
+			local scripts = {}
+			for _, sc in ipairs({ "OnClick", "OnMouseDown", "OnMouseUp", "OnEnter", "OnShow", "OnUpdate" }) do
+				local okS, fn = pcall(f.GetScript, f, sc)
+				if okS and fn then scripts[#scripts + 1] = sc end
+			end
+			ns.print("%sscripts: %s", indent, #scripts > 0 and table.concat(scripts, " ") or "none")
+			local okR, regions = pcall(function() return { f:GetRegions() } end)
+			for _, r in ipairs(okR and regions or {}) do
+				local kind = read(r.GetObjectType, r)
+				if kind == "FontString" then
+					ns.print("%stext: \"%s\"", indent, tostring(read(r.GetText, r)))
+				elseif kind == "Texture" then
+					local tex = read(r.GetTexture, r) or read(r.GetAtlas, r)
+					if tex then ns.print("%stexture: %s", indent, tostring(tex)) end
+				end
+			end
+			-- a global (or a field of one) that holds it
+			for k, v in pairs(_G) do
+				if rawequal(v, f) and type(k) == "string" then ns.print("%sglobal: %s", indent, k) end
+			end
+		end
 		for _, f in ipairs(list) do
 			local okN, name = pcall(nameOf, f)
 			ns.print("%s  %s  strata %s level %s  alpha %.2f  shown %s  protected %s", okN and name or "?",
 				tostring(ns.read(f.GetObjectType, f)), tostring(ns.read(f.GetFrameStrata, f)), tostring(ns.read(f.GetFrameLevel, f)),
 				ns.read(f.GetEffectiveAlpha, f) or ns.read(f.GetAlpha, f) or -1, tostring(ns.read(f.IsShown, f)),
 				tostring(ns.read(f.IsProtected, f)))
+			details(f, "  ")
+			-- its children (the button may be one of them) and its parent's other children at this strata
+			local okK, kids = pcall(function() return { f:GetChildren() } end)
+			for i, k in ipairs(okK and kids or {}) do
+				if i > 8 then break end
+				local okKN, kn = pcall(nameOf, k)
+				ns.print("  child %s  %s", okKN and kn or "?", tostring(read(k.GetObjectType, k)))
+				details(k, "    ")
+			end
 		end
 	end)
 	ns.print("saved; /reload writes it to disk.")
