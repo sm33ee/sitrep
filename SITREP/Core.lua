@@ -8,7 +8,7 @@
 
 local ADDON, ns = ...
 _G.SITREP = ns
-ns.VERSION = "4.11.5"
+ns.VERSION = "4.12.0"
 
 local pcall, type, pairs, ipairs, select, tostring = pcall, type, pairs, ipairs, select, tostring
 local format = string.format

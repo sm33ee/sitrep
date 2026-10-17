@@ -18,10 +18,16 @@ SITREP works with what the client still gives and says so where it cannot.
 ## Features
 
 **Frames and HUD**
-- Player, target (grows with what it shows), pet and party frames in glass; buffs above,
-  debuffs below the target
-- Nameplates: role-based colours, a coral ring for enemy players, group focus rings,
-  dispel orbs, combo points, auras over the name, a calm "zen" mode for friendly players
+- Player, target (grows with what it shows), pet, focus and party frames in glass; buffs
+  above, debuffs below the target; party members with their target, dispel orbs and a
+  compact mode
+- Raid frames for up to 40: one column per group in use, class colour, dispel orbs, aggro
+  and target rims, faded out of heal range
+- Your focus in magenta everywhere: its frame, a ring on its plate, an alert when it
+  casts; shift-click a frame or a key (mouse over a plate) to set it
+- Nameplates: role-based colours, a coral ring for enemy players, a blue one for your
+  group, group focus rings, dispel orbs, combo points, auras over the name, a calm "zen"
+  mode for friendly players
 - Friendly NPCs: no bar, their title and an icon for what they do (repair, inn, flight
   master, trainer, vendor...)
 - A hover window next to the mouse instead of the tooltip: race/class, guild, NPC title,

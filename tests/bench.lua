@@ -10,7 +10,7 @@ for line in io.lines("SITREP/SITREP.toc") do
 end
 local S = W.scenario
 S.me = { x = 0, y = 0, facing = 0, inst = 1 }
-S.units.player = { name = "Tobi", guid = "Player-1-0001", class = "DRUID", level = 30, hostile = false, faction = "Alliance", hp = 4000, hpMax = 4000, dist = 0 }
+S.units.player = { name = "Ardan", guid = "Player-1-0001", class = "DRUID", level = 30, hostile = false, faction = "Alliance", hp = 4000, hpMax = 4000, dist = 0 }
 W.Fire("ADDON_LOADED", "SITREP")
 W.Fire("PLAYER_LOGIN")
 W.Fire("SPELLS_CHANGED")

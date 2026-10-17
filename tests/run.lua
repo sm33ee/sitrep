@@ -57,7 +57,7 @@ local S = W.scenario
 -- wiping contacts by hand (as the tests do) must also drop their tracks
 local function wipeContacts(C_) for k in pairs(C_) do C_[k] = nil end end
 S.me = { x = 0, y = 0, facing = 0, inst = 1 }
-S.units.player = { name = "Tobi", guid = "Player-1-0001", class = "MAGE", level = 60, hostile = false, faction = "Alliance", hp = 4000, hpMax = 4000, dist = 0 }
+S.units.player = { name = "Ardan", guid = "Player-1-0001", class = "MAGE", level = 60, hostile = false, faction = "Alliance", hp = 4000, hpMax = 4000, dist = 0 }
 
 -- (a profile of its own: the preset layout is for a first start)
 SITREP_DB = { profile = {} }
@@ -278,7 +278,7 @@ check("net contact ingested", lock and lock.net == "Ally-Realm")
 check("net contact: who, no distance", lock and lock.class == "WARLOCK" and lock.range == nil and lock.inCombat == true)
 check("net contact is not live", lock and lock.live == false)
 local mine = #W.addonMsgs
-W.Fire("CHAT_MSG_ADDON", "SITREP", msg, "PARTY", "Tobi")
+W.Fire("CHAT_MSG_ADDON", "SITREP", msg, "PARTY", "Ardan")
 check("own echo ignored", true)
 W.Fire("CHAT_MSG_ADDON", "OTHER", "garbage", "PARTY", "X")
 check("foreign prefix ignored", ns.Comms.stats.received == 1, ns.Comms.stats.received)
@@ -321,7 +321,7 @@ S.me.combat, S.units.player.combat = true, true
 W.Fire("PLAYER_REGEN_DISABLED")
 W.Fire("UNIT_COMBAT", "player", "WOUND", "", 700, 1)
 for _ = 1, 8 do W.Update(0.25) end
-W.Fire("CHAT_MSG_SYSTEM", "Tobi has defeated Garrick in a duel")
+W.Fire("CHAT_MSG_SYSTEM", "Ardan has defeated Garrick in a duel")
 S.units.nameplate6.hostile = false
 S.me.combat, S.units.player.combat = false, false
 W.Fire("PLAYER_REGEN_ENABLED")
@@ -336,10 +336,10 @@ check("per-class record: 1-0 vs Paladin", ns.db.log.duels.PALADIN and ns.db.log.
 check("no honorable kill needed", d.hk == 0)
 
 -- Results that arrive outside combat are logged on their own.
-W.Fire("CHAT_MSG_SYSTEM", "Garrick has fled from Tobi in a duel")
+W.Fire("CHAT_MSG_SYSTEM", "Garrick has fled from Ardan in a duel")
 check("flee counts as a win", aars[#aars].outcome == "WIN" and ns.db.log.duels.PALADIN.w == 2)
 check("standalone duel carries no stale damage", aars[#aars].dmg == 0)
-W.Fire("CHAT_MSG_SYSTEM", "Garrick-Stormrage has defeated Tobi in a duel")
+W.Fire("CHAT_MSG_SYSTEM", "Garrick-Stormrage has defeated Ardan in a duel")
 check("loss recorded (realm suffix stripped)", aars[#aars].outcome == "LOSS" and ns.db.log.duels.PALADIN.l == 1)
 local before3 = #aars
 W.Fire("CHAT_MSG_SYSTEM", "Foo has defeated Bar in a duel")
@@ -362,8 +362,8 @@ check("no result: duel BREAK, nothing trained", aars[#aars].kind == "duel" and a
 
 -- Localized pattern building copes with magic characters.
 local pat, order = ns.AAR._toPattern("%2$s (Duell) wurde von %1$s besiegt.")
-local a, b = ("Garrick (Duell) wurde von Tobi besiegt."):match(pat)
-check("pattern handles reordered args and punctuation", a == "Garrick" and b == "Tobi" and order[1] == 2 and order[2] == 1)
+local a, b = ("Garrick (Duell) wurde von Ardan besiegt."):match(pat)
+check("pattern handles reordered args and punctuation", a == "Garrick" and b == "Ardan" and order[1] == 2 and order[2] == 1)
 
 -- Dueling a groupmate: they leave the friendly force.
 S.units.nameplate6 = nil
@@ -4016,7 +4016,7 @@ do
 	local me = S.units.player
 	TR.SetEditing(true) -- layout mode: every icon this character may see is shown
 	local it = TR.Add("Gegenzauber", "cd")
-	check("new icon: claimed by this class and character", it.class == "MAGE" and it.char == "Tobi-Forever" and it.scope == "class")
+	check("new icon: claimed by this class and character", it.class == "MAGE" and it.char == "Ardan-Forever" and it.scope == "class")
 	TR.Refresh()
 	check("shown for its class", TR.icons[it.id]:IsShown() and #TR.Mine() == 1)
 	-- log in a warrior
@@ -4031,7 +4031,7 @@ do
 	check("this character only: hidden for the other mage", not TR.icons[it.id]:IsShown())
 	it.scope = "all"; me.class = "WARRIOR"; TR.Refresh()
 	check("all characters: shown even for the warrior", TR.icons[it.id]:IsShown())
-	me.class, me.name = "MAGE", "Tobi"
+	me.class, me.name = "MAGE", "Ardan"
 	-- icons from older lists carry no class: the first class that knows the spell takes it
 	local legacy = TR.Add("Gegenzauber", "cd")
 	legacy.class, legacy.char, legacy.scope = nil, nil, nil
@@ -4045,9 +4045,9 @@ do
 	check("unclaimed icon, spell known: claimed by this class", TR.icons[legacy.id]:IsShown() and legacy.class == "MAGE")
 	IsPlayerSpell = nil
 	-- the macro copy keeps whose icon it is
-	it.scope, it.class, it.char = "char", "MAGE", "Tobi-Forever"
+	it.scope, it.class, it.char = "char", "MAGE", "Ardan-Forever"
 	local back = TR.Decode(TR.Encode())
-	check("macro copy: scope, class and character survive", back.items[1].scope == "char" and back.items[1].class == "MAGE" and back.items[1].char == "Tobi-Forever"
+	check("macro copy: scope, class and character survive", back.items[1].scope == "char" and back.items[1].class == "MAGE" and back.items[1].char == "Ardan-Forever"
 		and back.items[2].scope == "class" and back.items[2].class == "MAGE")
 	local old = TR.Decode("2|1|c,2139,0,0,36,100,n,0,a,c,0,0")
 	check("older macro copies: unclaimed", old.items[1].class == nil and old.items[1].scope == "class")
