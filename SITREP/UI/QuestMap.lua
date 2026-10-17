@@ -30,9 +30,10 @@
 --            inside (caves, buildings), the doors between them yellow. Where the
 --            arrow can lead you round.
 --   flights  (quests.mapFlights) every flight point of your faction on the map
---            (the client knows them all): the flight master's icon; dim with "new"
---            where this character has not been (Travel learns that at a flight
---            master: open one once with a character new to SITREP).
+--            (the client knows them all): the flight master's icon, no label (its
+--            name, known or not and how far, when the mouse is on it); dim where
+--            this character has not been (Travel learns that at a flight master:
+--            open one once with a character new to SITREP).
 --
 -- Self-contained, to take out in one go: this file and its line in the TOC, its
 -- switches on the Quests page with their defaults (quests.questMap, mapTrails,
@@ -563,8 +564,6 @@ function QM.DrawFlights(cx)
 				f.icon = f.inner:CreateTexture(nil, "OVERLAY")
 				f.icon:SetTexture(FLIGHT_ICON)
 				f.icon:SetAllPoints()
-				f.text = K.Font(f.inner, 10, C.text, K.FONT, "OUTLINE")
-				f.text:SetPoint("TOP", f.icon, "BOTTOM", 0, -1)
 				QM.Hoverable(f.inner)
 				f.inner.owner = f
 				QM.flightPool[i] = f
@@ -580,9 +579,6 @@ function QM.DrawFlights(cx)
 			f.mine = mine
 			pcall(f.icon.SetDesaturated, f.icon, not mine)
 			f.icon:SetAlpha(mine and 1 or 0.6)
-			local short = node.name:match("^([^,]+)") or node.name
-			f.text:SetText(mine and short or not checked and format("%s |cff%s?|r", short, hex(C.dim)) or format("%s |cff%snew|r", short, hex(ITEM_COL)))
-			f.text:SetTextColor(mine and C.text[1] or C.dim[1], mine and C.text[2] or C.dim[2], mine and C.text[3] or C.dim[3])
 			f.node = node.name
 			f.inner.info = { kind = "flight", name = node.name, mine = mine, unknown = not checked, x = node.x, y = node.y, map = cx.map }
 			f:Show()

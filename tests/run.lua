@@ -6992,9 +6992,9 @@ end)()
 		if f.node == "Stormwind, Elwynn" then mine = f elseif f.node == "Späherkuppe, Westfall" then new = f end
 	end
 	check("flights: the points on this map (not the far one)", QM.flightUsed == 2, QM.flightUsed)
-	check("...the one you know: bright, its name", mine and mine.mine and mine.text:GetText() == "Stormwind" and not mine.icon._desat)
-	check("...the one you have not been to: dim, \"new\"", new and not new.mine and new.icon._desat and new.text:GetText():find("Späherkuppe", 1, true)
-		and new.text:GetText():find("new", 1, true), new and new.text:GetText())
+	check("...the one you know: bright", mine and mine.mine and not mine.icon._desat)
+	check("...the one you have not been to: dim", new and not new.mine and new.icon._desat)
+	check("...no names under the icons (they are in the tooltip)", mine.text == nil and new.text == nil)
 	check("...the icons keep one size when zoomed", math.abs(mine.inner:GetScale() - 0.5) < 1e-6)
 	new.inner._scripts.OnEnter(new.inner)
 	check("a hovered flight point grows, the others step back", math.abs(new.inner:GetScale() - 0.5 * 1.3) < 1e-9 and mine:GetAlpha() == 0.5
@@ -7008,7 +7008,6 @@ end)()
 	ns.db.flight = nil
 	QM.Draw()
 	local any = QM.flightPool[1]
-	check("flights unknown for this character: '?', not 'new'", any.text:GetText():find("?", 1, true) and not any.text:GetText():find("new", 1, true), any.text:GetText())
 	any.inner._scripts.OnEnter(any.inner)
 	check("...its tooltip says to talk to a flight master once", GameTooltip:Text():find("talk to any flight master once", 1, true), GameTooltip:Text())
 	any.inner._scripts.OnLeave(any.inner)
